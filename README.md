@@ -3,8 +3,7 @@
 Create a virtual DOM that can be used to update the real DOM using diffs.
 
 ```js
-var dom = require('virtual-dom');
-var div = dom.div;
+var {div} = require('virtual-dom');
 
 function template(data) {
     return div({ class: data.class }, [data.text]);
