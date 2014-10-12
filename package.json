@@ -2,6 +2,6 @@
   "name": "virtual-dom",
   "devDependencies": {
     "duo": "^0.5.4",
-    "mocha": "1.x"
+    "duo-test": "^0.3.10"
   }
 }

@@ -3,36 +3,42 @@
 #
 
 duo = ./node_modules/.bin/duo
-mocha = ./node_modules/.bin/mocha
+test = ./node_modules/.bin/duo-test
 
 #
 # Wildcards.
 #
 
-js = $(shell find ./ -name '*.js')
+js = $(shell find index.js lib/*.js test/*.js)
 
 #
 # Default.
 #
 
-default: build
+default: test
 
 #
 # Tasks.
 #
 
 build: node_modules $(js)
-	@$(duo) index.js build/build.js --development
+	@$(duo) -r ./ test/tests.js > build.js
 
-test: node_modules $(js)
-	@$(mocha) test
+test: build
+	@$(test) browser -c 'make build'
 
 node_modules: package.json
 	@npm install
 	@touch node_modules # make sure node_modules is last modified
 
+clean:
+	@rm -r build.js
+
+distclean:
+	@rm -r components node_modules
+
 #
 # PHONY
 #
 
-.PHONY: test
+.PHONY: clean distclean
