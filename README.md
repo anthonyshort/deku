@@ -19,7 +19,7 @@ var el = node.toElement();
 
 // Create a new node and compare it
 var updated = render({ class: 'foo' });
-var patch = node.diff(updated);
+node.patch(el, updated);
 
 // Patch the original element so that it matches
 // the new node using the diff
@@ -27,6 +27,8 @@ patch(el);
 // el === <div class="foo"></div>
 
 ```
+
+### Ways to map virtual tree to DOM tree
 
 ## API
 
