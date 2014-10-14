@@ -30,7 +30,7 @@ describe('dom', function () {
     );
   });
 
-  describe.only('diffs', function () {
+  describe('diffs', function () {
     var parent;
 
     beforeEach(function () {
@@ -87,6 +87,27 @@ describe('dom', function () {
       var patch = a.diff(b);
       patch(el);
       done();
+    });
+
+    it('should add new elements', function () {
+      var a = dom('div');
+      var b = dom('div', null, [dom('span')]);
+      var el = a.toElement();
+      var patch = a.diff(b);
+      assert(el.childNodes.length === 0);
+      patch(el);
+      assert(el.childNodes.length === 1);
+      assert(el.childNodes[0].tagName === 'SPAN');
+    });
+
+    it.skip('should remove old elements', function () {
+      var a = dom('div');
+      var b = dom('div', null, [dom('span')]);
+      var el = b.toElement();
+      var patch = b.diff(a);
+      assert(el.childNodes.length === 1);
+      patch(el);
+      assert(el.childNodes.length === 0);
     });
 
   });
