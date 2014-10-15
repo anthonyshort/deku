@@ -43,9 +43,8 @@ describe('dom', function () {
       var el = a.toElement();
       parent.appendChild(el);
       var patch = a.diff(b);
-      var newEl = patch(el);
-      assert(newEl !== el);
-      assert(newEl.tagName === 'SPAN');
+      patch(el);
+      assert(el.tagName === 'SPAN');
     });
 
     it('should add new attributes', function () {
@@ -100,7 +99,7 @@ describe('dom', function () {
       assert(el.childNodes[0].tagName === 'SPAN');
     });
 
-    it.skip('should remove old elements', function () {
+    it('should remove old elements', function () {
       var a = dom('div');
       var b = dom('div', null, [dom('span')]);
       var el = b.toElement();
@@ -108,6 +107,16 @@ describe('dom', function () {
       assert(el.childNodes.length === 1);
       patch(el);
       assert(el.childNodes.length === 0);
+    });
+
+    it.skip('should add text elements', function () {
+      var a = dom('div');
+      var b = dom('div', null, ['foo']);
+      var el = b.toElement();
+      var patch = b.diff(a);
+      assert(el.childNodes.length === 1);
+      patch(el);
+      assert(el.childNodes[0].data === 'foo');
     });
 
   });
