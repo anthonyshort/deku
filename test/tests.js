@@ -109,15 +109,56 @@ describe('dom', function () {
       assert(el.childNodes.length === 0);
     });
 
-    it.skip('should add text elements', function () {
+    it('should add text elements', function () {
+      var a = dom('div');
+      var b = dom('div', null, ['foo']);
+      var el = a.toElement();
+      var patch = a.diff(b);
+      assert(el.childNodes.length === 0);
+      patch(el);
+      assert(el.childNodes[0].data === 'foo');
+    });
+
+    it('should remove text elements', function () {
       var a = dom('div');
       var b = dom('div', null, ['foo']);
       var el = b.toElement();
       var patch = b.diff(a);
       assert(el.childNodes.length === 1);
       patch(el);
-      assert(el.childNodes[0].data === 'foo');
+      assert(el.innerHTML === '');
     });
+
+    it('should update text elements', function () {
+      var a = dom('div', null, ['foo']);
+      var b = dom('div', null, ['bar']);
+      var el = a.toElement();
+      var patch = a.diff(b);
+      assert(el.innerHTML === 'foo');
+      patch(el);
+      assert(el.innerHTML === 'bar');
+    });
+
+    it('should swap elements with text elements', function () {
+      var a = dom('div', null, [dom('span')]);
+      var b = dom('div', null, ['bar']);
+      var el = a.toElement();
+      var patch = a.diff(b);
+      assert(el.innerHTML === '<span></span>');
+      patch(el);
+      assert(el.innerHTML === 'bar');
+    });
+
+    it('should swap text elements with elements', function () {
+      var a = dom('div', null, [dom('span')]);
+      var b = dom('div', null, ['bar']);
+      var el = b.toElement();
+      var patch = b.diff(a);
+      assert(el.innerHTML === 'bar');
+      patch(el);
+      assert(el.innerHTML === '<span></span>');
+    });
+
 
   });
 
