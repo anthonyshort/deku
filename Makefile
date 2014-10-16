@@ -27,6 +27,9 @@ build: node_modules $(js)
 test: build
 	@$(test) browser -c 'make build'
 
+headless: build
+	@$(test) phantomjs -c 'make build'
+
 node_modules: package.json
 	@npm install
 	@touch node_modules # make sure node_modules is last modified
