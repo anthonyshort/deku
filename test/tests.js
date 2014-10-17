@@ -40,7 +40,7 @@ describe('dom', function () {
     it.skip('should replace different nodes', function () {
       var a = dom('div');
       var b = dom('span');
-      var el = a.toElement();
+      var el = a.render();
       parent.appendChild(el);
       var patch = a.diff(b);
       patch(el);
@@ -50,7 +50,7 @@ describe('dom', function () {
     it('should add new attributes', function () {
       var a = dom('div');
       var b = dom('div', { name: 'foo' });
-      var el = a.toElement();
+      var el = a.render();
       parent.appendChild(el);
       var patch = a.diff(b);
       patch(el);
@@ -60,7 +60,7 @@ describe('dom', function () {
     it('should remove old attributes', function () {
       var a = dom('div', { name: 'foo' });
       var b = dom('div');
-      var el = a.toElement();
+      var el = a.render();
       parent.appendChild(el);
       var patch = a.diff(b);
       patch(el);
@@ -70,7 +70,7 @@ describe('dom', function () {
     it('should update attribute values', function () {
       var a = dom('div', { name: 'foo' });
       var b = dom('div', { name: 'bar' });
-      var el = a.toElement();
+      var el = a.render();
       var patch = a.diff(b);
       patch(el);
       assert(el.getAttribute('name') == 'bar');
@@ -79,7 +79,7 @@ describe('dom', function () {
     it('should not update attributes that have not changed', function (done) {
       var a = dom('div', { name: 'foo' });
       var b = dom('div', { name: 'foo' });
-      var el = a.toElement();
+      var el = a.render();
       el.setAttribute = function(name, value){
         done(false);
       };
@@ -91,7 +91,7 @@ describe('dom', function () {
     it('should add new elements', function () {
       var a = dom('div');
       var b = dom('div', null, [dom('span')]);
-      var el = a.toElement();
+      var el = a.render();
       var patch = a.diff(b);
       assert(el.childNodes.length === 0);
       patch(el);
@@ -102,7 +102,7 @@ describe('dom', function () {
     it('should remove old elements', function () {
       var a = dom('div');
       var b = dom('div', null, [dom('span')]);
-      var el = b.toElement();
+      var el = b.render();
       var patch = b.diff(a);
       assert(el.childNodes.length === 1);
       patch(el);
@@ -112,7 +112,7 @@ describe('dom', function () {
     it('should add text elements', function () {
       var a = dom('div');
       var b = dom('div', null, ['foo']);
-      var el = a.toElement();
+      var el = a.render();
       var patch = a.diff(b);
       assert(el.childNodes.length === 0);
       patch(el);
@@ -122,7 +122,7 @@ describe('dom', function () {
     it('should remove text elements', function () {
       var a = dom('div');
       var b = dom('div', null, ['foo']);
-      var el = b.toElement();
+      var el = b.render();
       var patch = b.diff(a);
       assert(el.childNodes.length === 1);
       patch(el);
@@ -132,7 +132,7 @@ describe('dom', function () {
     it('should update text elements', function () {
       var a = dom('div', null, ['foo']);
       var b = dom('div', null, ['bar']);
-      var el = a.toElement();
+      var el = a.render();
       var patch = a.diff(b);
       assert(el.innerHTML === 'foo');
       patch(el);
@@ -142,7 +142,7 @@ describe('dom', function () {
     it('should swap elements with text elements', function () {
       var a = dom('div', null, [dom('span')]);
       var b = dom('div', null, ['bar']);
-      var el = a.toElement();
+      var el = a.render();
       var patch = a.diff(b);
       assert(el.innerHTML === '<span></span>');
       patch(el);
@@ -152,13 +152,12 @@ describe('dom', function () {
     it('should swap text elements with elements', function () {
       var a = dom('div', null, [dom('span')]);
       var b = dom('div', null, ['bar']);
-      var el = b.toElement();
+      var el = b.render();
       var patch = b.diff(a);
       assert(el.innerHTML === 'bar');
       patch(el);
       assert(el.innerHTML === '<span></span>');
     });
-
 
   });
 
