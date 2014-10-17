@@ -1,5 +1,8 @@
-var Virtual = require('./lib/element');
+var VirtualElement = require('./lib/element');
+var VirtualNode = require('./lib/node');
 
 module.exports = function(type, attrs, children) {
-  return new Virtual(type, attrs, children);
+  var element = new VirtualElement(type, attrs);
+  var node = new VirtualNode(element, children);
+  return node;
 }

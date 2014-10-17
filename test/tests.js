@@ -13,11 +13,11 @@ describe('dom', function () {
    */
 
   it('should create divs by default', function () {
-    assert(node.tagName === 'div');
+    assert(node.element.tagName === 'div');
   });
 
   it('should set the type', function () {
-    assert(dom('span').tagName === 'span');
+    assert(dom('span').element.tagName === 'span');
   });
 
   it('should set attributes', function () {
@@ -25,7 +25,7 @@ describe('dom', function () {
       name: 'Foo'
     });
     assert.equal(
-      node.attributes['name'],
+      node.element.attributes['name'],
       'Foo'
     );
   });
@@ -44,7 +44,7 @@ describe('dom', function () {
       parent.appendChild(el);
       var patch = a.diff(b);
       patch(el);
-      assert(el.tagName === 'SPAN');
+      assert(el.element.tagName === 'SPAN');
     });
 
     it('should add new attributes', function () {
