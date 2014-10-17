@@ -19,17 +19,17 @@ var VirtualText = require('./lib/text');
  */
 
 function createElement(type, attrs, children) {
-  if (children) children = children.map(parse);
-  var element = new VirtualElement(type, attrs, children);
-  var node = new VirtualNode(element);
+  var list = (children || []).map(normalize);
+  var element = new VirtualElement(type, attrs);
+  var node = new VirtualNode(element, list);
   return node;
 }
 
 /**
- * Add a child to this node
+ * Parse nodes into real VirtualNodes
  */
 
-function parse(node, index) {
+function normalize(node) {
   if (typeof node === 'string' || typeof node === 'number') {
     var element = new VirtualText(node);
     return new VirtualNode(element);
