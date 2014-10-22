@@ -9,10 +9,19 @@ var VirtualNode = require('./lib/node');
 var VirtualText = require('./lib/text');
 
 /**
+ * DOM mapping.
+ */
+
+var elements = {
+  text: VirtualText,
+  default: VirtualElement
+};
+
+/**
  * Expose `dom`.
  */
 
-exports = module.exports = createElement;
+exports = module.exports = createNode;
 exports.dom = exports;
 
 /**
@@ -31,16 +40,22 @@ exports.mount = mount;
  * Create virtual DOM trees
  *
  * @param {String} type
- * @param {Object} attrs
+ * @param {Object} attributes
  * @param {Array} children
  *
  * @return {VirtualNode}
  */
 
-function createElement(type, attrs, children) {
+function createNode(type, attributes, children) {
   var list = (children || []).map(normalize);
-  var element = new VirtualElement(type, attrs);
-  var node = new VirtualNode(element, list);
+  // TODO: this can be abstracted away if we have another `Dom` object.
+  if ('function' == typeof type) {
+    var tagName = type.tagName;
+  } else {
+    var tagName = type;
+    type = elements[type] || elements['default'];
+  }
+  var node = new VirtualNode(tagName, type, attributes, list);
   return node;
 }
 
@@ -50,8 +65,7 @@ function createElement(type, attrs, children) {
 
 function normalize(node) {
   if (typeof node === 'string' || typeof node === 'number') {
-    var element = new VirtualText(node);
-    return new VirtualNode(element);
+    return createNode('text', node);
   }
   return node;
 }
@@ -60,8 +74,7 @@ function normalize(node) {
  * Mount.
  */
 
-function mount(type, attrs, el) {
-  var node = createElement(type, attrs);
-  console.log(node.render())
+function mount(type, attributes, el) {
+  var node = createNode(type, attributes);
   el.appendChild(node.render());
 }

@@ -2,18 +2,12 @@ var assert = require('component/assert@0.4.0');
 var dom = require('../index.js');
 
 describe('dom', function(){
-  var node;
-
-  beforeEach(function(){
-    node = dom();
-  });
-
-  it('should create divs by default', function(){
-    assert(node.owner.tagName === 'div');
-  });
+  // it('should create divs by default', function(){
+  //   assert(dom().owner.tagName === 'div');
+  // });
 
   it('should set the type', function(){
-    assert(dom('span').owner.tagName === 'span');
+    assert(dom('span').tagName === 'span');
   });
 
   it('should set attributes', function(){
@@ -21,7 +15,7 @@ describe('dom', function(){
       name: 'Foo'
     });
     assert.equal(
-      node.owner.attributes['name'],
+      node.attributes['name'],
       'Foo'
     );
   });

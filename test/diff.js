@@ -84,8 +84,11 @@ describe('diffs', function(){
 
   it('should add text elements', function(){
     var a = dom('div');
+    console.log(a);
     var b = dom('div', null, ['foo']);
+    console.log(b);
     var el = a.render();
+    console.log(el);
     var patch = a.diff(b);
     assert(el.childNodes.length === 0);
     patch(el);
