@@ -9,11 +9,11 @@ describe('dom', function(){
   });
 
   it('should create divs by default', function(){
-    assert(node.element.tagName === 'div');
+    assert(node.owner.tagName === 'div');
   });
 
   it('should set the type', function(){
-    assert(dom('span').element.tagName === 'span');
+    assert(dom('span').owner.tagName === 'span');
   });
 
   it('should set attributes', function(){
@@ -21,7 +21,7 @@ describe('dom', function(){
       name: 'Foo'
     });
     assert.equal(
-      node.element.attributes['name'],
+      node.owner.attributes['name'],
       'Foo'
     );
   });
