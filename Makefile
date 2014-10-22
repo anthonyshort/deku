@@ -22,7 +22,7 @@ default: test
 #
 
 build: node_modules $(js)
-	@$(duo) -r ./ test/tests.js > build.js
+	@$(duo) -r ./ test/index.js > build.js
 
 test: build
 	@$(test) browser -c 'make build'
@@ -35,13 +35,14 @@ node_modules: package.json
 	@touch node_modules # make sure node_modules is last modified
 
 clean:
-	@rm -r build.js
+	@-rm -r build.js
 
 distclean:
-	@rm -r components node_modules
+	@-rm -r components node_modules
 
 #
 # PHONY
 #
 
-.PHONY: clean distclean
+.PHONY: clean
+.PHONY: distclean

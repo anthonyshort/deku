@@ -1,12 +1,31 @@
-module.exports = createElement;
 
 /**
- * Dependencies
+ * Module dependencies.
  */
 
 var VirtualElement = require('./lib/element');
+var Component = require('./lib/component');
 var VirtualNode = require('./lib/node');
 var VirtualText = require('./lib/text');
+
+/**
+ * Expose `dom`.
+ */
+
+exports = module.exports = createElement;
+exports.dom = exports;
+
+/**
+ * Expose `component`.
+ */
+
+exports.component = Component;
+
+/**
+ * Expose `mount`.
+ */
+
+exports.mount = mount;
 
 /**
  * Create virtual DOM trees
@@ -35,4 +54,14 @@ function normalize(node) {
     return new VirtualNode(element);
   }
   return node;
+}
+
+/**
+ * Mount.
+ */
+
+function mount(type, attrs, el) {
+  var node = createElement(type, attrs);
+  console.log(node.render())
+  el.appendChild(node.render());
 }
