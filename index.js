@@ -38,25 +38,25 @@ exports.component = Component;
 exports.mount = mount;
 
 /**
- * Create virtual DOM trees
+ * Create virtual DOM trees.
  *
- * @param {String} type
+ * @param {String|Function} type
  * @param {Object} attributes
  * @param {Array} children
  *
  * @return {VirtualNode}
  */
 
-function createNode(type, attributes, children) {
+function createNode(factory, attributes, children) {
   var list = (children || []).map(normalize);
   // TODO: this can be abstracted away if we have another `Dom` object.
-  if ('function' == typeof type) {
-    var tagName = type.tagName;
+  if ('function' == typeof factory) {
+    var tagName = factory.tagName;
   } else {
-    var tagName = type;
-    type = elements[type] || elements['default'];
+    var tagName = factory;
+    factory = elements[factory] || elements['default'];
   }
-  var node = new VirtualNode(tagName, type, attributes, list);
+  var node = new VirtualNode(tagName, factory, attributes, list);
   return node;
 }
 
@@ -75,8 +75,8 @@ function normalize(node) {
  * Mount.
  */
 
-function mount(type, attributes, container) {
-  var node = createNode(type, attributes);
+function mount(factory, attributes, container) {
+  var node = createNode(factory, attributes);
   var rootId = renderer.cache(container);
   node.create(rootId);
   var el = node.render();
