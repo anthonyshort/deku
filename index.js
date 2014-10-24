@@ -7,6 +7,7 @@ var VirtualElement = require('./lib/element');
 var Component = require('./lib/component');
 var VirtualNode = require('./lib/node');
 var VirtualText = require('./lib/text');
+var renderer = require('./lib/renderer'); // hack ftm
 
 /**
  * DOM mapping.
@@ -74,7 +75,10 @@ function normalize(node) {
  * Mount.
  */
 
-function mount(type, attributes, el) {
+function mount(type, attributes, container) {
   var node = createNode(type, attributes);
-  el.appendChild(node.render());
+  var rootId = renderer.cache(container);
+  node.create(rootId);
+  var el = node.render();
+  container.appendChild(el);
 }
