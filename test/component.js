@@ -125,7 +125,6 @@ describe('component', function(){
 
       App.prototype.render = function(state, props){
         var current = state.page;
-        debugger;
         return dom('div', {}, [
           dom(current, {}, [])
         ]);

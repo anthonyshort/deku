@@ -3,19 +3,19 @@
  * Module dependencies.
  */
 
-var VirtualElement = require('./lib/element');
+var ElementComponent = require('./lib/component/element');
+var TextComponent = require('./lib/component/text');
 var Component = require('./lib/component');
-var VirtualNode = require('./lib/node');
-var VirtualText = require('./lib/text');
 var renderer = require('./lib/renderer'); // hack ftm
+var VirtualNode = require('./lib/node');
 
 /**
  * DOM mapping.
  */
 
 var elements = {
-  text: VirtualText,
-  default: VirtualElement
+  text: TextComponent,
+  default: ElementComponent
 };
 
 /**
