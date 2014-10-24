@@ -43,8 +43,8 @@ exports.mount = mount;
  * @param {String|Function} type
  * @param {Object} attributes
  * @param {Array} children
- *
  * @return {VirtualNode}
+ * @api public
  */
 
 function dom(factory, attributes, children) {
@@ -61,6 +61,11 @@ function dom(factory, attributes, children) {
 
 /**
  * Mount.
+ *
+ * @param {String|Function} type
+ * @param {Object} attributes
+ * @param {Array} children
+ * @api public
  */
 
 function mount(factory, attributes, container) {
