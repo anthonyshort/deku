@@ -22,7 +22,7 @@ var elements = {
  * Expose `dom`.
  */
 
-exports = module.exports = createNode;
+exports = module.exports = dom;
 exports.dom = exports;
 
 /**
@@ -47,8 +47,7 @@ exports.mount = mount;
  * @return {VirtualNode}
  */
 
-function createNode(factory, attributes, children) {
-  var list = (children || []).map(normalize);
+function dom(factory, attributes, children) {
   // TODO: this can be abstracted away if we have another `Dom` object.
   if ('function' == typeof factory) {
     var tagName = factory.tagName;
@@ -56,18 +55,7 @@ function createNode(factory, attributes, children) {
     var tagName = factory;
     factory = elements[factory] || elements['default'];
   }
-  var node = new VirtualNode(tagName, factory, attributes, list);
-  return node;
-}
-
-/**
- * Parse nodes into real VirtualNodes
- */
-
-function normalize(node) {
-  if (typeof node === 'string' || typeof node === 'number') {
-    return createNode('text', node);
-  }
+  var node = new VirtualNode(tagName, factory, attributes, children);
   return node;
 }
 
@@ -76,7 +64,7 @@ function normalize(node) {
  */
 
 function mount(factory, attributes, container) {
-  var node = createNode(factory, attributes);
+  var node = dom(factory, attributes);
   var rootId = renderer.cache(container);
   node.create(rootId);
   var el = node.render();
