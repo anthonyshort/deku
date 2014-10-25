@@ -6,7 +6,6 @@
 var Element = require('./lib/component/element');
 var Text = require('./lib/component/text');
 var component = require('./lib/component');
-var renderer = require('./lib/renderer');
 var Node = require('./lib/node');
 
 /**
@@ -20,12 +19,6 @@ exports.dom = dom;
  */
 
 exports.component = component;
-
-/**
- * Expose `mount`.
- */
-
-exports.mount = mount;
 
 /**
  * Create virtual DOM trees. This creates the
@@ -64,23 +57,6 @@ function dom(type, props, children) {
     tagName: type,
     attributes: props
   });
-}
-
-/**
- * Mount.
- *
- * @param {String|Function} type
- * @param {Object} props
- * @param {Array} children
- * @api public
- */
-
-function mount(type, props, container) {
-  var node = dom(type, props);
-  var rootId = renderer.cache(container);
-  node.create(rootId, rootId + '.' + 0);
-  var el = node.render();
-  container.appendChild(el);
 }
 
 /**

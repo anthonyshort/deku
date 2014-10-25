@@ -5,7 +5,6 @@ var tick = require('timoxley/next-tick');
 var tron = require('../index.js');
 var dom = tron.dom;
 var component = tron.component;
-var mount = tron.mount;
 
 describe('component', function(){
   var node;
@@ -25,7 +24,7 @@ describe('component', function(){
   describe('create', function(){
     it('should create a component', function(){
       var Page = component(render);
-      mount(Page, {}, el);
+      Page.mount(el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
 
       function render(state, props) {
@@ -34,14 +33,13 @@ describe('component', function(){
     });
 
     it('should create a component with properties', function(){
-      var Page = component(render)
-        .prop('one')
-        .prop('two');
+      var Page = component(render);
 
-      mount(Page, {
+      Page.mount(el, {
         one: 'Hello',
         two: 'World'
-      }, el);
+      });
+
       assert.equal(el.innerHTML, '<span>Hello World</span>');
 
       function render(state, props) {
@@ -59,7 +57,7 @@ describe('component', function(){
         }
       };
 
-      mount(Page, {}, el);
+      Page.mount(el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
 
       function render(state, props) {
@@ -70,7 +68,7 @@ describe('component', function(){
     it('should emit `create`', function(done){
       var Page = component(render);
       Page.prototype.oncreate = done;
-      mount(Page, {}, el);
+      Page.mount(el);
 
       function render(state, props) {
         return dom('span', {}, ['Hello World']);
@@ -80,7 +78,7 @@ describe('component', function(){
     it('should emit `created`', function(done){
       var Page = component(render);
       Page.prototype.oncreated = done;
-      mount(Page, {}, el);
+      Page.mount(el);
 
       function render(state, props) {
         return dom('span', {}, ['Hello World']);
@@ -114,7 +112,7 @@ describe('component', function(){
         done();
       };
 
-      mount(Page, {}, el);
+      Page.mount(el);
 
       function render(state, props) {
         return dom('div', {}, [
@@ -169,7 +167,7 @@ describe('component', function(){
 
       var store = new Emitter;
 
-      mount(App, {}, el);
+      App.mount(el);
 
       setTimeout(function(){
         store.page = Page2;
