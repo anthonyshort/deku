@@ -125,9 +125,9 @@ describe('component', function(){
 
       App.prototype.render = function(state, props){
         var current = state.page;
-        debugger;
         return dom('div', {}, [
-          dom(current, {}, [])
+          dom(current, {}, []),
+          dom('i', {}, [ 'loaded' ])
         ]);
       };
 
@@ -142,11 +142,11 @@ describe('component', function(){
       };
 
       App.prototype.oncreated = function(){
-        assert.equal(el.innerHTML, '<div><span>Page 1</span></div>');
+        assert.equal(el.innerHTML, '<div><span>Page 1</span><i>loaded</i></div>');
       };
 
       App.prototype.onupdated = function(){
-        assert.equal(el.innerHTML, '<div><span>Page 2</span></div>');
+        assert.equal(el.innerHTML, '<div><span>Page 2</span><i>loaded</i></div>');
         done();
       };
 
