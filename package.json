@@ -1,7 +1,7 @@
 {
   "name": "virtual-dom",
   "devDependencies": {
-    "duo": "^0.5.4",
+    "duo": "^0.8.5",
     "duo-test": "^0.3.10"
   }
 }

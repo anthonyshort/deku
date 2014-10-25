@@ -1,38 +1,77 @@
-module.exports = createElement;
 
 /**
- * Dependencies
+ * Module dependencies.
  */
 
-var VirtualElement = require('./lib/element');
+var ElementComponent = require('./lib/component/element');
+var TextComponent = require('./lib/component/text');
+var Component = require('./lib/component');
+var renderer = require('./lib/renderer'); // hack ftm
 var VirtualNode = require('./lib/node');
-var VirtualText = require('./lib/text');
 
 /**
- * Create virtual DOM trees
- *
- * @param {String} type
- * @param {Object} attrs
- * @param {Array} children
- *
- * @return {VirtualNode}
+ * DOM mapping.
  */
 
-function createElement(type, attrs, children) {
-  var list = (children || []).map(normalize);
-  var element = new VirtualElement(type, attrs);
-  var node = new VirtualNode(element, list);
+var elements = {
+  text: TextComponent,
+  default: ElementComponent
+};
+
+/**
+ * Expose `dom`.
+ */
+
+exports = module.exports = dom;
+exports.dom = exports;
+
+/**
+ * Expose `component`.
+ */
+
+exports.component = Component;
+
+/**
+ * Expose `mount`.
+ */
+
+exports.mount = mount;
+
+/**
+ * Create virtual DOM trees.
+ *
+ * @param {String|Function} type
+ * @param {Object} attributes
+ * @param {Array} children
+ * @return {VirtualNode}
+ * @api public
+ */
+
+function dom(factory, attributes, children) {
+  // TODO: this can be abstracted away if we have another `Dom` object.
+  if ('function' == typeof factory) {
+    var tagName = factory.tagName;
+  } else {
+    var tagName = factory;
+    factory = elements[factory] || elements['default'];
+  }
+  var node = new VirtualNode(tagName, factory, attributes, children);
   return node;
 }
 
 /**
- * Parse nodes into real VirtualNodes
+ * Mount.
+ *
+ * @param {String|Function} type
+ * @param {Object} attributes
+ * @param {Array} children
+ * @api public
  */
 
-function normalize(node) {
-  if (typeof node === 'string' || typeof node === 'number') {
-    var element = new VirtualText(node);
-    return new VirtualNode(element);
-  }
-  return node;
+function mount(factory, attributes, container) {
+  var node = dom(factory, attributes);
+  var rootId = renderer.cache(container);
+  node.create(rootId, rootId + '.' + 0);
+  var el = node.render();
+  container.appendChild(el);
 }
