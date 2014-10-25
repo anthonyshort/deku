@@ -1,5 +1,6 @@
 var assert = require('component/assert@0.4.0');
-var dom = require('../index.js');
+var tron = require('../index.js');
+var dom = tron.dom;
 
 describe('diffs', function(){
   var parent;
@@ -27,7 +28,7 @@ describe('diffs', function(){
     parent.appendChild(el);
     var patch = a.diff(b);
     patch(el);
-    assert(el.getAttribute('name') === 'foo');
+    assert(el.getAttribute('name') === 'foo', el.outerHTML);
   });
 
   it('should remove old attributes', function(){

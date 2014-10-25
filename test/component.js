@@ -2,8 +2,10 @@ var assert = require('component/assert@0.4.0');
 var Emitter = require('component/emitter');
 var domify = require('component/domify');
 var tick = require('timoxley/next-tick');
-var dom = require('../index.js');
-var component = dom.component;
+var tron = require('../index.js');
+var dom = tron.dom;
+var component = tron.component;
+var mount = tron.mount;
 
 describe('component', function(){
   var node;
@@ -23,7 +25,7 @@ describe('component', function(){
   describe('create', function(){
     it('should create a component', function(){
       var Page = component(render);
-      dom.mount(Page, {}, el);
+      mount(Page, {}, el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
 
       function render(state, props) {
@@ -36,7 +38,7 @@ describe('component', function(){
         .prop('one')
         .prop('two');
 
-      dom.mount(Page, {
+      mount(Page, {
         one: 'Hello',
         two: 'World'
       }, el);
@@ -48,11 +50,16 @@ describe('component', function(){
     });
 
     it('should create a component with states', function(){
-      var Page = component(render)
-        .state('one', 'Hello')
-        .state('two', 'World');
+      var Page = component(render);
 
-      dom.mount(Page, {}, el);
+      Page.prototype.getInitialState = function(){
+        return {
+          one: 'Hello',
+          two: 'World'
+        }
+      };
+
+      mount(Page, {}, el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
 
       function render(state, props) {
@@ -63,7 +70,7 @@ describe('component', function(){
     it('should emit `create`', function(done){
       var Page = component(render);
       Page.prototype.oncreate = done;
-      dom.mount(Page, {}, el);
+      mount(Page, {}, el);
 
       function render(state, props) {
         return dom('span', {}, ['Hello World']);
@@ -73,7 +80,7 @@ describe('component', function(){
     it('should emit `created`', function(done){
       var Page = component(render);
       Page.prototype.oncreated = done;
-      dom.mount(Page, {}, el);
+      mount(Page, {}, el);
 
       function render(state, props) {
         return dom('span', {}, ['Hello World']);
@@ -87,12 +94,19 @@ describe('component', function(){
         .state('one', 'Hello')
         .state('two', 'World');
 
+      Page.prototype.getInitialState = function() {
+        return {
+          one: 'Hello',
+          two: 'World'
+        };
+      };
+
       Page.prototype.oncreated = function(){
         // pretending the user does something here...
         var self = this;
         setTimeout(function(){
           self.set('one', 'Open');
-        }, 100);
+        }, 10);
       };
 
       Page.prototype.onupdated = function(){
@@ -100,7 +114,7 @@ describe('component', function(){
         done();
       };
 
-      dom.mount(Page, {}, el);
+      mount(Page, {}, el);
 
       function render(state, props) {
         return dom('div', {}, [
@@ -120,15 +134,18 @@ describe('component', function(){
         return dom('span', {}, ['Page 2']);
       });
 
-      var App = component()
-        .state('page', Page1);
-
-      App.prototype.render = function(state, props){
+      var App = component(function(state, props){
         var current = state.page;
         return dom('div', {}, [
           dom(current, {}, []),
           dom('i', {}, [ 'loaded' ])
         ]);
+      });
+
+      App.prototype.getInitialState = function(){
+        return {
+          page: Page1
+        }
       };
 
       App.prototype.oncreate = function(){
@@ -152,12 +169,12 @@ describe('component', function(){
 
       var store = new Emitter;
 
-      dom.mount(App, {}, el);
+      mount(App, {}, el);
 
       setTimeout(function(){
         store.page = Page2;
         store.emit('change');
-      }, 100);
+      }, 10);
     });
   });
 });

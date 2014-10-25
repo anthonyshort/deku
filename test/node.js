@@ -1,5 +1,6 @@
 var assert = require('component/assert@0.4.0');
-var dom = require('../index.js');
+var tron = require('../index.js');
+var dom = tron.dom;
 
 describe('dom', function(){
   // it('should create divs by default', function(){
@@ -7,7 +8,20 @@ describe('dom', function(){
   // });
 
   it('should set the type', function(){
-    assert(dom('span').tagName === 'span');
+    var el = dom('span').render();
+    assert(el.tagName === 'SPAN');
+  });
+
+  it('should create divs by default', function(){
+    var a = dom();
+    var el = a.render();
+    assert(el.tagName === 'DIV');
+  });
+
+  it('should not add exluded properies', function(){
+    var a = dom('div', { key: 'foo' });
+    var el = a.render();
+    assert(el.outerHTML === '<div></div>');
   });
 
   it('should set attributes', function(){
@@ -15,7 +29,7 @@ describe('dom', function(){
       name: 'Foo'
     });
     assert.equal(
-      node.attributes['name'],
+      node.data.attributes['name'],
       'Foo'
     );
   });

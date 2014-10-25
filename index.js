@@ -3,33 +3,23 @@
  * Module dependencies.
  */
 
-var ElementComponent = require('./lib/component/element');
-var TextComponent = require('./lib/component/text');
-var Component = require('./lib/component');
-var renderer = require('./lib/renderer'); // hack ftm
-var VirtualNode = require('./lib/node');
-
-/**
- * DOM mapping.
- */
-
-var elements = {
-  text: TextComponent,
-  default: ElementComponent
-};
+var Element = require('./lib/component/element');
+var Text = require('./lib/component/text');
+var component = require('./lib/component');
+var renderer = require('./lib/renderer');
+var Node = require('./lib/node');
 
 /**
  * Expose `dom`.
  */
 
-exports = module.exports = dom;
-exports.dom = exports;
+exports.dom = dom;
 
 /**
  * Expose `component`.
  */
 
-exports.component = Component;
+exports.component = component;
 
 /**
  * Expose `mount`.
@@ -38,40 +28,72 @@ exports.component = Component;
 exports.mount = mount;
 
 /**
- * Create virtual DOM trees.
+ * Create virtual DOM trees. This creates the
+ * nicer API for the user. It translate that friendly
+ * API into an actual tree of nodes
  *
  * @param {String|Function} type
- * @param {Object} attributes
+ * @param {Object} props
  * @param {Array} children
  * @return {VirtualNode}
  * @api public
  */
 
-function dom(factory, attributes, children) {
-  // TODO: this can be abstracted away if we have another `Dom` object.
-  if ('function' == typeof factory) {
-    var tagName = factory.tagName;
-  } else {
-    var tagName = factory;
-    factory = elements[factory] || elements['default'];
+function dom(type, props, children) {
+  var node;
+
+  // Normalize the values
+  props = props || {};
+  children = (children || []).map(normalize);
+
+  // Pull the key out from the data
+  var key = props.key;
+  delete props.key;
+
+  // It is a component
+  if ('function' == typeof type) {
+    return new Node('component', type, children, {
+      key: key,
+      props: props
+    });
   }
-  var node = new VirtualNode(tagName, factory, attributes, children);
-  return node;
+
+  // It is an element
+  return new Node('element', Element, children, {
+    key: key,
+    tagName: type,
+    attributes: props
+  });
 }
 
 /**
  * Mount.
  *
  * @param {String|Function} type
- * @param {Object} attributes
+ * @param {Object} props
  * @param {Array} children
  * @api public
  */
 
-function mount(factory, attributes, container) {
-  var node = dom(factory, attributes);
+function mount(type, props, container) {
+  var node = dom(type, props);
   var rootId = renderer.cache(container);
   node.create(rootId, rootId + '.' + 0);
   var el = node.render();
   container.appendChild(el);
+}
+
+/**
+ * Parse nodes into real VirtualNodes.
+ *
+ * @param {Mixed} value
+ * @return {VirtualNode}
+ * @api private
+ */
+
+function normalize(value) {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return new Node('text', Text, null, { text: value });
+  }
+  return value;
 }
