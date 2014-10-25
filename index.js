@@ -71,7 +71,7 @@ function dom(factory, attributes, children) {
 function mount(factory, attributes, container) {
   var node = dom(factory, attributes);
   var rootId = renderer.cache(container);
-  node.create(rootId);
+  node.create(rootId, rootId + '.' + 0);
   var el = node.render();
   container.appendChild(el);
 }
