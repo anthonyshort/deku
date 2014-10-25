@@ -62,14 +62,15 @@ function dom(type, props, children) {
 /**
  * Parse nodes into real VirtualNodes.
  *
- * @param {Mixed} value
+ * @param {Mixed} node
  * @return {VirtualNode}
  * @api private
  */
 
-function normalize(value) {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return new Node('text', Text, null, { text: value });
+function normalize(node, index) {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return new Node('text', Text, null, { text: node });
   }
-  return value;
+  node.index = index;
+  return node;
 }
