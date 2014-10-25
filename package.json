@@ -1,5 +1,6 @@
 {
-  "name": "virtual-dom",
+  "name": "tron",
+  "version": "0.0.1",
   "devDependencies": {
     "duo": "^0.8.5",
     "duo-test": "^0.3.10"
