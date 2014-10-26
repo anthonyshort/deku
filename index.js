@@ -28,7 +28,7 @@ exports.component = component;
  * @param {String|Function} type
  * @param {Object} props
  * @param {Array} children
- * @return {VirtualNode}
+ * @return {Node}
  * @api public
  */
 
@@ -60,10 +60,10 @@ function dom(type, props, children) {
 }
 
 /**
- * Parse nodes into real VirtualNodes.
+ * Parse nodes into real Nodes.
  *
  * @param {Mixed} node
- * @return {VirtualNode}
+ * @return {Node}
  * @api private
  */
 
