@@ -3,7 +3,7 @@ var Emitter = require('component/emitter');
 var domify = require('component/domify');
 var tick = require('timoxley/next-tick');
 var tron = require('../index.js');
-var dom = tron.dom;
+var dom = tron.node;
 var component = tron.component;
 
 describe('component', function(){

@@ -1,6 +1,6 @@
 var assert = require('component/assert@0.4.0');
 var tron = require('../index.js');
-var dom = tron.dom;
+var dom = tron.node;
 
 describe('diffs', function(){
   var parent;

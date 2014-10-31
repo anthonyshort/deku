@@ -1,7 +1,7 @@
 var assert = require('component/assert@0.4.0');
 var tron = require('../index');
 var Tree = require('../lib/tree');
-var dom = tron.dom;
+var dom = tron.node;
 
 describe.only('tree', function(){
 
