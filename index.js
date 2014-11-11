@@ -1,3 +1,2 @@
 
-exports.node = require('./lib/node');
-exports.component = require('./lib/component');
+module.exports = require('./lib/component');

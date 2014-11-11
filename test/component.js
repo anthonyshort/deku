@@ -2,16 +2,12 @@ var assert = require('component/assert@0.4.0');
 var Emitter = require('component/emitter');
 var domify = require('component/domify');
 var tick = require('timoxley/next-tick');
-var tron = require('../index.js');
-var dom = tron.node;
-var component = tron.component;
+var component = require('../index.js');
 
 describe('component', function(){
-  var node;
   var el;
 
   beforeEach(function(){
-    node = dom();
     el = domify('<div id="example"></div>');
     document.body.appendChild(el);
   });
@@ -23,17 +19,23 @@ describe('component', function(){
 
   describe('create', function(){
     it('should create a component', function(){
-      var Page = component(render);
+
+      var Page = component({
+        render: function(state, props, dom) {
+          return dom('span', {}, ['Hello World']);
+        }
+      });
+
       Page.mount(el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
-
-      function render(state, props) {
-        return dom('span', {}, ['Hello World']);
-      }
     });
 
     it('should create a component with properties', function(){
-      var Page = component(render);
+      var Page = component({
+        render: function(state, props, dom) {
+          return dom('span', {}, [props.one + ' ' + props.two]);
+        }
+      });
 
       Page.mount(el, {
         one: 'Hello',
@@ -41,86 +43,59 @@ describe('component', function(){
       });
 
       assert.equal(el.innerHTML, '<span>Hello World</span>');
-
-      function render(state, props) {
-        return dom('span', {}, [props.one + ' ' + props.two]);
-      }
     });
 
     it('should create a component with states', function(){
-      var Page = component(render);
 
-      Page.prototype.getInitialState = function(){
-        return {
-          one: 'Hello',
-          two: 'World'
+      var Page = component({
+        initialState: function(){
+          return {
+            one: 'Hello',
+            two: 'World'
+          }
+        },
+        render: function(state, props, dom) {
+          return dom('span', {}, [state.one + ' ' + state.two]);
         }
-      };
+      });
 
       Page.mount(el);
       assert.equal(el.innerHTML, '<span>Hello World</span>');
-
-      function render(state, props) {
-        return dom('span', {}, [state.one + ' ' + state.two]);
-      }
     });
 
-    it('should emit `create`', function(done){
-      var Page = component(render);
-      Page.prototype.oncreate = done;
-      Page.mount(el);
-
-      function render(state, props) {
-        return dom('span', {}, ['Hello World']);
-      }
-    });
-
-    it('should emit `created`', function(done){
-      var Page = component(render);
-      Page.prototype.oncreated = done;
-      Page.mount(el);
-
-      function render(state, props) {
-        return dom('span', {}, ['Hello World']);
-      }
-    });
   });
 
   describe('update', function(){
     it('should change state', function(done){
-      var Page = component(render)
-        .state('one', 'Hello')
-        .state('two', 'World');
 
-      Page.prototype.getInitialState = function() {
-        return {
-          one: 'Hello',
-          two: 'World'
-        };
-      };
-
-      Page.prototype.oncreated = function(){
-        // pretending the user does something here...
-        var self = this;
-        setTimeout(function(){
-          self.set('one', 'Open');
-        }, 10);
-      };
-
-      Page.prototype.onupdated = function(){
-        assert.equal(el.innerHTML, '<div><span>Open</span> <span>World</span></div>');
-        done();
-      };
+      var Page = component({
+        initialState: function(){
+          return {
+            one: 'Hello',
+            two: 'World'
+          };
+        },
+        created: function(state, props) {
+          // pretending the user does something here...
+          var self = this;
+          setTimeout(function(){
+            self.set('one', 'Open');
+          }, 10);
+        },
+        updated: function(){
+          assert.equal(el.innerHTML, '<div><span>Open</span> <span>World</span></div>');
+          done();
+        },
+        render: function(state, props, dom){
+          return dom('div', {}, [
+            dom('span', {}, [ state.one ]),
+            ' ',
+            dom('span', {}, [ state.two ])
+          ]);
+        }
+      });
 
       Page.mount(el);
-
-      function render(state, props) {
-        return dom('div', {}, [
-          dom('span', {}, [ state.one ]),
-          ' ',
-          dom('span', {}, [ state.two ])
-        ]);
-      }
     });
 
     it('should change nested components', function(done){

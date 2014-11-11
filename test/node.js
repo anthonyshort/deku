@@ -1,36 +1,24 @@
 var assert = require('component/assert@0.4.0');
-var tron = require('../index.js');
-var dom = tron.node;
+var dom = require('../lib/node');
 
-describe('dom', function(){
-  // it('should create divs by default', function(){
-  //   assert(dom().owner.tagName === 'div');
-  // });
-
-  it('should set the type', function(){
-    var el = dom('span').render();
-    assert(el.tagName === 'SPAN');
-  });
+describe('node', function(){
 
   it('should create divs by default', function(){
-    var a = dom();
-    var el = a.render();
-    assert(el.tagName === 'DIV');
-  });
+    assert(dom().tagName === 'div');
+  })
 
-  it('should not add exluded properies', function(){
+  it('should set the tagName', function(){
+    assert(dom('span').tagName === 'span');
+  })
+
+  it('should add the key as an attribute', function(){
     var a = dom('div', { key: 'foo' });
-    var el = a.render();
-    assert(el.outerHTML === '<div></div>');
-  });
+    var el = a.toElement();
+    assert(el.outerHTML === '<div data-key="foo"></div>');
+  })
 
   it('should set attributes', function(){
-    var node = dom('div', {
-      name: 'Foo'
-    });
-    assert.equal(
-      node.data.attributes['name'],
-      'Foo'
-    );
-  });
+    var node = dom('div', { name: 'Foo' });
+    assert(node.attributes.name === 'Foo');
+  })
 });
