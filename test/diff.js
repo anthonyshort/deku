@@ -3,7 +3,7 @@ var dom = require('../lib/node');
 var tree = require('../lib/tree');
 var diff = require('../lib/diff');
 
-describe('diffs', function(){
+describe.skip('diffs', function(){
   var parent;
   var node;
 

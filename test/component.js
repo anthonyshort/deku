@@ -4,7 +4,7 @@ var domify = require('component/domify');
 var tick = require('timoxley/next-tick');
 var component = require('../index.js');
 
-describe('component', function(){
+describe.skip('component', function(){
   var el;
 
   beforeEach(function(){
