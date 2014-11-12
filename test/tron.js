@@ -4,7 +4,7 @@ var domify = require('component/domify');
 var tick = require('timoxley/next-tick');
 var component = require('../index');
 
-describe('component', function(){
+describe('tron', function(){
   var el;
 
   function defaultRender(dom, state, props) {
