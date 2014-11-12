@@ -55,6 +55,19 @@ describe('component', function(){
     Page.render(el);
   })
 
+  it('should fire the `beforeMount` hook before `mount`', function (done) {
+    var Page = component({
+      render: defaultRender,
+      beforeMount: function(){
+        done();
+      },
+      mount: function(){
+        done(false);
+      }
+    });
+    Page.render(el);
+  })
+
   it('should fire the `unmount` hook', function (done) {
     var Page = component({
       render: defaultRender,
@@ -64,6 +77,19 @@ describe('component', function(){
     });
     var mount = Page.render(el);
     mount.remove();
+  })
+
+  it('should fire the `beforeUnmount` hook before `unmount`', function (done) {
+    var Page = component({
+      render: defaultRender,
+      beforeUnmount: function(){
+        done();
+      },
+      unmount: function(){
+        done(false);
+      }
+    });
+    Page.render(el).remove();
   })
 
   it('should not unmount twice', function () {
