@@ -101,4 +101,21 @@ describe('tron', function(){
     mount.remove();
   })
 
+  it('should update a mounted component', function(){
+    var Page = component({
+      render: function(dom, state, props) {
+        return dom('span', null, [props.one + ' ' + props.two]);
+      }
+    });
+    var mount = Page.render(el, {
+      one: 'Hello',
+      two: 'World'
+    });
+    mount.set({
+      two: 'Pluto'
+    });
+    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
+  });
+
+
 });
