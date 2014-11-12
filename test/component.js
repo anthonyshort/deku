@@ -7,7 +7,7 @@ var component = require('../index');
 describe('component', function(){
   var el;
 
-  function defaultRender(state, props, dom) {
+  function defaultRender(dom, state, props) {
     return dom();
   }
 
@@ -23,7 +23,7 @@ describe('component', function(){
 
   it('should create a component', function(){
     var Page = component({
-      render: function(state, props, dom) {
+      render: function(dom, state, props) {
         return dom('span', null, ['Hello World']);
       }
     });
@@ -33,7 +33,7 @@ describe('component', function(){
 
   it('should create a component with properties', function(){
     var Page = component({
-      render: function(state, props, dom) {
+      render: function(dom, state, props) {
         return dom('span', null, [props.one + ' ' + props.two]);
       }
     });
