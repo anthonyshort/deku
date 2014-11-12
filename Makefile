@@ -9,7 +9,7 @@ test = ./node_modules/.bin/duo-test
 # Wildcards.
 #
 
-js = $(shell find index.js lib/*.js test/*.js)
+js = $(shell find index.js lib/*/*.js test/*.js)
 
 #
 # Default.
