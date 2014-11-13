@@ -202,4 +202,31 @@ describe('tron', function(){
     assert(i === 4, i);
   });
 
+  it('should fire unmount events on sub-components', function(){
+    var i = 0;
+
+    function inc() { i++ }
+
+    var ComponentA = component({
+      unmount: inc,
+      beforeUnmount: inc,
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+
+    var ComponentB = component({
+      unmount: inc,
+      beforeUnmount: inc,
+      render: function(n, state, props){
+        return n(ComponentA, { text: 'foo', name: props.name });
+      }
+    });
+
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    mount.remove();
+    assert(i === 4, i);
+    assert(el.innerHTML === "");
+  });
+
 });
