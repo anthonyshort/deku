@@ -229,4 +229,23 @@ describe('tron', function(){
     assert(el.innerHTML === "");
   });
 
+  it('should update sub-components', function(){
+
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n(ComponentA, { text: 'foo', name: props.name });
+      }
+    });
+
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    mount.set({ name: 'Tom' })
+    assert.equal(el.innerHTML, '<span name="Tom">foo</span>');
+  });
+
 });
