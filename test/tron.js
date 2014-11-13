@@ -157,4 +157,24 @@ describe('tron', function(){
     assert.equal(el.innerHTML, '<span></span>');
   });
 
+  it('should render sub-components', function(){
+
+    var ComponentA = component({
+      displayName: 'ComponentA',
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+
+    var ComponentB = component({
+      displayName: 'ComponentB',
+      render: function(n, state, props){
+        return n(ComponentA, { text: 'foo', name: props.name });
+      }
+    });
+
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
+  });
+
 });
