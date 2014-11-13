@@ -177,4 +177,29 @@ describe('tron', function(){
     assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
   });
 
+  it('should fire mount events on sub-components', function(){
+    var i = 0;
+
+    function inc() { i++ }
+
+    var ComponentA = component({
+      mount: inc,
+      beforeMount: inc,
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+
+    var ComponentB = component({
+      mount: inc,
+      beforeMount: inc,
+      render: function(n, state, props){
+        return n(ComponentA, { text: 'foo', name: props.name });
+      }
+    });
+
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    assert(i === 4, i);
+  });
+
 });
