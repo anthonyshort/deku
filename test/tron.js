@@ -101,7 +101,7 @@ describe('tron', function(){
     mount.remove();
   })
 
-  it('should update a mounted component', function(){
+  it('should update simple text nodes', function(){
     var Page = component({
       render: function(dom, state, props) {
         return dom('span', null, [props.one + ' ' + props.two]);
@@ -117,5 +117,44 @@ describe('tron', function(){
     assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
   });
 
+  it('should update simple attributes', function(){
+    var Page = component({
+      render: function(dom, state, props) {
+        return dom('span', { name: props.name });
+      }
+    });
+    var mount = Page.render(el, { name: 'Tom' });
+    assert.equal(el.innerHTML, '<span name="Tom"></span>');
+    mount.set({ name: 'Bob' });
+    assert.equal(el.innerHTML, '<span name="Bob"></span>');
+  });
+
+  it('should add simple attributes', function(){
+    var Page = component({
+      render: function(dom, state, props) {
+        var attrs = {};
+        if (props.name) attrs.name = props.name;
+        return dom('span', attrs);
+      }
+    });
+    var mount = Page.render(el);
+    assert.equal(el.innerHTML, '<span></span>');
+    mount.set({ name: 'Bob' });
+    assert.equal(el.innerHTML, '<span name="Bob"></span>');
+  });
+
+  it('should remove simple attributes', function(){
+    var Page = component({
+      render: function(dom, state, props) {
+        var attrs = {};
+        if (props.name) attrs.name = props.name;
+        return dom('span', attrs);
+      }
+    });
+    var mount = Page.render(el, { name: 'Bob' });
+    assert.equal(el.innerHTML, '<span name="Bob"></span>');
+    mount.set({ name: null });
+    assert.equal(el.innerHTML, '<span></span>');
+  });
 
 });
