@@ -3,6 +3,12 @@ var component = require('/lib/component');
 
 describe('structure', function(){
 
+  /**
+   * When updating a component it should add new elements
+   * that are created on the new pass. These elements should
+   * be added to the DOM.
+   */
+
   it('should add new elements', function(){
     var i = 1;
     var Page = component({
@@ -18,35 +24,30 @@ describe('structure', function(){
     assert(document.querySelector('#foo'));
   });
 
-  it.skip('should remove old elements', function(){
-    var a = dom('div');
-    var b = dom('div', null, [dom('span')]);
-    var el = b.toElement();
-    var patch = diff(b, a);
-    assert(el.childNodes.length === 1);
-    patch(el);
-    assert(el.childNodes.length === 0);
+  /**
+   * When updating a component it should remove elements
+   * from the DOM that don't exist in the new rendering.
+   */
+
+  it('should remove nodes', function(){
+    var i = 1;
+    var Page = component({
+      render: function(dom){
+        if (i === 1) return dom('div', null, [dom('span', { id: 'foo' })]);
+        if (i === 2) return dom('div');
+      }
+    });
+    var view = Page.render(el);
+    assert(document.querySelector('#foo'));
+    i = 2;
+    view.render();
+    assert(document.querySelector('#foo') == null);
   });
 
-  it.skip('should replace different nodes', function(){
-    var a = dom('div');
-    var b = dom('span');
-    var el = a.toElement();
-    parent.appendChild(el);
-    var patch = diff(a,b);
-    patch(el);
-    assert(el.element.tagName === 'SPAN');
-  });
-
-  it.skip('should swap text elements with elements', function(){
-    var a = dom('div', null, [dom('span')]);
-    var b = dom('div', null, ['bar']);
-    var el = b.toElement();
-    var patch = diff(b, a);
-    assert(el.innerHTML === 'bar');
-    patch(el);
-    assert(el.innerHTML === '<span></span>');
-  });
+  /**
+   * It should change the tag name of element and keep
+   * the same content.
+   */
 
   it('should change tag names', function(){
     var i = 0;
@@ -56,9 +57,14 @@ describe('structure', function(){
       }
     });
     var mount = ComponentA.render(el, { type: 'span' });
+    assert.equal(el.innerHTML, '<span>test</span>');
     mount.set({ type: 'div' })
     assert.equal(el.innerHTML, '<div>test</div>');
   });
+
+  /**
+   * When changing the tagName of an element it destroy all of the sub-components
+   */
 
   it.skip('should remove nested components when switching tag names', function(){
     var i = 0;
@@ -141,5 +147,21 @@ describe('structure', function(){
     assert.equal(i, 6);
   });
 
+  it('should change sub-component tag names', function(){
+    var i = 0;
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n(props.type, null, ['test']);
+      }
+    });
+    var ComponentB = component({
+      render: function(n){
+        return n(ComponentA);
+      }
+    });
+    var mount = ComponentB.render(el, { type: 'span' });
+    mount.set({ type: 'div' });
+    assert.equal(el.innerHTML, '<div>test</div>');
+  });
 
 });

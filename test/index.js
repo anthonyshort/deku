@@ -28,6 +28,5 @@ require('./mount/tree');
 
 require('./diff/structure');
 require('./diff/attributes');
-require('./diff/component');
 require('./diff/text');
 
