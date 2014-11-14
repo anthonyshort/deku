@@ -66,8 +66,9 @@ describe('structure', function(){
    * When changing the tagName of an element it destroy all of the sub-components
    */
 
-  it.skip('should remove nested components when switching tag names', function(){
+  it('should remove nested components when switching tag names', function(){
     var i = 0;
+    var n = 0;
     function inc() { i++ }
     var ComponentA = component({
       unmount: inc,
@@ -87,7 +88,7 @@ describe('structure', function(){
       unmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
-        if (props.n === 0) {
+        if (n === 0) {
           return n('div', null, [
             n('div', null, [
               n(ComponentB),
@@ -104,7 +105,8 @@ describe('structure', function(){
       }
     });
     var mount = ComponentC.render(el, { n: 0 });
-    mount.set({ n: 1 })
+    n = 1;
+    mount.render();
     assert.equal(i, 6);
   });
 
@@ -147,6 +149,12 @@ describe('structure', function(){
     assert.equal(i, 6);
   });
 
+  /**
+   * When a component has another component directly rendered
+   * with it, it should be able to swap out the type of element
+   * that is rendered.
+   */
+
   it('should change sub-component tag names', function(){
     var i = 0;
     var ComponentA = component({
@@ -161,6 +169,29 @@ describe('structure', function(){
     });
     var mount = ComponentB.render(el, { type: 'span' });
     mount.set({ type: 'div' });
+    assert.equal(el.innerHTML, '<div>test</div>');
+  });
+
+  /**
+   * It should be able to render new components when re-rendering
+   */
+
+  it('should swap elements for components', function(){
+    var i = 0;
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n(props.type, null, ['test']);
+      }
+    });
+    var ComponentB = component({
+      render: function(n){
+        if (i === 0) return n('div');
+        return n(ComponentA);
+      }
+    });
+    var mount = ComponentB.render(el);
+    i = 1;
+    mount.render();
     assert.equal(el.innerHTML, '<div>test</div>');
   });
 

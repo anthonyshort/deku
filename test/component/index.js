@@ -13,6 +13,12 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
+  it('should render nothing visible on the page by default', function(){
+    var Page = component();
+    Page.render(el);
+    assert.equal(el.innerHTML, '<noscript></noscript>');
+  });
+
   it('should create a component with properties', function(){
     var Page = component({
       render: function(dom, state, props) {
