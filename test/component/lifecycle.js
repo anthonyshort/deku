@@ -22,28 +22,32 @@ describe('lifecycle events', function(){
     mount.remove();
   })
 
-  it('should fire the `beforeMount` hook before `mount`', function (done) {
+  it('should fire the `beforeMount` hook before `mount`', function () {
+    var pass;
     var Page = component({
       beforeMount: function(){
-        done();
+        pass = false;
       },
       mount: function(){
-        done(false);
+        pass = true;
       }
     });
     Page.render(el);
+    assert(pass);
   })
 
-  it('should fire the `beforeUnmount` hook before `unmount`', function (done) {
+  it('should fire the `beforeUnmount` hook before `unmount`', function () {
+    var pass;
     var Page = component({
       beforeUnmount: function(){
-        done();
+        pass = false;
       },
       unmount: function(){
-        done(false);
+        pass = true;
       }
     });
     Page.render(el).remove();
+    assert(pass);
   })
 
   it('should not unmount twice', function () {

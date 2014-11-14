@@ -29,6 +29,16 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<noscript></noscript>');
   });
 
+  it('should render nothing if the render method returns falsy', function(){
+    var Page = component({
+      render: function(){
+        return;
+      }
+    });
+    Page.render(el);
+    assert.equal(el.innerHTML, '<noscript></noscript>');
+  });
+
   it('should create a component with properties', function(){
     var Page = component({
       render: function(dom, state, props) {
@@ -73,7 +83,7 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span name="Tom">foo</span>');
   });
 
-  it('should have initial state', function(done){
+  it('should have initial state', function(){
     var ComponentA = component({
       initialState: function(){
         return {
@@ -82,7 +92,6 @@ describe('component', function(){
       },
       render: function(dom, state){
         assert(state.duration === 0);
-        done();
       }
     });
     ComponentA.render(el);

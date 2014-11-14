@@ -43,11 +43,12 @@ describe('attributes', function () {
     assert.equal(el.innerHTML, '<span></span>');
   })
 
-  it('should not update attributes that have not changed', function (done) {
+  it('should not update attributes that have not changed', function () {
+    var pass = true;
     var Page = component({
       mount: function(el){
         el.setAttribute = function(){
-          done(false);
+          pass = false;
         }
       },
       render: function(dom, state, props) {
@@ -56,7 +57,7 @@ describe('attributes', function () {
     });
     var mount = Page.render(el, { name: 'Bob' });
     mount.set({ name: 'Bob' });
-    done();
+    assert(pass);
   })
 
 });

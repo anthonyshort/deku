@@ -66,7 +66,7 @@ describe('structure', function(){
    * When changing the tagName of an element it destroy all of the sub-components
    */
 
-  it('should remove nested components when switching tag names', function(){
+  it.skip('should remove nested components when switching tag names', function(){
     var i = 0;
     var n = 0;
     function inc() { i++ }
