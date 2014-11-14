@@ -14,12 +14,15 @@ afterEach(function(){
 // tests.
 
 require('./node');
-require('./tree');
 
 // component.
 
 require('./component');
 require('./component/lifecycle');
+
+// mount.
+
+require('./mount/tree');
 
 // diffing.
 

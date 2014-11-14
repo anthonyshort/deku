@@ -1,5 +1,5 @@
 var assert = require('component/assert@0.4.0');
-var dom = require('../lib/node');
+var dom = require('/lib/node');
 
 describe('node', function(){
 
