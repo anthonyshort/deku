@@ -203,4 +203,57 @@ describe('structure', function(){
     assert.equal(el.innerHTML, '<div>test</div>');
   });
 
+  /**
+   * If the component type changes at a node, the first component
+   * should be removed and unmount and replaced with the new component
+   */
+
+  it('should replace components', function(){
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('div', null, ['A']);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n('div', null, ['B']);
+      }
+    });
+    var ComponentC = component({
+      render: function(n, state, props){
+        if (props.type === 'A') return n(ComponentA);
+        return n(ComponentB);
+      }
+    });
+    var mount = ComponentC.render(el, { type: 'A' });
+    assert.equal(el.innerHTML, '<div>A</div>');
+    mount.set({ type: 'B' });
+    assert.equal(el.innerHTML, '<div>B</div>');
+    assert(mount.children['0'].component.instance instanceof ComponentB);
+  })
+
+  /**
+   * It should remove components from the children hash when they
+   * are moved from the tree.
+   */
+
+  it('should remove references to child components when they are removed', function () {
+    var Component = component({
+      render: function(n, state, props){
+        return n('div', null, ['Component']);
+      }
+    });
+    var Wrapper = component({
+      render: function(n, state, props){
+        if (props.type === 'component') return n(Component);
+        return n('div', null, ['Element']);
+      }
+    });
+    var mount = Wrapper.render(el, { type: 'component' });
+    assert(mount.children['0']);
+    mount.set({ type: 'element' });
+    assert.equal(el.innerHTML, '<div>Element</div>');
+    assert(mount.children['0'] == null);
+  });
+
 });
