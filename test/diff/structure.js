@@ -114,52 +114,9 @@ describe('structure', function(){
   });
 
   /**
-   * When changing the tagName of an element it destroy all of the sub-components
+   * When a node is removed from the tree, all components within that
+   * node should be recursively removed and unmounted.
    */
-
-  it.skip('should remove nested components when switching tag names', function(){
-    var i = 0;
-    var n = 0;
-    function inc() { i++ }
-    var ComponentA = component({
-      unmount: inc,
-      beforeUnmount: inc,
-      render: function(n, state, props){
-        return n('span', null, ['test']);
-      }
-    });
-    var ComponentB = component({
-      unmount: inc,
-      beforeUnmount: inc,
-      render: function(n, state, props){
-        return n(ComponentA);
-      }
-    });
-    var ComponentC = component({
-      unmount: inc,
-      beforeUnmount: inc,
-      render: function(n, state, props){
-        if (n === 0) {
-          return n('div', null, [
-            n('div', null, [
-              n(ComponentB),
-              n(ComponentA)
-            ])
-          ]);
-        }
-        else {
-          n('span', null, [
-            n(ComponentB),
-            n(ComponentA)
-          ])
-        }
-      }
-    });
-    var mount = ComponentC.render(el, { n: 0 });
-    n = 1;
-    mount.render();
-    assert.equal(i, 6);
-  });
 
   it('should remove nested components when removing a branch', function(){
     var i = 0;
