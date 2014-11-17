@@ -59,7 +59,58 @@ describe('structure', function(){
     var mount = ComponentA.render(el, { type: 'span' });
     assert.equal(el.innerHTML, '<span>test</span>');
     mount.set({ type: 'div' })
-    assert.equal(el.innerHTML, '<div>test</div>');
+    assert.equal(mount.el.outerHTML, '<div>test</div>');
+  });
+
+  /**
+   * If there are child component that actually reference the same
+   * element as the root element, we need to make sure the references
+   * are updated correctly.
+   */
+
+  it('should change tag names and update parent components that reference the element', function(){
+    var i = 0;
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n(props.type, null, ['test']);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n(ComponentA, { type: props.type });
+      }
+    });
+    var mount = ComponentB.render(el, { type: 'span' });
+    assert(mount.el === mount.children['0'].el);
+    mount.set({ type: 'div' });
+    assert(mount.el === mount.children['0'].el);
+    mount.set({ type: 'b' });
+    assert.equal(mount.el.outerHTML, '<b>test</b>');
+    assert.equal(mount.children['0'].el.outerHTML, '<b>test</b>');
+  });
+
+  /**
+   * Because the root node has changed, when updating the mounted component
+   * should have it's element updated so that it applies the diff patch to
+   * the correct element.
+   */
+
+  it('should change tag names and update', function(){
+    var i = 0;
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n(props.type, null, props.text);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n(ComponentA, { type: props.type, text: props.text });
+      }
+    });
+    var mount = ComponentB.render(el, { type: 'span', text: 'test' });
+    mount.set({ type: 'div', text: 'test' });
+    mount.set({ type: 'div', text: 'foo' });
+    assert.equal(el.innerHTML, '<div>foo</div>');
   });
 
   /**
