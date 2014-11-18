@@ -229,7 +229,7 @@ describe('structure', function(){
     assert.equal(el.innerHTML, '<div>A</div>');
     mount.set({ type: 'B' });
     assert.equal(el.innerHTML, '<div>B</div>');
-    assert(mount.children['0'].component.instance instanceof ComponentB);
+    assert(mount.children['0'].rendered.instance instanceof ComponentB);
   })
 
   /**

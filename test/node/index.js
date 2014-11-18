@@ -13,8 +13,7 @@ describe('node', function(){
 
   it('should add the key as an attribute', function(){
     var a = dom('div', { key: 'foo' });
-    var el = a.toElement();
-    assert(el.outerHTML === '<div data-key="foo"></div>');
+    assert(a.attributes['data-key'] === 'foo');
   })
 
   it('should set attributes', function(){
