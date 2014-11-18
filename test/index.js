@@ -23,6 +23,7 @@ require('./component/lifecycle');
 // mount.
 
 require('./mount/tree');
+require('./mount/equal');
 
 // diffing.
 
