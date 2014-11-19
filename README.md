@@ -24,13 +24,13 @@ It has similar capabilities to React:
 var component = require('segmentio/deku');
 
 var App = component({
-    onClick(e) {
-        e.preventDefault();
-        console.log('clicked!');
-    }
-    render(dom, state, props) {
-        return dom('a', { onClick: this.onClick }, [props.text]);
-    }
+  onClick(e) {
+    e.preventDefault();
+    console.log('clicked!');
+  }
+  render(dom, state, props) {
+    return dom('a', { onClick: this.onClick }, [props.text]);
+  }
 });
 
 // Plugins are super easy to add. 
@@ -38,18 +38,18 @@ App.use(styleHelper);
 
 // Returns a MountedComponent 
 var mounted = App.mount(document.body, {
-    text: 'Click Me!'
+  text: 'Click Me!'
 });
 
 // We can set the props which triggers a render next frame
 mounted.setProps({
-    text: 'Do it...'
+  text: 'Do it...'
 })
 
 // Emits events we can hook into which makes it 
 // easy to add plugins to components 
 mounted.on('afterUpdate', function(){
-    console.log('updated!');
+  console.log('updated!');
 }) 
 
 // And then unmount it when we're done
