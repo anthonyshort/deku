@@ -1,9 +1,10 @@
+
 #
 # Binaries.
 #
 
-duo = ./node_modules/.bin/duo
-test = ./node_modules/.bin/duo-test
+TEST := ./node_modules/.bin/duo-test
+DUO := ./node_modules/.bin/duo
 
 #
 # Wildcards.
@@ -22,26 +23,26 @@ default: test
 #
 
 build: node_modules $(js)
-	@$(duo) -r ./ test/index.js > build.js
+	@$(DUO) -r ./ test/index.js > build.js
 
 test: build
-	@$(test) browser -c 'make build'
+	@$(TEST) browser -c 'make build'
 
 headless: build
-	@$(test) phantomjs -c 'make build'
+	@$(TEST) phantomjs -c 'make build'
 
 node_modules: package.json
 	@npm install
 	@touch node_modules # make sure node_modules is last modified
 
 clean:
-	@-rm -r build.js
+	@-rm -rf build.js
 
 distclean:
-	@-rm -r components node_modules
+	@-rm -rf components node_modules
 
 #
-# PHONY
+# Phonies.
 #
 
 .PHONY: clean
