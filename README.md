@@ -1,91 +1,56 @@
-# virtual-dom
+# Deku
 
-Create a virtual DOM that can be used to update the real DOM using diffs.
+Create composable, reactive views that use implement a virtual DOM system similar to React. The benefits of using Deku over React:
+
+* Smaller at roughly 5kb
+* Readable source
+* No globals or global state
+* Easily testable components without needing Jest
+* Isolated components that don't need a global to be mounted
+* It doesn't create virtual events
+* It doesn't support old IE
+* Easily add plugins
+* Events instead of mixins
+
+It has similar capabilities to React:
+
+* Components return a virtual tree using a `render` method
+* Batched rendering using `requestAnimationFrame`
+* Optimized tree diffs
+* Server-side rendering
 
 ```js
-var dom = require('virtual-dom');
+var component = require('segmentio/deku');
 
-function render(data) {
-  return dom('div')
-    .styles({ color: "red" })
-    .class(['foo', 'bar']);
-    .attrs({ name: data.name })
-    .children([data.text]);
-};
-
-var node = render({ class: 'test', text: 'Hello World', name: 'title' });
-var el = node.toElement(); 
-// el === <div class="foo bar" name="title">Hello World</div>
-
-// Create a new node and compare it
-var updated = render({ class: 'foo' });
-node.patch(el, updated);
-
-// Patch the original element so that it matches
-// the new node using the diff
-patch(el);
-// el === <div class="foo"></div>
-
-```
-
-### Ways to map virtual tree to DOM tree
-
-## API
-
-## Setting Attributes
-
-```
-var node = dom();
-
-node.attrs({ name: 'Hello World' });
-
-// node.toString() === <div name="Hello World"></div>
-
-node.attrs({ size: 'large' });
-
-// node.toString() === <div size="large"></div>
-
-### Using thunks
-
-```
-node.attrs(function(){
-    return {
-        foo: 'bar'
+var App = component({
+    onClick(e) {
+        e.preventDefault();
+        console.log('clicked!');
+    }
+    render(dom, state, props) {
+        return dom('a', { onClick: this.onClick }, [props.text]);
     }
 });
 
-// node.toString() === <div foo="bar"></div>
-```
+// Plugins are super easy to add. 
+App.use(styleHelper);
 
-### Boolean Attributes
+// Returns a MountedComponent 
+var mounted = App.mount(document.body, {
+    text: 'Click Me!'
+});
 
-Attributes with boolean values are either added or removed.
+// We can set the props which triggers a render next frame
+mounted.setProps({
+    text: 'Do it...'
+})
 
-```
-node.attrs({ hidden: true });
+// Emits events we can hook into which makes it 
+// easy to add plugins to components 
+mounted.on('afterUpdate', function(){
+    console.log('updated!');
+}) 
 
-// node.toString() === <div hidden></div>
-
-node.attrs({ hidden: false });
-
-// node.toString() === <div></div>
-```
-
-### Empty Attributes
-
-Empty attrsibutes won't render.
-
-```
-node.attrs({ foo: '' });
-
-// node.toString() === <div></div>
-```
-
-## Getting Attributes
-
-```
-var node = dom();
-node.attrs({ name: 'Hello World' });
-
-node.attrs('name') // 'Hello World';
+// And then unmount it when we're done
+mounted.unmount();
 ```
