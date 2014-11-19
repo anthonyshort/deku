@@ -121,4 +121,12 @@ describe('component', function(){
     }, 2);
   });
 
+  it('should allow optional spec', function(){
+    var Page = component();
+    Page.prototype.render = function(dom, state, props){
+      return dom('span', null, ['Hello World']);
+    };
+    Page.render(el);
+    assert.equal(el.innerHTML, '<span>Hello World</span>');
+  });
 });
