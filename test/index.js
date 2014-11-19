@@ -20,12 +20,11 @@ require('./node');
 require('./component');
 require('./component/lifecycle');
 
-// mount.
+// // mount.
 
 require('./mount/tree');
-require('./mount/equal');
 
-// diffing.
+// // diffing.
 
 require('./diff/structure');
 require('./diff/attributes');
