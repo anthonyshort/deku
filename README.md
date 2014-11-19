@@ -11,6 +11,7 @@ Create composable, reactive views that use implement a virtual DOM system simila
 * It doesn't support old IE
 * Easily add plugins
 * Events instead of mixins
+* Render methods can be imported instead of inline reducing the need for JSX
 
 It has similar capabilities to React:
 
