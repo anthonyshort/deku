@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "dependencies": {
     "apily/sha1": "master",
+    "segmentio/bind-all": "~0.0.2",
     "component/emitter": "^1.1.3",
     "jkroso/equals": "^1.0.0",
     "sindresorhus/object-assign": "v1.0.0"

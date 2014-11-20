@@ -13,6 +13,20 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
+  it('should bind `this` to any method', function(done){
+    var Page = component({
+      hack: function(){
+        assert(this instanceof Page);
+        done();
+      },
+      render: function(dom, state, props){
+        this.hack();
+        return dom('span', null, ['Hello World']);
+      }
+    });
+    Page.render(el);
+  });
+
   it('should allow strings as children', function(){
     var Page = component({
       render: function(dom, state, props){
