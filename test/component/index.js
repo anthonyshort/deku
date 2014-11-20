@@ -20,7 +20,8 @@ describe('component', function(){
         done();
       },
       render: function(dom, state, props){
-        this.hack();
+        var fn = this.hack;
+        fn();
         return dom('span', null, ['Hello World']);
       }
     });
