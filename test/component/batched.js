@@ -4,8 +4,7 @@ var component = require('/lib/component');
 var Emitter = require('component/emitter');
 
 describe('batched rendering', function(){
-
-  it('should update props on the next frame', function () {
+  it('should update props on the next frame', function(){
     var Component = component({
       render: function(dom, state, props){
         return dom('div', null, [props.text]);
@@ -20,7 +19,7 @@ describe('batched rendering', function(){
     assert(el.innerHTML === '<div>one</div>');
   });
 
-  it('should setProps and call the callback', function (done) {
+  it('should setProps and call the callback', function(done){
     var Component = component({
       render: function(dom, state, props){
         return dom('div', null, [props.text]);
@@ -35,7 +34,7 @@ describe('batched rendering', function(){
     });
   });
 
-  it('should not update twice when setting props', function (done) {
+  it('should not update twice when setting props', function(done){
     var i = 0;
     var Component = component({
       render: function(dom, state, props){
@@ -53,7 +52,7 @@ describe('batched rendering', function(){
     });
   });
 
-  it('should only call `beforeUpdate` once', function (done) {
+  it('should only call `beforeUpdate` once', function(done){
     var i = 0;
     var Component = component({
       beforeUpdate: function(state, props, prevState, nextProps){
@@ -75,7 +74,7 @@ describe('batched rendering', function(){
     });
   });
 
-  it('should immediately update when setting state in `beforeUpdate`', function (done) {
+  it('should immediately update when setting state in `beforeUpdate`', function(done){
     var i = 0;
     var Component = component({
       initialState: function(){
@@ -98,7 +97,7 @@ describe('batched rendering', function(){
     });
   });
 
-  it("should still call all callback even if it doesn't change", function (done) {
+  it("should still call all callback even if it doesn't change", function(done){
     var Page = component({
       render: function(dom, state, props) {
         return dom('div', { name: props.name })
@@ -110,7 +109,7 @@ describe('batched rendering', function(){
     });
   })
 
-  it('should only render components once when state and props change', function (done) {
+  it('should only render components once when state and props change', function(done){
     var i = 0;
     var emitter = new Emitter();
     var ComponentA = component({
@@ -152,5 +151,4 @@ describe('batched rendering', function(){
       done();
     });
   });
-
 });

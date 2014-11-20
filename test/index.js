@@ -5,11 +5,11 @@ beforeEach(function(){
   window.el = document.createElement('div');
   window.el.id = "example";
   document.body.appendChild(window.el);
-})
+});
 
 afterEach(function(){
   if (window.el) document.body.removeChild(window.el);
-})
+});
 
 // tests.
 

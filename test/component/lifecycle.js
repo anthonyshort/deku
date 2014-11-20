@@ -1,9 +1,9 @@
+
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
 describe('lifecycle events', function(){
-
-  it('should fire the `afterMount` hook', function (done) {
+  it('should fire the `afterMount` hook', function(done){
     var Page = component({
       afterMount: function(){
         done();
@@ -12,7 +12,7 @@ describe('lifecycle events', function(){
     Page.render(el);
   })
 
-  it('should fire the `afterUnmount` hook', function (done) {
+  it('should fire the `afterUnmount` hook', function(done){
     var Page = component({
       afterUnmount: function(){
         done();
@@ -22,7 +22,7 @@ describe('lifecycle events', function(){
     mount.remove();
   })
 
-  it('should fire the `beforeMount` hook before `mount`', function () {
+  it('should fire the `beforeMount` hook before `mount`', function(){
     var pass;
     var Page = component({
       beforeMount: function(){
@@ -36,7 +36,7 @@ describe('lifecycle events', function(){
     assert(pass);
   })
 
-  it('should fire the `beforeUnmount` hook before `unmount`', function () {
+  it('should fire the `beforeUnmount` hook before `unmount`', function(){
     var pass;
     var Page = component({
       beforeUnmount: function(){
@@ -50,7 +50,7 @@ describe('lifecycle events', function(){
     assert(pass);
   })
 
-  it('should not unmount twice', function () {
+  it('should not unmount twice', function(){
     var Page = component();
     var mount = Page.render(el);
     mount.remove();
@@ -108,6 +108,4 @@ describe('lifecycle events', function(){
     assert(i === 4, i);
     assert(el.innerHTML === "");
   });
-
-
 });

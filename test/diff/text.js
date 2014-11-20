@@ -1,8 +1,8 @@
+
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
 describe('text', function(){
-
   it('should update text nodes', function(){
     var Page = component({
       render: function(dom, state, props) {
@@ -101,5 +101,4 @@ describe('text', function(){
     i = 1;
     mount.forceUpdate();
   });
-
 });

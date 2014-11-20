@@ -1,11 +1,10 @@
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
-describe('attributes', function () {
-
+describe('attributes', function(){
   it('should update attributes', function(done){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('span', { name: props.name });
       },
       afterUpdate: function(){
@@ -20,7 +19,7 @@ describe('attributes', function () {
 
   it('should add attributes', function(done){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         var attrs = {};
         if (props.name) attrs.name = props.name;
         return dom('span', attrs);
@@ -37,7 +36,7 @@ describe('attributes', function () {
 
   it('should remove attributes', function(done){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         var attrs = {};
         if (props.name) attrs.name = props.name;
         return dom('span', attrs);
@@ -52,7 +51,7 @@ describe('attributes', function () {
     mount.setProps({ name: null });
   })
 
-  it('should not update attributes that have not changed', function (done) {
+  it('should not update attributes that have not changed', function(done){
     var pass = true;
     var Page = component({
       afterMount: function(el){
@@ -60,7 +59,7 @@ describe('attributes', function () {
           pass = false;
         }
       },
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('div', { name: props.name })
       }
     });
@@ -70,5 +69,4 @@ describe('attributes', function () {
       done();
     });
   })
-
 });

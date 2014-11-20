@@ -1,3 +1,4 @@
+
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
@@ -245,7 +246,7 @@ describe('structure', function(){
    * are moved from the tree.
    */
 
-  it('should remove references to child components when they are removed', function () {
+  it('should remove references to child components when they are removed', function(){
     var Component = component({
       render: function(n, state, props){
         return n('div', null, ['Component']);
@@ -264,5 +265,4 @@ describe('structure', function(){
     assert.equal(el.innerHTML, '<div>Element</div>');
     assert(mount.rendered.children['0'] == null);
   });
-
 });

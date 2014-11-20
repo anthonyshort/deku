@@ -1,11 +1,11 @@
+
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
 describe('component', function(){
-
   it('should create a component', function(){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('span', null, ['Hello World']);
       }
     });
@@ -15,7 +15,7 @@ describe('component', function(){
 
   it('should allow strings as children', function(){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('span', null, 'Hello World');
       }
     });
@@ -31,7 +31,7 @@ describe('component', function(){
 
   it('should create a component with properties', function(){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('span', null, [props.one + ' ' + props.two]);
       }
     });
@@ -44,7 +44,7 @@ describe('component', function(){
 
   it('should not merge new props', function(){
     var Page = component({
-      render: function(dom, state, props) {
+      render: function(dom, state, props){
         return dom('span', null, [props.one + ' ' + props.two]);
       }
     });
@@ -105,7 +105,7 @@ describe('component', function(){
     ComponentA.render(el);
   });
 
-  it('should throw an error if the render method does not return a node', function (done) {
+  it('should throw an error if the render method does not return a node', function(done){
     var ComponentA = component({
       render: function(dom, state){
         return false;
