@@ -55,7 +55,7 @@ describe('attributes', function () {
   it('should not update attributes that have not changed', function (done) {
     var pass = true;
     var Page = component({
-      mount: function(el){
+      afterMount: function(el){
         el.setAttribute = function(){
           pass = false;
         }

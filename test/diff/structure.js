@@ -127,21 +127,21 @@ describe('structure', function(){
     var i = 0;
     function inc() { i++ }
     var ComponentA = component({
-      unmount: inc,
+      afterUnmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
         return n('span', null, ['test']);
       }
     });
     var ComponentB = component({
-      unmount: inc,
+      afterUnmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
         return n(ComponentA);
       }
     });
     var ComponentC = component({
-      unmount: inc,
+      afterUnmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
         if (props.n === 0) {

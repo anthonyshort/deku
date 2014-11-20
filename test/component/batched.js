@@ -119,7 +119,7 @@ describe('batched rendering', function(){
           text: 'Deku Shield'
         };
       },
-      mount: function() {
+      afterMount: function() {
         var self = this;
         emitter.on('data', function(text){
           self.setState({ text: text });

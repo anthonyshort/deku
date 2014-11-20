@@ -126,7 +126,7 @@ describe('component', function(){
           duration: 0
         }
       },
-      mount: function(){
+      afterMount: function(){
         this.setState({ 'duration': 1 });
       },
       afterUpdate: function(){

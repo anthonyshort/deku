@@ -25,7 +25,7 @@ describe('text', function(){
   it('should add text elements', function(){
     var i = 0;
     var Page = component({
-      mount: function(el){
+      afterMount: function(el){
         if (i === 0) {
           assert(el.outerHTML === '<div></div>');
         } else {
@@ -45,7 +45,7 @@ describe('text', function(){
   it('should remove text elements', function(){
     var i = 0;
     var Page = component({
-      mount: function(el){
+      afterMount: function(el){
         if (i !== 0) {
           assert(el.outerHTML === '<div></div>');
         } else {
@@ -65,7 +65,7 @@ describe('text', function(){
   it('should swap elements with text elements', function(){
     var i = 0;
     var Page = component({
-      mount: function(el){
+      afterMount: function(el){
         if (i === 0) {
           assert(el.innerHTML === '<span></span>');
         } else {
@@ -85,7 +85,7 @@ describe('text', function(){
   it('should swap text elements with elements', function(){
     var i = 0;
     var Page = component({
-      mount: function(el){
+      afterMount: function(el){
         if (i !== 0) {
           assert(el.innerHTML === '<span></span>');
         } else {

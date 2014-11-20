@@ -3,18 +3,18 @@ var component = require('/lib/component');
 
 describe('lifecycle events', function(){
 
-  it('should fire the `mount` hook', function (done) {
+  it('should fire the `afterMount` hook', function (done) {
     var Page = component({
-      mount: function(){
+      afterMount: function(){
         done();
       }
     });
     Page.render(el);
   })
 
-  it('should fire the `unmount` hook', function (done) {
+  it('should fire the `afterUnmount` hook', function (done) {
     var Page = component({
-      unmount: function(){
+      afterUnmount: function(){
         done();
       }
     });
@@ -28,7 +28,7 @@ describe('lifecycle events', function(){
       beforeMount: function(){
         pass = false;
       },
-      mount: function(){
+      afterMount: function(){
         pass = true;
       }
     });
@@ -42,7 +42,7 @@ describe('lifecycle events', function(){
       beforeUnmount: function(){
         pass = false;
       },
-      unmount: function(){
+      afterUnmount: function(){
         pass = true;
       }
     });
@@ -63,7 +63,7 @@ describe('lifecycle events', function(){
     function inc() { i++ }
 
     var ComponentA = component({
-      mount: inc,
+      afterMount: inc,
       beforeMount: inc,
       render: function(n, state, props){
         return n('span', { name: props.name }, [props.text]);
@@ -71,7 +71,7 @@ describe('lifecycle events', function(){
     });
 
     var ComponentB = component({
-      mount: inc,
+      afterMount: inc,
       beforeMount: inc,
       render: function(n, state, props){
         return n(ComponentA, { text: 'foo', name: props.name });
@@ -88,7 +88,7 @@ describe('lifecycle events', function(){
     function inc() { i++ }
 
     var ComponentA = component({
-      unmount: inc,
+      afterUnmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
         return n('span', { name: props.name }, [props.text]);
@@ -96,7 +96,7 @@ describe('lifecycle events', function(){
     });
 
     var ComponentB = component({
-      unmount: inc,
+      afterUnmount: inc,
       beforeUnmount: inc,
       render: function(n, state, props){
         return n(ComponentA, { text: 'foo', name: props.name });
