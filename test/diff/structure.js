@@ -17,10 +17,10 @@ describe('structure', function(){
         if (i === 2) return dom('div', null, [dom('span', { id: 'foo' })]);
       }
     });
-    var view = Page.render(el);
+    var mount = Page.render(el);
     assert(document.querySelector('#foo') == null);
     i = 2;
-    view.render();
+    mount.forceUpdate();
     assert(document.querySelector('#foo'));
   });
 
@@ -40,7 +40,7 @@ describe('structure', function(){
     var view = Page.render(el);
     assert(document.querySelector('#foo'));
     i = 2;
-    view.render();
+    view.forceUpdate();
     assert(document.querySelector('#foo') == null);
   });
 
@@ -58,7 +58,8 @@ describe('structure', function(){
     });
     var mount = ComponentA.render(el, { type: 'span' });
     assert.equal(el.innerHTML, '<span>test</span>');
-    mount.set({ type: 'div' })
+    mount.setProps({ type: 'div' });
+    mount.forceUpdate();
     assert.equal(mount.rendered.el.outerHTML, '<div>test</div>');
   });
 
@@ -82,9 +83,11 @@ describe('structure', function(){
     });
     var mount = ComponentB.render(el, { type: 'span' });
     assert(mount.rendered.el === mount.rendered.children['0'].el);
-    mount.set({ type: 'div' });
+    mount.setProps({ type: 'div' });
+    mount.forceUpdate();
     assert(mount.rendered.el === mount.rendered.children['0'].el);
-    mount.set({ type: 'b' });
+    mount.setProps({ type: 'b' });
+    mount.forceUpdate();
     assert.equal(mount.rendered.el.outerHTML, '<b>test</b>');
     assert.equal(mount.rendered.children['0'].el.outerHTML, '<b>test</b>');
   });
@@ -108,8 +111,10 @@ describe('structure', function(){
       }
     });
     var mount = ComponentB.render(el, { type: 'span', text: 'test' });
-    mount.set({ type: 'div', text: 'test' });
-    mount.set({ type: 'div', text: 'foo' });
+    mount.setProps({ type: 'div', text: 'test' });
+    mount.forceUpdate();
+    mount.setProps({ type: 'div', text: 'foo' });
+    mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>foo</div>');
   });
 
@@ -153,7 +158,8 @@ describe('structure', function(){
       }
     });
     var mount = ComponentC.render(el, { n: 0 });
-    mount.set({ n: 1 })
+    mount.setProps({ n: 1 });
+    mount.forceUpdate();
     assert.equal(i, 6);
   });
 
@@ -176,7 +182,8 @@ describe('structure', function(){
       }
     });
     var mount = ComponentB.render(el, { type: 'span' });
-    mount.set({ type: 'div' });
+    mount.setProps({ type: 'div' });
+    mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>test</div>');
   });
 
@@ -199,7 +206,7 @@ describe('structure', function(){
     });
     var mount = ComponentB.render(el);
     i = 1;
-    mount.render();
+    mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>test</div>');
   });
 
@@ -227,7 +234,8 @@ describe('structure', function(){
     });
     var mount = ComponentC.render(el, { type: 'A' });
     assert.equal(el.innerHTML, '<div>A</div>');
-    mount.set({ type: 'B' });
+    mount.setProps({ type: 'B' });
+    mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>B</div>');
     assert(mount.rendered.children['0'].instance instanceof ComponentB);
   })
@@ -251,7 +259,8 @@ describe('structure', function(){
     });
     var mount = Wrapper.render(el, { type: 'component' });
     assert(mount.rendered.children['0']);
-    mount.set({ type: 'element' });
+    mount.setProps({ type: 'element' });
+    mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>Element</div>');
     assert(mount.rendered.children['0'] == null);
   });

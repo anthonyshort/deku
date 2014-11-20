@@ -22,7 +22,7 @@ describe('events', function(){
     }
   });
 
-  it('should remove click event', function(){
+  it('should remove click event', function(done){
     var count = 0;
     var Page = component({
       render: function(dom, state, props){
@@ -31,35 +31,39 @@ describe('events', function(){
         } else {
           return dom('span', {}, ['Hello World']);
         }
+      },
+      afterUpdate: function(){
+        trigger(el.querySelector('span'), 'click');
+        assert.equal(count, 1);
+        done();
       }
     });
-
     var mount = Page.render(el, { click: true });
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-    mount.set({ click: false });
-    trigger(el.querySelector('span'), 'click');
-    assert.equal(count, 1);
-
+    mount.setProps({ click: false });
     function onclick() {
       ++count;
     }
   });
 
-  it('should update click event', function(){
+  it('should update click event', function(done){
     var count = 0;
     var Page = component({
       render: function(dom, state, props){
         return dom('span', { onclick: props.click }, ['Hello World']);
+      },
+      afterUpdate: function(){
+        trigger(el.querySelector('span'), 'click');
+        assert.equal(count, 11);
+        done();
       }
     });
 
     var mount = Page.render(el, { click: onclicka });
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-    mount.set({ click: onclickb });
-    trigger(el.querySelector('span'), 'click');
-    assert.equal(count, 11);
+    mount.setProps({ click: onclickb });
 
     function onclicka() {
       count += 1;

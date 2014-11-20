@@ -7,16 +7,19 @@ describe('text', function(){
     var Page = component({
       render: function(dom, state, props) {
         return dom('span', null, [props.one + ' ' + props.two]);
+      },
+      afterUpdate: function(){
+        assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
       }
     });
     var mount = Page.render(el, {
       one: 'Hello',
       two: 'World'
     });
-    mount.set({
+    mount.setProps({
+      one: 'Hello',
       two: 'Pluto'
     });
-    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
   });
 
   it('should add text elements', function(){
@@ -36,7 +39,7 @@ describe('text', function(){
     });
     var mount = Page.render(el);
     i = 1;
-    mount.render();
+    mount.forceUpdate();
   });
 
   it('should remove text elements', function(){
@@ -56,7 +59,7 @@ describe('text', function(){
     });
     var mount = Page.render(el);
     i = 1;
-    mount.render();
+    mount.forceUpdate();
   });
 
   it('should swap elements with text elements', function(){
@@ -76,7 +79,7 @@ describe('text', function(){
     });
     var mount = Page.render(el);
     i = 1;
-    mount.render();
+    mount.forceUpdate();
   });
 
   it('should swap text elements with elements', function(){
@@ -96,7 +99,7 @@ describe('text', function(){
     });
     var mount = Page.render(el);
     i = 1;
-    mount.render();
+    mount.forceUpdate();
   });
 
 });

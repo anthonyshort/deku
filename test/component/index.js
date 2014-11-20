@@ -42,6 +42,21 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
+  it('should not merge new props', function(){
+    var Page = component({
+      render: function(dom, state, props) {
+        return dom('span', null, [props.one + ' ' + props.two]);
+      }
+    });
+    var mount = Page.render(el, {
+      one: 'Hello',
+      two: 'World'
+    });
+    mount.setProps({ one: 'Hello' });
+    mount.forceUpdate();
+    assert.equal(el.innerHTML, '<span>Hello undefined</span>');
+  });
+
   it('should render sub-components', function(){
     var ComponentA = component({
       render: function(n, state, props){
@@ -57,7 +72,7 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
   });
 
-  it('should update sub-components', function(){
+  it('should update sub-components', function(done){
     var ComponentA = component({
       render: function(n, state, props){
         return n('span', { name: props.name }, [props.text]);
@@ -69,8 +84,10 @@ describe('component', function(){
       }
     });
     var mount = ComponentB.render(el, { name: 'Bob' });
-    mount.set({ name: 'Tom' })
-    assert.equal(el.innerHTML, '<span name="Tom">foo</span>');
+    mount.setProps({ name: 'Tom' }, function(){
+      assert.equal(el.innerHTML, '<span name="Tom">foo</span>');
+      done();
+    })
   });
 
   it('should have initial state', function(){
@@ -110,20 +127,17 @@ describe('component', function(){
         }
       },
       mount: function(){
-        var self = this;
-        setTimeout(function(){
-          self.set('duration', 1);
-        }, 1);
+        this.setState({ 'duration': 1 });
+      },
+      afterUpdate: function(){
+        assert(el.innerHTML === '<span>1</span>');
+        done();
       },
       render: function(n, state, props){
         return n('span', null, [state.duration]);
       }
     });
     ComponentA.render(el);
-    setTimeout(function(){
-      assert.equal(el.innerHTML, '<span>1</span>');
-      done();
-    }, 2);
   });
 
   it('should allow optional spec', function(){
