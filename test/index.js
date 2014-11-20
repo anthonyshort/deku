@@ -18,6 +18,7 @@ require('./node');
 // component.
 
 require('./component');
+require('./component/batched');
 require('./component/lifecycle');
 require('./component/events');
 
