@@ -7,6 +7,12 @@ describe('node', function(){
     assert(dom().tagName === 'div');
   })
 
+  it('should create unique ids', function () {
+    var one = dom();
+    var two = dom();
+    assert(one.id !== two.id);
+  });
+
   it('should set the tagName', function(){
     assert(dom('span').tagName === 'span');
   })

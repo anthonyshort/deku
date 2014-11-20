@@ -7,8 +7,14 @@ describe('tree', function(){
   it('parse a single node', function(){
     var node = dom();
     var tree = new Tree(node);
-    assert(tree.get('0') === node);
+    assert(tree.getNode('0') === node);
   })
+
+  it('should get the path for a node', function () {
+    var node = dom();
+    var tree = new Tree(node);
+    assert(tree.getPath(node) === '0');
+  });
 
   it('parse a node with one level of children', function(){
     var node = dom('div', null, [
@@ -17,10 +23,10 @@ describe('tree', function(){
       'Hello World'
     ]);
     var tree = new Tree(node);
-    assert(tree.get('0') === node);
-    assert(tree.get('0.0') === node.children[0]);
-    assert(tree.get('0.1') === node.children[1]);
-    assert(tree.get('0.2') === node.children[2]);
+    assert(tree.getNode('0') === node);
+    assert(tree.getNode('0.0') === node.children[0]);
+    assert(tree.getNode('0.1') === node.children[1]);
+    assert(tree.getNode('0.2') === node.children[2]);
   })
 
   it('parse nodes with keys', function(){
@@ -30,7 +36,7 @@ describe('tree', function(){
       ])
     ]);
     var tree = new Tree(node);
-    assert(tree.get('0.foo.0') === node.children[0].children[0]);
+    assert(tree.getNode('0.foo.0') === node.children[0].children[0]);
   })
 
   it('parse a node with two levels of children', function(){
@@ -43,12 +49,12 @@ describe('tree', function(){
       'Hello World'
     ]);
     var tree = new Tree(node);
-    assert(tree.get('0') === node);
-    assert(tree.get('0.0') === node.children[0]);
-    assert(tree.get('0.1') === node.children[1]);
-    assert(tree.get('0.1.0') === node.children[1].children[0]);
-    assert(tree.get('0.1.1') === node.children[1].children[1]);
-    assert(tree.get('0.2') === node.children[2]);
+    assert(tree.getNode('0') === node);
+    assert(tree.getNode('0.0') === node.children[0]);
+    assert(tree.getNode('0.1') === node.children[1]);
+    assert(tree.getNode('0.1.0') === node.children[1].children[0]);
+    assert(tree.getNode('0.1.1') === node.children[1].children[1]);
+    assert(tree.getNode('0.2') === node.children[2]);
   })
 
   it('should get nodes using a string path', function () {
@@ -58,7 +64,7 @@ describe('tree', function(){
       dom('div', null, [child])
     ]);
     var tree = new Tree(node);
-    assert(tree.get('0.1.0') === child);
+    assert(tree.getNode('0.1.0') === child);
   })
 
 })

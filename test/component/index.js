@@ -29,16 +29,6 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<noscript></noscript>');
   });
 
-  it('should render nothing if the render method returns falsy', function(){
-    var Page = component({
-      render: function(){
-        return;
-      }
-    });
-    Page.render(el);
-    assert.equal(el.innerHTML, '<noscript></noscript>');
-  });
-
   it('should create a component with properties', function(){
     var Page = component({
       render: function(dom, state, props) {
@@ -92,9 +82,24 @@ describe('component', function(){
       },
       render: function(dom, state){
         assert(state.duration === 0);
+        return dom();
       }
     });
     ComponentA.render(el);
+  });
+
+  it('should throw an error if the render method does not return a node', function (done) {
+    var ComponentA = component({
+      render: function(dom, state){
+        return false;
+      }
+    });
+    try {
+      ComponentA.render(el);
+      done(false);
+    } catch (e) {
+      done();
+    }
   });
 
   it('should update when the component state changes', function(done){
