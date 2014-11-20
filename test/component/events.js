@@ -12,12 +12,14 @@ describe('events', function(){
       }
     });
 
-    Page.render(el);
+    Page.render(el, { x: 20 });
     assert.equal(el.innerHTML, '<span>Hello World</span>');
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
 
-    function onclick() {
+    function onclick(e, state, props) {
+      assert(this instanceof Page);
+      assert(props.x, 10);
       ++count;
     }
   });
