@@ -9,6 +9,7 @@
     "sindresorhus/object-assign": "v1.0.0"
   },
   "development": {
-    "component/assert": "^0.4.0"
+    "component/assert": "^0.4.0",
+    "adamsanderson/trigger-event": "*"
   }
 }
