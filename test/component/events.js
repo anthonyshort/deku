@@ -45,4 +45,28 @@ describe('events', function(){
       ++count;
     }
   });
+
+  it('should update click event', function(){
+    var count = 0;
+    var Page = component({
+      render: function(dom, state, props){
+        return dom('span', { onclick: props.click }, ['Hello World']);
+      }
+    });
+
+    var mount = Page.render(el, { click: onclicka });
+    trigger(el.querySelector('span'), 'click');
+    assert.equal(count, 1);
+    mount.set({ click: onclickb });
+    trigger(el.querySelector('span'), 'click');
+    assert.equal(count, 11);
+
+    function onclicka() {
+      count += 1;
+    }
+
+    function onclickb() {
+      count += 10;
+    }
+  });
 });
