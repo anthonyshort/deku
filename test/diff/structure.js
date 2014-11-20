@@ -46,6 +46,28 @@ describe('structure', function(){
   });
 
   /**
+   * When updating a component it should remove child elements
+   * from the DOM that don't exist in the new rendering.
+   */
+
+  it('should remove child nodes', function(){
+    var i = 1;
+    var Page = component({
+      render: function(dom){
+        if (i === 1) return dom('div', null, [dom('span', { id: 'foo' }), dom('span', { id: 'bar' })]);
+        if (i === 2) return dom('div', null, [dom('span', { id: 'foo' })]);
+      }
+    });
+    var view = Page.render(el);
+    assert(document.querySelector('#foo'));
+    assert(document.querySelector('#bar'));
+    i = 2;
+    view.forceUpdate();
+    assert(document.querySelector('#foo'));
+    assert(document.querySelector('#bar') == null);
+  });
+
+  /**
    * It should change the tag name of element and keep
    * the same content.
    */
