@@ -19,14 +19,14 @@ require('./node');
 
 require('./component');
 require('./component/lifecycle');
+require('./component/events');
 
-// // mount.
+// mount.
 
 require('./mount/tree');
 
-// // diffing.
+// diffing.
 
 require('./diff/structure');
 require('./diff/attributes');
 require('./diff/text');
-
