@@ -163,4 +163,39 @@ describe('component', function(){
     Page.render(el);
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
+
+  it('should override the shouldUpdate method', function (done) {
+    var i = 0;
+    var Page = component({
+      render: function(dom, state, props){
+        i++;
+        return dom();
+      },
+      shouldUpdate: function(){
+        return false;
+      }
+    });
+    var mount = Page.render(el, { n: 0 });
+    mount.setProps({ n: 1 }, function(){
+      assert(i === 1);
+      done();
+    });
+  });
+
+  it('should ignore the shouldUpdate method if forceUpdate is used', function () {
+    var i = 0;
+    var Page = component({
+      render: function(dom, state, props){
+        i++;
+        return dom();
+      },
+      shouldUpdate: function(){
+        return false;
+      }
+    });
+    var mount = Page.render(el, { n: 0 });
+    mount.setProps({ n: 1 });
+    mount.forceUpdate();
+    assert(i === 2);
+  });
 });
