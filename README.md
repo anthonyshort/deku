@@ -1,5 +1,7 @@
 # Deku
 
+<img  width="200" align="right" src="http://img4.wikia.nocookie.net/__cb20091220220017/zelda/images/e/ee/Deku_Stick.png" />
+
 > This project is still a [work-in-progress](https://github.com/segmentio/deku/issues/3)
 
 Create composable, reactive views that use implement a virtual DOM system similar to React. The benefits of using Deku over React:
