@@ -26,11 +26,11 @@ It has similar capabilities to React:
 var component = require('segmentio/deku');
 
 // Simple button component.
-var Button = component({
+var ButtonComponent = component({
   onClick() {
     this.setState({ clicked: true });
   }
-  render: function(dom, state, props) {
+  render(dom, state, props) {
     return dom('button', { onClick: this.onClick }, [props.text]);
   }
 });
@@ -38,17 +38,17 @@ var Button = component({
 // Our main app.
 var App = component({
   render(dom, state, props) {
-    return dom('div', { class: "App" }, [
-      dom(Button, { text: props.buttonText })
+    return dom('div', { class: 'App' }, [
+      dom(ButtonComponent, { text: props.buttonText })
     ]);
   }
 });
 
 // Plugins are super easy to add and don't require
 // a separate build to get them.
-App.use(styleHelper);
+App.use(styleHelper());
 
-// Returns a Mount.
+// Returns a scene.
 var scene = App.mount(document.body, {
   buttonText: 'Click Me!'
 });
