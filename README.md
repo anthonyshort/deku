@@ -41,7 +41,7 @@ var ButtonComponent = component({
 var App = component({
   render(dom, state, props) {
     return dom('div', { class: 'App' }, [
-      dom(ButtonComponent, { text: props.buttonText })
+      ButtonComponent({ text: props.buttonText })
     ]);
   }
 });
