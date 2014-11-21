@@ -198,4 +198,21 @@ describe('component', function(){
     mount.forceUpdate();
     assert(i === 2);
   });
+
+
+  it('should compose without needing to use dom object', function () {
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return ComponentA({ text: 'foo', name: props.name });
+      }
+    });
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
+  });
+
 });
