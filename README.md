@@ -25,35 +25,39 @@ It has similar capabilities to React:
 ```js
 var component = require('segmentio/deku');
 
-var App = component({
-  onClick(e) {
-    e.preventDefault();
-    console.log('clicked!');
+// Simple button component.
+var Button = component({
+  onClick() {
+    this.setState({ clicked: true });
   }
-  render(dom, state, props) {
-    return dom('a', { onClick: this.onClick }, [props.text]);
+  render: function(dom, state, props) {
+    return dom('button', { onClick: this.onClick }, [props.text]);
   }
 });
 
-// Plugins are super easy to add. 
+// Our main app.
+var App = component({
+  render(dom, state, props) {
+    return dom('div', { class: "App" }, [
+      dom(Button, { text: props.buttonText })
+    ]);
+  }
+});
+
+// Plugins are super easy to add and don't require
+// a separate build to get them.
 App.use(styleHelper);
 
-// Returns a MountedComponent 
-var mounted = App.mount(document.body, {
-  text: 'Click Me!'
+// Returns a Mount.
+var scene = App.mount(document.body, {
+  buttonText: 'Click Me!'
 });
 
-// We can set the props which triggers a render next frame
-mounted.setProps({
-  text: 'Do it...'
-})
+// We can set the props which triggers a render next frame.
+scene.setProps({
+  buttonText: 'Do it...'
+});
 
-// Emits events we can hook into which makes it 
-// easy to add plugins to components 
-mounted.on('afterUpdate', function(){
-  console.log('updated!');
-}) 
-
-// And then unmount it when we're done
-mounted.unmount();
+// And then unmount it when we're done.
+scene.remove();
 ```
