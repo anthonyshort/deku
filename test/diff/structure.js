@@ -54,17 +54,20 @@ describe('structure', function(){
     var i = 1;
     var Page = component({
       render: function(dom){
-        if (i === 1) return dom('div', null, [dom('span', { id: 'foo' }), dom('span', { id: 'bar' })]);
-        if (i === 2) return dom('div', null, [dom('span', { id: 'foo' })]);
+        if (i === 1) return dom('div', { id: 'root' }, [dom('span', { id: 'foo' }), dom('span', { id: 'bar' }), dom('span', { id: 'baz' })]);
+        if (i === 2) return dom('div', { id: 'root' }, [dom('span', { id: 'foo' })]);
       }
     });
     var view = Page.render(el);
     assert(document.querySelector('#foo'));
     assert(document.querySelector('#bar'));
+    assert(document.querySelector('#baz'));
     i = 2;
     view.forceUpdate();
+    console.log(document.querySelector('#root').innerHTML)
     assert(document.querySelector('#foo'));
     assert(document.querySelector('#bar') == null);
+    assert(document.querySelector('#baz') == null);
   });
 
   /**
