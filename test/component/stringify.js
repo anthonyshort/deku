@@ -1,7 +1,7 @@
 var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
-describe.only('stringify', function(){
+describe('stringify', function(){
 
   it('should render an element', function () {
     var Component = component({
