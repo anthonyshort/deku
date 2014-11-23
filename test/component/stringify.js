@@ -77,4 +77,27 @@ describe('stringify', function(){
     assert(result === '<span>foo</span>');
   });
 
+  it('should render with props', function () {
+    var Component = component({
+      render: function(dom, state, props){
+        return dom('div', null, [props.text]);
+      }
+    });
+    var result = Component.renderString({ text: 'foo' });
+    assert(result === '<div>foo</div>');
+  });
+
+  it('should render with initial state', function () {
+    var Component = component({
+      initialState: function(){
+        return { text: 'foo' }
+      },
+      render: function(dom, state, props){
+        return dom('div', null, [state.text]);
+      }
+    });
+    var result = Component.renderString();
+    assert(result === '<div>foo</div>');
+  });
+
 });
