@@ -1,8 +1,15 @@
 {
   "name": "deku",
   "version": "0.1.0",
+  "main": "dist/build.js",
+  "scripts": {
+    "prepublish": "npm run build && npm run fixrequire",
+    "build": "duo -s deku -o dist index.js",
+    "fixrequire": "bfc dist/index.js > dist/build.js"
+  },
   "devDependencies": {
-    "duo": "^0.8.5",
-    "duo-test": "^0.3.10"
+    "duo": "^0.8.10",
+    "duo-test": "^0.3.10",
+    "bfc": "~0.1.0"
   }
 }
