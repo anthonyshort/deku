@@ -21,6 +21,7 @@ require('./component');
 require('./component/batched');
 require('./component/lifecycle');
 require('./component/events');
+require('./component/stringify');
 
 // mount.
 
