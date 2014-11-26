@@ -223,4 +223,70 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
   });
 
+  it('should store the state in a top-level object', function () {
+    var ComponentA = component({
+      afterMount: function(){
+        this.setState({ 'mounted': true });
+      },
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return ComponentA({ text: 'foo', name: props.name });
+      }
+    });
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    mount.forceUpdate();
+    assert.equal(mount.serialize(), '{"state":{"root":{},"root.0":{"mounted":true}},"props":{"name":"Bob"}}');
+  });
+
+  it('should remove state when a component is removed from the tree', function () {
+    var i = 0;
+    var ComponentA = component({
+      afterMount: function(){
+        this.setState({ 'mounted': true });
+      },
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        if (i === 0) {
+          return ComponentA({ text: 'foo', name: props.name });
+        } else {
+          return n();
+        }
+      }
+    });
+    var mount = ComponentB.render(el, { name: 'Bob' });
+    i = 1;
+    mount.forceUpdate();
+    assert.equal(mount.serialize(), '{"state":{"root":{}},"props":{"name":"Bob"}}');
+  });
+
+  it.only('should render in the same state', function () {
+    var i = 0;
+    var ComponentA = component({
+      afterMount: function(){
+        this.setState({ 'mounted': true });
+      },
+      render: function(n, state, props){
+        return n('span', { name: props.name }, [props.text]);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        if (i === 0) {
+          return ComponentA({ text: 'foo', name: props.name });
+        } else {
+          return n();
+        }
+      }
+    });
+    ComponentB.render(el, { name: 'Bob' }, { 'root': { open: true } });
+  });
+
 });
