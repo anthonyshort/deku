@@ -13,6 +13,14 @@ describe('component', function(){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
+  it('should create a component with just a render function', function () {
+    var Page = component(function(dom, state, props){
+      return dom('span', null, [props.name]);
+    });
+    Page.render(el, { name: 'Link' });
+    assert.equal(el.innerHTML, '<span>Link</span>');
+  });
+
   it('should bind `this` to any method', function(done){
     var Page = component({
       hack: function(){
