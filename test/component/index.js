@@ -207,6 +207,29 @@ describe('component', function(){
     assert(i === 2);
   });
 
+  it.only('shouldnt update child when the props haven\'t changed', function (done) {
+    var calls = 0;
+    var ComponentA = component({
+      render: function(n, state, props){
+        calls++;
+        return n('span', null, [props.text]);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n('div', { name: props.character }, [
+          ComponentA({ text: 'foo' })
+        ]);
+      }
+    });
+    var mount = ComponentB.render(el, {
+      character: 'Link'
+    });
+    mount.setProps({ character: 'Zelda' }, function(){
+      assert(calls === 1);
+      done();
+    });
+  });
 
   it('should compose without needing to use dom object', function () {
     var ComponentA = component({
