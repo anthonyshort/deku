@@ -109,7 +109,7 @@ describe('batched rendering', function(){
     });
   })
 
-  it('should only render components once when state and props change', function(done){
+  it.skip('should only render components once when state and props change', function(done){
     var i = 0;
     var emitter = new Emitter();
     var ComponentA = component({
