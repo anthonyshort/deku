@@ -207,7 +207,7 @@ describe('component', function(){
     assert(i === 2);
   });
 
-  it.only('shouldnt update child when the props haven\'t changed', function (done) {
+  it('shouldnt update child when the props haven\'t changed', function (done) {
     var calls = 0;
     var ComponentA = component({
       render: function(n, state, props){
@@ -244,6 +244,37 @@ describe('component', function(){
     });
     var mount = ComponentB.render(el, { name: 'Bob' });
     assert.equal(el.innerHTML, '<span name="Bob">foo</span>');
+  });
+
+  it('should not call flush callbacks if removed', function (done) {
+    var Component = component(function(dom, state, props){
+      return dom('div', null, props.text);
+    });
+    var mount = Component.render(el, { text: 'foo' });
+    mount.setProps({ text: 'bar' }, function(){
+      done(false); // the callback should never be called
+    });
+    mount.remove();
+    requestAnimationFrame(function(){
+      done();
+    });
+  });
+
+  it('should not try to update if it is removed', function (done) {
+    var Component = component(function(dom, state, props){
+      return dom('div', null, props.text);
+    });
+    var mount = Component.render(el, { text: 'foo' });
+    try {
+      mount.setProps({ text: 'bar' });
+      mount.remove();
+      requestAnimationFrame(function(){
+        done();
+      });
+    }
+    catch (e) {
+      done(false);
+    }
   });
 
 });

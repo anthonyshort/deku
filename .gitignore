@@ -1,6 +1,7 @@
 node_modules
 components
 deku.js
+build.js
 .DS_Store
 notes
 dist

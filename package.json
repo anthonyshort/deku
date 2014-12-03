@@ -4,7 +4,7 @@
   "main": "deku.js",
   "scripts": {
     "prepublish": "npm run build",
-    "build": "duo -s deku index.js | bfc > deku.js",
+    "build": "duo -s deku index.js | bfc > deku.js"
   },
   "devDependencies": {
     "duo": "^0.8.10",
