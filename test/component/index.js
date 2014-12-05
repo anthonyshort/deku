@@ -277,4 +277,69 @@ describe('component', function(){
     }
   });
 
+  it('should allow components to have child nodes', function () {
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('div', null, props.children);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return ComponentA(null, [
+          n('span', null, 'Hello World!')
+        ]);
+      }
+    });
+    var mount = ComponentB.render(el);
+    assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
+  });
+
+  it('should update component child nodes', function (done) {
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('div', null, props.children);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return ComponentA(null, [
+          n('span', null, props.text)
+        ]);
+      }
+    });
+    var mount = ComponentB.render(el, { text: 'Hello World!' });
+    mount.setProps({
+      text: 'Hello Pluto!'
+    }, function(){
+      assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
+      done();
+    });
+  });
+
+  it('should allow components to have other components as child nodes', function () {
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('div', { name: 'ComponentA' }, props.children);
+      }
+    });
+    var ComponentC = component({
+      render: function(n, state, props){
+        return n('div', { name: 'ComponentC' }, props.children);
+      }
+    });
+    var ComponentB = component({
+      render: function(n, state, props){
+        return n('div', { name: 'ComponentB' }, [
+          ComponentA(null, [
+            ComponentC({ text: props.text }, [
+              n('span', null, 'Hello Pluto!')
+            ])
+          ])
+        ]);
+      }
+    });
+    var mount = ComponentB.render(el, { text: 'Hello World!' });
+    assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>');
+  });
+
 });

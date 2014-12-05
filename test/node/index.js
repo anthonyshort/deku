@@ -73,4 +73,15 @@ describe('node', function(){
     assert(node.attributes['data-foo'] === true);
   });
 
+  it('should throw a helpful error if you try to use an array as a node', function (done) {
+    try {
+      var node = dom('div', null, [
+        [dom('span')]
+      ]);
+    } catch (e) {
+      assert(e.message === 'Child node cant be an array. This can happen if you try to use props.children like a node.');
+      done();
+    }
+  });
+
 });
