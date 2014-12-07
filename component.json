@@ -3,11 +3,13 @@
   "repo": "segmentio/deku",
   "version": "0.0.1",
   "dependencies": {
-    "apily/sha1": "master",
-    "segmentio/bind-all": "~0.0.2",
+    "component/bind": "^1.0.0",
     "component/emitter": "^1.1.3",
+    "component/event": "^0.1.4",
+    "component/raf": "^1.2.0",
     "jkroso/equals": "^1.0.0",
-    "sindresorhus/object-assign": "v1.0.0"
+    "segmentio/bind-all": "~0.0.2",
+    "sindresorhus/object-assign": "^v1.0.0"
   },
   "development": {
     "component/assert": "^0.4.0",
