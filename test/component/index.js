@@ -113,6 +113,32 @@ describe('component', function(){
     })
   });
 
+  it('should update sub-components when state changes', function(done){
+    var ComponentA = component({
+      render: function(n, state, props){
+        return n('div', null, [
+          ComponentB()
+        ]);
+      }
+    });
+    var ComponentB = component({
+      initialState: function(){
+        return { text: "foo" };
+      },
+      afterMount: function(){
+        this.setState({ text: 'bar' });
+      },
+      render: function(n, state, props){
+        return n('span', null, state.text);
+      }
+    });
+    var mount = ComponentA.render(el);
+    requestAnimationFrame(function(){
+      assert.equal(el.innerHTML, '<div><span>bar</span></div>');
+      done();
+    });
+  });
+
   it('should have initial state', function(){
     var ComponentA = component({
       initialState: function(){
