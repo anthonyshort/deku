@@ -66,4 +66,16 @@ describe('tree', function(){
     var tree = new Tree(node);
     assert(tree.getNode('0.1.0') === child);
   });
+
+  it('should store the components within the tree', function () {
+    function Component(){}
+    var node = dom('div', null, [
+      dom('span'),
+      dom(Component)
+    ]);
+    var tree = new Tree(node);
+    assert('0.1' in tree.components);
+    assert(tree.components['0.1'].type === 'component');
+    assert(Object.keys(tree.components).length === 1);
+  });
 });
