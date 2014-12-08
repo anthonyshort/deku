@@ -263,7 +263,7 @@ describe('structure', function(){
     mount.setProps({ type: 'B' });
     mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>B</div>');
-    assert(mount.entity.children['0'].instance instanceof ComponentB);
+    assert(mount.entity.children['0'].component instanceof ComponentB);
   })
 
   /**
