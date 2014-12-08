@@ -86,7 +86,7 @@ describe('structure', function(){
     assert.equal(el.innerHTML, '<span>test</span>');
     mount.setProps({ type: 'div' });
     mount.forceUpdate();
-    assert.equal(mount.rendered.el.outerHTML, '<div>test</div>');
+    assert.equal(el.innerHTML, '<div>test</div>');
   });
 
   /**
@@ -108,14 +108,14 @@ describe('structure', function(){
       }
     });
     var mount = ComponentB.render(el, { type: 'span' });
-    assert(mount.rendered.el === mount.rendered.children['0'].el);
+    assert(mount.entity.el === mount.entity.children['0'].el);
     mount.setProps({ type: 'div' });
     mount.forceUpdate();
-    assert(mount.rendered.el === mount.rendered.children['0'].el);
+    assert(mount.entity.el === mount.entity.children['0'].el);
     mount.setProps({ type: 'b' });
     mount.forceUpdate();
-    assert.equal(mount.rendered.el.outerHTML, '<b>test</b>');
-    assert.equal(mount.rendered.children['0'].el.outerHTML, '<b>test</b>');
+    assert.equal(mount.entity.el.outerHTML, '<b>test</b>');
+    assert.equal(mount.entity.children['0'].el.outerHTML, '<b>test</b>');
   });
 
   /**
@@ -263,7 +263,7 @@ describe('structure', function(){
     mount.setProps({ type: 'B' });
     mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>B</div>');
-    assert(mount.rendered.children['0'].instance instanceof ComponentB);
+    assert(mount.entity.children['0'].instance instanceof ComponentB);
   })
 
   /**
@@ -284,10 +284,10 @@ describe('structure', function(){
       }
     });
     var mount = Wrapper.render(el, { type: 'component' });
-    assert(mount.rendered.children['0']);
+    assert(mount.entity.children['0']);
     mount.setProps({ type: 'element' });
     mount.forceUpdate();
     assert.equal(el.innerHTML, '<div>Element</div>');
-    assert(mount.rendered.children['0'] == null);
+    assert(mount.entity.children['0'] == null);
   });
 });
