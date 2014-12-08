@@ -4,6 +4,7 @@ var assert = require('component/assert@0.4.0');
 var component = require('/lib/component');
 
 describe('events', function(){
+
   it('should add click event', function(){
     var count = 0;
     var Page = component({
