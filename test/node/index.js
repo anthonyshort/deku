@@ -84,4 +84,10 @@ describe('node', function(){
     }
   });
 
+  it('should store events', function () {
+    var node = dom('div', { 'on-click': click });
+    function click() {};
+    assert(node.events['click'] === click);
+  });
+
 });

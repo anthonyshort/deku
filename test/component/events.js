@@ -9,7 +9,7 @@ describe('events', function(){
     var count = 0;
     var Page = component({
       render: function(dom, state, props){
-        return dom('span', { onclick: onclick }, ['Hello World']);
+        return dom('span', { 'on-click': onclick }, ['Hello World']);
       }
     });
 
@@ -30,7 +30,7 @@ describe('events', function(){
     var Page = component({
       render: function(dom, state, props){
         if (props.click) {
-          return dom('span', { onclick: onclick }, ['Hello World']);
+          return dom('span', { 'on-click': onclick }, ['Hello World']);
         } else {
           return dom('span', {}, ['Hello World']);
         }
@@ -54,7 +54,7 @@ describe('events', function(){
     var count = 0;
     var Page = component({
       render: function(dom, state, props){
-        return dom('span', { onclick: props.click }, ['Hello World']);
+        return dom('span', { 'on-click': props.click }, ['Hello World']);
       },
       afterUpdate: function(){
         trigger(el.querySelector('span'), 'click');
