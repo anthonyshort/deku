@@ -1,0 +1,32 @@
+<html>
+<head>
+  <title>Click Example</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main></main>
+  <script src="../../deku.js"></script>
+  <script>
+
+    var App = deku({
+      render: function(dom, state, props){
+        function focus() {
+          console.log('focused');
+        }
+        function blur() {
+          console.log('blur');
+        }
+        return dom('div', { class: 'App' }, [
+          dom('input', {
+            type: 'text',
+            'on-focus': focus,
+            'on-blur': blur
+          })
+        ]);
+      }
+    });
+
+    var scene = App.mount(document.querySelector('main'));
+  </script>
+</body>
+</html>
