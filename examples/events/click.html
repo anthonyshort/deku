@@ -7,59 +7,19 @@
   <main></main>
   <script src="../../deku.js"></script>
   <script>
-    var scene;
-
-    var Box = deku({
-      onClick: function(state, e) {
-        console.log('clicked box');
-        this.setState({ 'clicked': !state.clicked });
-      },
-      render: function(dom, state){
-        var classes = {
-          'box': true,
-          'active': state.clicked === true
-        };
-        return dom('div', { class: classes }, [
-          dom('button', { 'on-click': this.onClick.bind(this, state) }, ['Click Me'])
-        ]);
-      }
-    });
-
-    var Box2 = deku({
-      onClick: function(state, e) {
-        console.log('clicked box2');
-        this.setState({ 'clicked': !state.clicked });
-      },
-      render: function(dom, state){
-        var classes = {
-          'box': true,
-          'active': state.clicked === true
-        };
-        return dom('div', { class: classes }, [
-          dom('button', { 'on-click': this.onClick.bind(this, state) }, ['Click Me Again'])
-        ]);
-      }
-    });
 
     var App = deku({
       render: function(dom, state, props){
-
         function swap() {
-          scene.setProps({ swapped: !props.swapped });
+          console.log('clicked');
         }
-
-        var button = dom('button', { 'on-click': swap }, 'Swap');
-
         return dom('div', { class: 'App' }, [
-          (props.swapped ? Box2() : Box()),
-          button
+          dom('button', { 'on-click': swap }, 'Click Me')
         ]);
       }
     });
 
-    var scene = App.mount(document.querySelector('main'), {
-      swapped: false
-    });
+    var scene = App.mount(document.querySelector('main'));
   </script>
 </body>
 </html>
