@@ -25,6 +25,9 @@ default: test
 build: node_modules $(js)
 	@$(DUO) -r ./ test/index.js > build.js
 
+deku.js:
+	duo -s deku index.js | bfc > deku.js
+
 test: build
 	@$(TEST) browser -c 'make build'
 
