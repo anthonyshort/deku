@@ -17,7 +17,7 @@ describe('node', function(){
     assert(dom('span').tagName === 'span');
   });
 
-  it('should add the key as an attribute', function(){
+  it.skip('should add the key as an attribute', function(){
     var a = dom('div', { key: 'foo' });
     assert(a.attributes['data-key'] === 'foo');
   });
