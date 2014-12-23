@@ -91,6 +91,16 @@ describe('node', function(){
     assert(node.events['click'] === click);
   });
 
+  it.skip('should allow skipping attributes and using an array of children', function () {
+    var node = dom('div', ['foo']);
+    assert(node.children[0].data === 'foo');
+  });
+
+  it.skip('should allow skipping attributes and using a single child', function () {
+    var node = dom('div', 'foo');
+    assert(node.children[0].data === 'foo');
+  });
+
   describe('extracting class/id', function(){
 
     it('should set the tag using classes', function () {

@@ -17,10 +17,9 @@
         self.setState({ hover: false });
       }
       var classes = {
-        'box': true,
         'active': state.hover === true
       };
-      return dom('div', { class: classes, onMouseOver: hover, onMouseOut: blur }, [
+      return dom('div.box', { class: classes, onMouseOver: hover, onMouseOut: blur }, [
         'Mouseover / Mouseout'
       ]);
     });
@@ -34,10 +33,9 @@
         self.setState({ down: false });
       }
       var classes = {
-        'box': true,
         'active': state.down === true
       };
-      return dom('div', { class: classes, onMouseDown: down, onMouseUp: up }, [
+      return dom('div.box', { class: classes, onMouseDown: down, onMouseUp: up }, [
         'Mousedown / Mouseup'
       ]);
     });
@@ -55,10 +53,9 @@
         });
       }
       var classes = {
-        'box': true,
         'active': state.moving === true
       };
-      return dom('div', { class: classes, onMouseMove: move }, [
+      return dom('div.box', { class: classes, onMouseMove: move }, [
         'Mousemove'
       ]);
     });
@@ -72,10 +69,9 @@
         self.setState({ focused: false });
       }
       var classes = {
-        'box': true,
         'active': state.focused === true
       };
-      return dom('div', { class: classes }, [
+      return dom('div.box', { class: classes }, [
         dom('input', {
           type: 'text',
           onFocus: focus,
@@ -97,10 +93,9 @@
           self.setState({ count: count });
         }
         var classes = {
-          'box': true,
           'active': state.count % 2
         };
-        return dom('div', { class: classes }, [
+        return dom('div.box', { class: classes }, [
           'Clicked ' + state.count + ' times',
           dom('button', { onClick: click }, 'Click Me')
         ]);
@@ -115,16 +110,15 @@
           self.setState({ submitted: !state.submitted });
         }
         var classes = {
-          'box': true,
           'active': state.submitted
         };
-        return dom('form', { class: classes, onSubmit: submit }, [
+        return dom('form.box', { class: classes, onSubmit: submit }, [
           dom('button', { type: 'submit' }, 'Submit')
         ]);
       }
     });
 
-    var App = deku(function(dom, state, props){
+    var Examples = deku(function(dom, state, props){
       return dom('div', null, [
         MouseOver(),
         MouseMove(),
@@ -132,6 +126,12 @@
         BlurFocus(),
         Click(),
         FormSubmit()
+      ]);
+    });
+
+    var App = deku(function(dom){
+      return dom('div.App', null, [
+        Examples()
       ]);
     });
 
