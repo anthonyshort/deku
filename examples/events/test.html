@@ -1,0 +1,145 @@
+<html>
+<head>
+  <title>Event Example</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main></main>
+  <script src="http://localhost:3000/build/index.js"></script>
+  <script>
+
+    var MouseOver = deku(function(dom, state){
+      var self = this;
+      function hover() {
+        self.setState({ hover: true });
+      }
+      function blur() {
+        self.setState({ hover: false });
+      }
+      var classes = {
+        'box': true,
+        'active': state.hover === true
+      };
+      return dom('div', { class: classes, onMouseOver: hover, onMouseOut: blur }, [
+        'Mouseover / Mouseout'
+      ]);
+    });
+
+    var MouseDown = deku(function(dom, state){
+      var self = this;
+      function down() {
+        self.setState({ down: true });
+      }
+      function up() {
+        self.setState({ down: false });
+      }
+      var classes = {
+        'box': true,
+        'active': state.down === true
+      };
+      return dom('div', { class: classes, onMouseDown: down, onMouseUp: up }, [
+        'Mousedown / Mouseup'
+      ]);
+    });
+
+    var MouseMove = deku(function(dom, state){
+      var self = this;
+      function move() {
+        if (self.timer) clearTimeout(self.timer);
+        self.timer = setTimeout(function(){
+          self.setState({ moving: false });
+          self.timer = null;
+        }, 50);
+        self.setState({
+          moving: true
+        });
+      }
+      var classes = {
+        'box': true,
+        'active': state.moving === true
+      };
+      return dom('div', { class: classes, onMouseMove: move }, [
+        'Mousemove'
+      ]);
+    });
+
+    var BlurFocus = deku(function(dom, state, props){
+      var self = this;
+      function focus(event) {
+        self.setState({ focused: true });
+      }
+      function blur() {
+        self.setState({ focused: false });
+      }
+      var classes = {
+        'box': true,
+        'active': state.focused === true
+      };
+      return dom('div', { class: classes }, [
+        dom('input', {
+          type: 'text',
+          onFocus: focus,
+          onBlur: blur
+        })
+      ]);
+    });
+
+    var Click = deku({
+      initialState: function(){
+        return {
+          count: 0
+        };
+      },
+      render: function(dom, state, props){
+        var self = this;
+        function click() {
+          var count = state.count + 1;
+          self.setState({ count: count });
+        }
+        var classes = {
+          'box': true,
+          'active': state.count % 2
+        };
+        return dom('div', { class: classes }, [
+          'Clicked ' + state.count + ' times',
+          dom('button', { onClick: click }, 'Click Me')
+        ]);
+      }
+    });
+
+    var FormSubmit = deku({
+      render: function(dom, state, props){
+        var self = this;
+        function submit(e) {
+          e.preventDefault();
+          self.setState({ submitted: !state.submitted });
+        }
+        var classes = {
+          'box': true,
+          'active': state.submitted
+        };
+        return dom('form', { class: classes, onSubmit: submit }, [
+          dom('button', { type: 'submit' }, 'Submit')
+        ]);
+      }
+    });
+
+    var Examples = deku(function(dom, state, props){
+      return dom('div', null, [
+        MouseOver(),
+        MouseMove(),
+        MouseDown(),
+        BlurFocus(),
+        Click(),
+        FormSubmit()
+      ]);
+    });
+
+    var App = deku(function(dom){
+      return dom('div', null, [Examples]);
+    });
+
+    var scene = App.mount(document.querySelector('main'));
+  </script>
+</body>
+</html>

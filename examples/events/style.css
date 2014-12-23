@@ -3,6 +3,11 @@
   height: 200px;
   width: 200px;
   border: 5px black solid;
+  float: left;
+  margin: 30px;
+  font-family: Helvetica;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .box.active {
