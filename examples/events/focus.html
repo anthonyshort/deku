@@ -11,14 +11,24 @@
     var App = deku({
       render: function(dom, state, props){
         function focus(event) {
-          console.log('focused', event.target);
+          console.log('focused');
         }
         function blur() {
           console.log('blur');
         }
+        function click() {
+          console.log('click');
+        }
         return dom('div', { class: 'App' }, [
           dom('input', {
             type: 'text',
+            onFocus: focus,
+            onBlur: blur,
+            onClick: click
+          }),
+          dom('input', {
+            type: 'text',
+            onClick: click,
             onFocus: focus,
             onBlur: blur
           })

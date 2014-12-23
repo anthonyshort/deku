@@ -5,7 +5,7 @@
 </head>
 <body>
   <main></main>
-  <script src="../../deku.js"></script>
+  <script src="http://localhost:3000/build/index.js"></script>
   <script>
     var scene;
 
@@ -20,7 +20,7 @@
           'active': state.clicked === true
         };
         return dom('div', { class: classes }, [
-          dom('button', { 'on-click': this.onClick.bind(this, state) }, ['Click Me'])
+          dom('button', { onClick: this.onClick.bind(this, state) }, ['Click Me'])
         ]);
       }
     });
@@ -36,7 +36,7 @@
           'active': state.clicked === true
         };
         return dom('div', { class: classes }, [
-          dom('button', { 'on-click': this.onClick.bind(this, state) }, ['Click Me Again'])
+          dom('button', { onClick: this.onClick.bind(this, state) }, ['Click Me Again'])
         ]);
       }
     });
@@ -49,12 +49,14 @@
           scene.setProps({ swapped: !props.swapped });
         }
 
-        var button = dom('button', { 'on-click': swap }, 'Swap');
+        var button = dom('button', { onClick: swap }, 'Swap');
 
-        return dom('div', { class: 'App' }, [
+        var template = dom('div', { class: 'App' }, [
           (props.swapped ? Box2() : Box()),
           button
         ]);
+
+        return template;
       }
     });
 
