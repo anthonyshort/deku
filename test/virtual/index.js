@@ -91,4 +91,50 @@ describe('node', function(){
     assert(node.events['click'] === click);
   });
 
+  describe('extracting class/id', function(){
+
+    it('should set the tag using classes', function () {
+      var node = dom('div.foo');
+      assert(node.attributes['class'] === 'foo');
+    });
+
+    it('should add classes together', function () {
+      var node = dom('div.foo', { class: 'bar' });
+      assert(node.attributes['class'] === 'bar foo', node.attributes.class);
+    });
+
+    it('should set the id', function () {
+      var node = dom('div#foo', { class: 'bar' });
+      assert(node.attributes.id === 'foo');
+      assert(node.attributes.class === 'bar');
+    });
+
+    it('should set the id and the class', function () {
+      var node = dom('div#foo.baz', { class: 'bar' });
+      assert(node.attributes.id === 'foo');
+      assert(node.attributes.class === 'bar baz');
+    });
+
+    it('should set the id and the class without the tag', function () {
+      var node = dom('#foo.baz', { class: 'bar' });
+      assert(node.tagName === 'div');
+      assert(node.attributes.id === 'foo');
+      assert(node.attributes.class === 'bar baz');
+    });
+
+    it('should set the id and the class with the tag', function () {
+      var node = dom('span#foo.baz', { class: 'bar' });
+      assert(node.tagName === 'span');
+      assert(node.attributes.id === 'foo');
+      assert(node.attributes.class === 'bar baz');
+    });
+
+    it('should set multiple classes', function () {
+      var node = dom('span.foo.baz', { class: 'bar' });
+      assert(node.tagName === 'span');
+      assert(node.attributes.class === 'bar foo baz');
+    });
+
+  });
+
 });
