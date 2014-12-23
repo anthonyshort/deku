@@ -51,19 +51,23 @@ describe('events', function(){
   });
 
   it('should update click event', function(done){
+    var mount;
     var count = 0;
+
     var Page = component({
       render: function(dom, state, props){
         return dom('span', { onClick: props.click }, ['Hello World']);
       },
       afterUpdate: function(){
-        trigger(el.querySelector('span'), 'click');
-        assert.equal(count, 11);
-        done();
+        requestAnimationFrame(function(){
+          trigger(el.querySelector('span'), 'click');
+          assert.equal(count, 0);
+          done();
+        });
       }
     });
 
-    var mount = Page.render(el, { click: onclicka });
+    mount = Page.render(el, { click: onclicka });
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
     mount.setProps({ click: onclickb });
@@ -73,7 +77,7 @@ describe('events', function(){
     }
 
     function onclickb() {
-      count += 10;
+      count -= 1;
     }
   });
 });
