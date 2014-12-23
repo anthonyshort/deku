@@ -102,6 +102,27 @@
       }
     });
 
+    var DblClick = deku({
+      initialState: function(){
+        return {
+          count: 0
+        };
+      },
+      render: function(dom, state, props){
+        var self = this;
+        function click() {
+          var count = state.count + 1;
+          self.setState({ count: count });
+        }
+        var classes = {
+          'active': state.count % 2
+        };
+        return dom('div.box', { class: classes, onDoubleClick: click }, [
+          'Double clicked ' + state.count + ' times'
+        ]);
+      }
+    });
+
     var FormSubmit = deku({
       render: function(dom, state, props){
         var self = this;
@@ -118,6 +139,184 @@
       }
     });
 
+    var KeyDown = deku(function(dom, state, props){
+      var self = this;
+      function down(event) {
+        if (self.timer) clearTimeout(self.timer);
+        self.setState({ active: true });
+        self.timer = setTimeout(function(){
+          self.setState({ active: false });
+        }, 100);
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes }, [
+        'onKeyDown',
+        dom('input', {
+          type: 'text',
+          onKeyDown: down
+        })
+      ]);
+    });
+
+    var KeyUp = deku(function(dom, state, props){
+      var self = this;
+      function down(event) {
+        if (self.timer) clearTimeout(self.timer);
+        self.setState({ active: true });
+        self.timer = setTimeout(function(){
+          self.setState({ active: false });
+        }, 100);
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes }, [
+        'onKeyUp',
+        dom('input', {
+          type: 'text',
+          onKeyUp: down
+        })
+      ]);
+    });
+
+    var Input = deku(function(dom, state, props){
+      var self = this;
+      function down(event) {
+        if (self.timer) clearTimeout(self.timer);
+        self.setState({ active: true });
+        self.timer = setTimeout(function(){
+          self.setState({ active: false });
+        }, 100);
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes }, [
+        'onInput',
+        dom('input', {
+          type: 'text',
+          onInput: down
+        })
+      ]);
+    });
+
+    var ContextMenu = deku(function(dom, state, props){
+      var self = this;
+      function down(event) {
+        event.preventDefault();
+        self.setState({ active: !state.active });
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes, onContextMenu: down }, [
+        'Context Menu (Right click on me)'
+      ]);
+    });
+
+    var Copy = deku(function(dom, state, props){
+      var self = this;
+      function run(event) {
+        self.setState({ active: !state.active });
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes, onCopy: run }, [
+        'Copy Me'
+      ]);
+    });
+
+    var CutPaste = deku(function(dom, state, props){
+      var self = this;
+      function run(event) {
+        self.setState({ active: !state.active });
+      }
+      var classes = {
+        'active': state.active
+      };
+      return dom('div.box', { class: classes }, [
+        dom('input', { onPaste: run, onCut: run, onCopy: run, value: 'Cut/Copy/Paste Here' })
+      ]);
+    });
+
+    var Draggable = deku(function(dom, state, props){
+      var self = this;
+      function start(event) {
+        self.setState({ active: true });
+      }
+      function end(event) {
+        self.setState({ active: false });
+      }
+      function enter(event) {
+        console.log('draggable', 'enter', event.target);
+      }
+      function leave(event) {
+        console.log('draggable', 'leave', event.target);
+      }
+      var attrs = {
+        class: {
+          'active': state.active
+        },
+        draggable: true,
+        onDragStart: start,
+        onDragEnd: end,
+        onDragEnter: enter,
+        onDragLeave: leave
+      };
+      return dom('div.box', attrs, [
+        'Drag Me'
+      ]);
+    });
+
+    var Droppable = deku(function(dom, state, props){
+      var self = this;
+      function over(event) {
+        event.preventDefault();
+        console.log('droppable', 'over', event.target);
+      }
+      function drop(event) {
+        console.log('droppable', 'drop', event.target);
+      }
+      var attrs = {
+        classes: {
+          'active': state.active
+        },
+        onDragOver: over,
+        onDrop: drop
+      };
+      return dom('div.box', null, [
+        state.dropped ? 'Dropped' : 'Drop Here'
+      ]);
+    });
+
+    var Scroll = deku(function(dom, state, props){
+      var self = this;
+      function scroll(event) {
+        self.setState({ position: event.target.scrollTop });
+      }
+      var attrs = {
+        onScroll: scroll,
+        class: {
+          'active': state.position > 100
+        },
+        style: {
+          overflow: 'scroll'
+        }
+      };
+      var innerAttrs = {
+        style: {
+          height: '500px',
+          width: '100%'
+        }
+      };
+      return dom('div.box', attrs, [
+        dom('div', innerAttrs, 'Scroll Me')
+      ]);
+    });
+
     var Examples = deku(function(dom, state, props){
       return dom('div', null, [
         MouseOver(),
@@ -125,7 +324,17 @@
         MouseDown(),
         BlurFocus(),
         Click(),
-        FormSubmit()
+        FormSubmit(),
+        KeyDown(),
+        Input(),
+        KeyUp(),
+        ContextMenu(),
+        DblClick(),
+        Copy(),
+        CutPaste(),
+        Draggable(),
+        Droppable(),
+        Scroll()
       ]);
     });
 
