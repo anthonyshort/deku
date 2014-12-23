@@ -1,6 +1,7 @@
 
 var assert = require('component/assert@0.4.0');
-var dom = require('/lib/node');
+var virtual = require('/lib/virtual');
+var dom = virtual.node;
 
 describe('node', function(){
   it('should create divs by default', function(){

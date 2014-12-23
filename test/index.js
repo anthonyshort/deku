@@ -13,7 +13,8 @@ afterEach(function(){
 
 // tests.
 
-require('./node');
+require('./virtual/index');
+require('./virtual/tree');
 
 // component.
 
@@ -22,10 +23,6 @@ require('./component/batched');
 require('./component/lifecycle');
 require('./component/events');
 require('./component/stringify');
-
-// mount.
-
-require('./mount/tree');
 
 // diffing.
 
