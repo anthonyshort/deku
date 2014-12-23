@@ -5,7 +5,7 @@
 </head>
 <body>
   <main></main>
-  <script src="../../deku.js"></script>
+  <script src="http://localhost:3000/build/index.js"></script>
   <script>
 
     var App = deku({
@@ -14,7 +14,7 @@
           console.log('clicked');
         }
         return dom('div', { class: 'App' }, [
-          dom('button', { 'on-click': swap }, 'Click Me')
+          dom('button', { onClick: swap }, 'Click Me')
         ]);
       }
     });

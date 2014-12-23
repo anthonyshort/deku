@@ -5,13 +5,13 @@
 </head>
 <body>
   <main></main>
-  <script src="../../deku.js"></script>
+  <script src="http://localhost:3000/build/index.js"></script>
   <script>
 
     var App = deku({
       render: function(dom, state, props){
-        function focus() {
-          console.log('focused');
+        function focus(event) {
+          console.log('focused', event.target);
         }
         function blur() {
           console.log('blur');
@@ -19,8 +19,8 @@
         return dom('div', { class: 'App' }, [
           dom('input', {
             type: 'text',
-            'on-focus': focus,
-            'on-blur': blur
+            onFocus: focus,
+            onBlur: blur
           })
         ]);
       }

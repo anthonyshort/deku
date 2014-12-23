@@ -28,6 +28,9 @@ build: node_modules $(js)
 deku.js:
 	duo -s deku index.js | bfc > deku.js
 
+serve:
+	duo serve index.js -g deku
+
 test: build
 	@$(TEST) browser -c 'make build'
 
