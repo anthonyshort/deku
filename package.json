@@ -1,6 +1,7 @@
 {
   "name": "deku",
   "version": "0.0.3",
+  "description": "Create view components using a virtual DOM",
   "main": "deku.js",
   "scripts": {
     "prepublish": "npm run build",
@@ -9,6 +10,8 @@
   "devDependencies": {
     "duo": "^0.8.10",
     "duo-test": "^0.3.10",
-    "bfc": "~0.2.0"
+    "duo-serve": "~0.6.1",
+    "bfc": "~0.2.0",
+    "jshint": "~2.5.11"
   }
 }

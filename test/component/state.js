@@ -1,6 +1,19 @@
 
 describe('Updating State', function () {
 
+  var StateChangeOnMount = component({
+    initialState: function(){
+      return { text: 'foo' };
+    },
+    afterMount: function(){
+      this.setState({ text: 'bar' });
+    },
+    render: function(n, state, props){
+      var Test = component(Span);
+      return Test({ text: state.text });
+    }
+  });
+
   it('should update components when state changes', function(){
     this.scene = StateChangeOnMount.render(el);
     assert.equal(el.innerHTML, '<span>foo</span>');

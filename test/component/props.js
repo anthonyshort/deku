@@ -1,21 +1,38 @@
 
 describe('Updating Props', function () {
 
+  var Test = component(TwoWords);
+
   it('should replace props on the scene', function(){
-    this.scene = TwoWords.render(el, { one: 'Hello', two: 'World' });
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
     this.scene.setProps({ one: 'Hello' });
     this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello undefined</span>');
   });
 
   it('should update on the next frame', function(){
-    this.scene = TwoWords.render(el, { one: 'Hello', two: 'World' });
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
     this.scene.setProps({ one: 'Hello', two: 'Pluto' });
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
+  it('should not update props if the scene is removed', function (done) {
+    var Test = component(Span);
+    var mount = Test.render(el, { text: 'foo' });
+    try {
+      mount.setProps({ text: 'bar' });
+      mount.remove();
+      requestAnimationFrame(function(){
+        done();
+      });
+    }
+    catch (e) {
+      done(false);
+    }
+  });
+
   it('should setProps and call the callback', function(done){
-    this.scene = TwoWords.render(el, { one: 'Hello', two: 'World' });
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
     this.scene.setProps({ one: 'Hello', two: 'Pluto' }, function(){
       assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
       done();
@@ -23,7 +40,7 @@ describe('Updating Props', function () {
   });
 
   it('should return a promise when changing the props', function(done){
-    this.scene = TwoWords.render(el, { one: 'Hello', two: 'World' });
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
     this.scene.setProps({ one: 'Hello', two: 'Pluto' })
       .then(function(){
         assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
@@ -31,11 +48,15 @@ describe('Updating Props', function () {
       });
   });
 
-  it('should still call all callbacks even if it doesn\'t change', function(done){
-    this.scene = Span.render(el, { text: 'foo' });
+  it('should still call all callbacks even if it doesn\'t change', function(){
+    var called = false;
+    var Test = component(Span);
+    this.scene = Test.render(el, { text: 'foo' });
     this.scene.setProps({ text: 'foo' }, function(){
-      done();
+      called = true;
     });
+    this.scene.update();
+    assert(called);
   });
 
   it('should not update twice when setting props', function(){

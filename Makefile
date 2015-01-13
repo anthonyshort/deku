@@ -5,6 +5,9 @@
 
 TEST := ./node_modules/.bin/duo-test
 DUO := ./node_modules/.bin/duo
+SERVE := ./node_modules/.bin/duo-serve
+BFC := ./node_modules/.bin/bfc
+JSHINT := ./node_modules/.bin/jshint
 
 #
 # Wildcards.
@@ -25,14 +28,14 @@ default: test
 build: node_modules $(js)
 	@$(DUO) -r ./ test/index.js > build.js
 
-lint:
-	jshint test/**/*.js lib/**/*.js
+lint: $(js)
+	@$(JSHINT) test/**/*.js lib/**/*.js
 
-deku.js:
-	duo -s deku index.js | bfc > deku.js
+dist/deku.js:
+	@$(DUO) index.js | $(BFC) > deku.js
 
 serve:
-	duo serve index.js -g component
+	@$(SERVE) index.js -g component
 
 test: build
 	@$(TEST) browser -c 'make build'
@@ -54,5 +57,6 @@ distclean:
 # Phonies.
 #
 
+.PHONY: serve
 .PHONY: clean
 .PHONY: distclean

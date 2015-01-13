@@ -7,7 +7,8 @@ describe('API', function(){
   });
 
   it('should render a component', function(){
-    this.scene = HelloWorld.render(el);
+    var Test = component(HelloWorld);
+    this.scene = Test.render(el);
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -72,14 +73,16 @@ describe('API', function(){
   });
 
   it('should create a component with properties', function(){
-    this.scene = Span.render(el, { text: 'Hello World' });
+    var Test = component(Span);
+    this.scene = Test.render(el, { text: 'Hello World' });
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
   it('should compose without needing to use dom object', function () {
+    var Inner = component(Span);
     var Test = component({
       render: function(n, state, props){
-        return Span({ text: 'foo' });
+        return Inner({ text: 'foo' });
       }
     });
     this.scene = Test.render(el);
@@ -87,38 +90,29 @@ describe('API', function(){
   });
 
   it('should remove from the DOM', function () {
-    var scene = HelloWorld.render(el);
+    var Test = component(HelloWorld);
+    var scene = Test.render(el);
     scene.remove();
     assert.equal(el.innerHTML, '');
   });
 
-  it.skip('should not call flush callbacks if removed', function () {
-    var scene = Span.render(el, { text: 'foo' });
+  it('should not call flush callbacks if removed', function (done) {
+    var Test = component(Span);
+    var scene = Test.render(el, { text: 'foo' });
     scene.setProps({ text: 'bar' }, function(){
       throw new Error('Oops');
     });
     scene.remove();
-    scene.emit('update');
-  });
-
-  it('should not try to update if it is removed', function (done) {
-    var mount = Span.render(el, { text: 'foo' });
-    try {
-      mount.setProps({ text: 'bar' });
-      mount.remove();
-      requestAnimationFrame(function(){
-        done();
-      });
-    }
-    catch (e) {
-      done(false);
-    }
+    requestAnimationFrame(function(){
+      done();
+    });
   });
 
   it('should compose components', function(){
+    var Inner = component(HelloWorld);
     var Composed = component({
       render: function(n, state, props){
-        return n(HelloWorld);
+        return n(Inner);
       }
     });
     this.scene = Composed.render(el);
@@ -126,17 +120,19 @@ describe('API', function(){
   });
 
   it('should compose components and pass in props', function(){
+    var Inner = component(TwoWords);
     var Composed = component(function(n, state, props){
-      return n(TwoWords, { one: 'Hello', two: 'World' });
+      return n(Inner, { one: 'Hello', two: 'World' });
     });
     this.scene = Composed.render(el);
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
   it('should update sub-components', function(){
+    var Inner = component(TwoWords);
     var Composed = component(function(n, state, props){
       return n('div', null, [
-        n(TwoWords, { one: 'Hello', two: props.world })
+        n(Inner, { one: 'Hello', two: props.world })
       ]);
     });
     this.scene = Composed.render(el, { world: 'Earth' });
