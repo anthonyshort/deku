@@ -4,7 +4,7 @@ var virtual = require('/lib/virtual');
 var Tree = virtual.tree;
 var dom = virtual.node;
 
-describe('tree', function(){
+describe('Virtual Tree', function(){
   it('parse a single node', function(){
     var node = dom();
     var tree = Tree(node);

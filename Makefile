@@ -25,11 +25,14 @@ default: test
 build: node_modules $(js)
 	@$(DUO) -r ./ test/index.js > build.js
 
+lint:
+	jshint test/**/*.js lib/**/*.js
+
 deku.js:
 	duo -s deku index.js | bfc > deku.js
 
 serve:
-	duo serve index.js -g deku
+	duo serve index.js -g component
 
 test: build
 	@$(TEST) browser -c 'make build'
@@ -42,7 +45,7 @@ node_modules: package.json
 	@touch node_modules # make sure node_modules is last modified
 
 clean:
-	@-rm -rf build.js
+	@-rm -rf build.js deku.js
 
 distclean:
 	@-rm -rf components node_modules

@@ -8,7 +8,7 @@
   <script src="http://localhost:3000/build/index.js"></script>
   <script>
 
-    var MouseOver = deku(function(dom, state){
+    var MouseOver = component(function(dom, state){
       var self = this;
       function hover() {
         self.setState({ hover: true });
@@ -24,7 +24,7 @@
       ]);
     });
 
-    var MouseDown = deku(function(dom, state){
+    var MouseDown = component(function(dom, state){
       var self = this;
       function down() {
         self.setState({ down: true });
@@ -40,7 +40,7 @@
       ]);
     });
 
-    var MouseMove = deku(function(dom, state){
+    var MouseMove = component(function(dom, state){
       var self = this;
       function move() {
         if (self.timer) clearTimeout(self.timer);
@@ -60,7 +60,7 @@
       ]);
     });
 
-    var BlurFocus = deku(function(dom, state, props){
+    var BlurFocus = component(function(dom, state, props){
       var self = this;
       function focus(event) {
         self.setState({ focused: true });
@@ -80,7 +80,7 @@
       ]);
     });
 
-    var Click = deku({
+    var Click = component({
       initialState: function(){
         return {
           count: 0
@@ -102,7 +102,7 @@
       }
     });
 
-    var DblClick = deku({
+    var DblClick = component({
       initialState: function(){
         return {
           count: 0
@@ -123,7 +123,7 @@
       }
     });
 
-    var FormSubmit = deku({
+    var FormSubmit = component({
       render: function(dom, state, props){
         var self = this;
         function submit(e) {
@@ -139,7 +139,7 @@
       }
     });
 
-    var KeyDown = deku(function(dom, state, props){
+    var KeyDown = component(function(dom, state, props){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -160,7 +160,7 @@
       ]);
     });
 
-    var KeyUp = deku(function(dom, state, props){
+    var KeyUp = component(function(dom, state, props){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -181,7 +181,7 @@
       ]);
     });
 
-    var Input = deku(function(dom, state, props){
+    var Input = component(function(dom, state, props){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -202,7 +202,7 @@
       ]);
     });
 
-    var ContextMenu = deku(function(dom, state, props){
+    var ContextMenu = component(function(dom, state, props){
       var self = this;
       function down(event) {
         event.preventDefault();
@@ -216,7 +216,7 @@
       ]);
     });
 
-    var Copy = deku(function(dom, state, props){
+    var Copy = component(function(dom, state, props){
       var self = this;
       function run(event) {
         self.setState({ active: !state.active });
@@ -229,7 +229,7 @@
       ]);
     });
 
-    var CutPaste = deku(function(dom, state, props){
+    var CutPaste = component(function(dom, state, props){
       var self = this;
       function run(event) {
         self.setState({ active: !state.active });
@@ -242,7 +242,7 @@
       ]);
     });
 
-    var Draggable = deku(function(dom, state, props){
+    var Draggable = component(function(dom, state, props){
       var self = this;
       function start(event) {
         self.setState({ active: true });
@@ -271,7 +271,7 @@
       ]);
     });
 
-    var Droppable = deku(function(dom, state, props){
+    var Droppable = component(function(dom, state, props){
       var self = this;
       function over(event) {
         event.preventDefault();
@@ -292,7 +292,7 @@
       ]);
     });
 
-    var Scroll = deku(function(dom, state, props){
+    var Scroll = component(function(dom, state, props){
       var self = this;
       function scroll(event) {
         self.setState({ position: event.target.scrollTop });
@@ -317,7 +317,7 @@
       ]);
     });
 
-    var Examples = deku(function(dom, state, props){
+    var Examples = component(function(dom, state, props){
       return dom('div', null, [
         MouseOver(),
         MouseMove(),
@@ -338,7 +338,7 @@
       ]);
     });
 
-    var App = deku(function(dom){
+    var App = component(function(dom){
       return dom('div.App', null, [
         Examples()
       ]);

@@ -1,15 +1,13 @@
 
-var assert = require('component/assert@0.4.0');
-var component = require('/lib/component');
+describe('Mounting Hooks', function(){
 
-describe('lifecycle events', function(){
   it('should fire the `afterMount` hook', function(done){
     var Page = component({
       afterMount: function(){
         done();
       }
     });
-    Page.render(el);
+    this.scene = Page.render(el);
   })
 
   it('should fire the `afterUnmount` hook', function(done){
@@ -18,8 +16,7 @@ describe('lifecycle events', function(){
         done();
       }
     });
-    var mount = Page.render(el);
-    mount.remove();
+    Page.render(el).remove();
   })
 
   it('should fire the `beforeMount` hook before `mount`', function(){
@@ -32,7 +29,7 @@ describe('lifecycle events', function(){
         pass = true;
       }
     });
-    Page.render(el);
+    Page.render(el).remove();
     assert(pass);
   })
 
@@ -108,4 +105,67 @@ describe('lifecycle events', function(){
     assert(i === 4, i);
     assert(el.innerHTML === "");
   });
+
+  it('should fire mount events on sub-components created later', function(done){
+    var calls = 0;
+    function inc() { calls++ }
+
+    var ComponentA = component({
+      afterMount: inc,
+      beforeMount: inc
+    });
+
+    var ComponentB = component({
+      render: function(n, state, props){
+        if (!props.showComponent) {
+          return n();
+        } else {
+          return n(ComponentA);
+        }
+      }
+    });
+
+    var scene = ComponentB.render(el, {
+      showComponent: false
+    });
+    scene.setProps({
+      showComponent: true
+    });
+    scene.on('update', function(){
+      assert.equal(calls, 2);
+      done();
+    });
+  });
+
+  it('should fire unmount events on sub-components created later', function(done){
+    var calls = 0;
+    function inc() { calls++ }
+
+    var ComponentA = component({
+      afterUnmount: inc,
+      beforeUnmount: inc
+    });
+
+    var ComponentB = component({
+      render: function(n, state, props){
+        if (!props.showComponent) {
+          return n();
+        } else {
+          return n(ComponentA);
+        }
+      }
+    });
+
+    var scene = ComponentB.render(el, {
+      showComponent: true
+    });
+    scene.setProps({
+      showComponent: false
+    });
+    scene.on('update', function(){
+      assert.equal(calls, 2);
+      done();
+    });
+  });
+
 });

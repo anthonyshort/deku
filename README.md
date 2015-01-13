@@ -6,7 +6,9 @@
 
 > This project is still a [work-in-progress](https://github.com/segmentio/deku/issues/3)
 
-Create composable, reactive views that use implement a virtual DOM system similar to React. The benefits of using Deku over React:
+Create composable, reactive views that use implement a virtual DOM system similar to React. 
+
+The benefits of using Deku over React:
 
 * Smaller at roughly 5kb
 * Readable source
@@ -14,7 +16,7 @@ Create composable, reactive views that use implement a virtual DOM system simila
 * Easily testable components without needing Jest
 * Isolated components that don't need a global to be mounted
 * It doesn't create virtual events
-* It doesn't support old IE
+* It only supports evergreen browsers
 * Easily add plugins
 * Events instead of mixins
 * Render methods can be imported instead of inline reducing the need for JSX
@@ -26,8 +28,16 @@ It has similar capabilities to React:
 * Optimized tree diffs
 * Server-side rendering
 
+## Install
+
+```
+npm install deku
+```
+
+## Example 
+
 ```js
-var component = require('segmentio/deku');
+var component = require('deku');
 
 // Simple button component.
 var ButtonComponent = component({
@@ -48,20 +58,13 @@ var App = component({
   }
 });
 
-// Plugins are super easy to add and don't require
-// a separate build to get them.
-App.use(styleHelper());
-
 // Returns a scene.
 var scene = App.mount(document.body, {
   buttonText: 'Click Me!'
 });
 
-// We can set the props which triggers a render next frame.
+// We set the props from the top and render the scene top-down
 scene.setProps({
   buttonText: 'Do it...'
 });
-
-// And then unmount it when we're done.
-scene.remove();
 ```

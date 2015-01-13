@@ -3,7 +3,7 @@ var assert = require('component/assert@0.4.0');
 var virtual = require('/lib/virtual');
 var dom = virtual.node;
 
-describe('node', function(){
+describe('Virtual Node', function(){
   it('should create divs by default', function(){
     assert(dom().tagName === 'div');
   });
@@ -16,11 +16,6 @@ describe('node', function(){
 
   it('should set the tagName', function(){
     assert(dom('span').tagName === 'span');
-  });
-
-  it.skip('should add the key as an attribute', function(){
-    var a = dom('div', { key: 'foo' });
-    assert(a.attributes['data-key'] === 'foo');
   });
 
   it('should set attributes', function(){
@@ -91,12 +86,12 @@ describe('node', function(){
     assert(node.events['click'] === click);
   });
 
-  it.skip('should allow skipping attributes and using an array of children', function () {
+  it('should allow skipping attributes and using an array of children', function () {
     var node = dom('div', ['foo']);
     assert(node.children[0].data === 'foo');
   });
 
-  it.skip('should allow skipping attributes and using a single child', function () {
+  it('should allow skipping attributes and using a single child', function () {
     var node = dom('div', 'foo');
     assert(node.children[0].data === 'foo');
   });
