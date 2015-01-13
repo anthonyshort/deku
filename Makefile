@@ -33,7 +33,7 @@ lint: $(lib)
 	@$(JSHINT) lib
 
 deku.js: $(js)
-	@$(DUO) -r ./ -s deku index.js
+	@$(DUO) -r ./ -s deku index.js > tmp.js && minify tmp.js > deku.js && rm tmp.js
 
 serve:
 	@$(SERVE) index.js -g component
