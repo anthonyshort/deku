@@ -13,6 +13,7 @@ JSHINT := ./node_modules/.bin/jshint
 # Wildcards.
 #
 
+lib = $(shell find index.js lib/*/*.js)
 js = $(shell find index.js lib/*/*.js test/*.js)
 
 #
@@ -28,11 +29,11 @@ default: test
 build: node_modules $(js)
 	@$(DUO) -r ./ test/index.js > build.js
 
-lint: $(js)
-	@$(JSHINT) test/**/*.js lib/**/*.js
+lint: $(lib)
+	@$(JSHINT) lib
 
-dist/deku.js:
-	@$(DUO) index.js | $(BFC) > deku.js
+deku.js: $(js)
+	@$(DUO) -r ./ -s deku index.js
 
 serve:
 	@$(SERVE) index.js -g component
