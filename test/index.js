@@ -23,14 +23,14 @@ describe('Virtual DOM', function () {
 describe('Component', function () {
   require('./component/helpers');
   require('./component');
-  require('./component/props');
-  require('./component/state');
   require('./component/mount-hook');
   require('./component/render-hook');
   require('./component/update-hook');
-  require('./component/events');
-  require('./component/stringify');
+  require('./component/props');
+  require('./component/state');
   require('./component/update-elements');
   require('./component/update-text');
   require('./component/update-attributes');
+  require('./component/events');
+  require('./component/string');
 });
