@@ -62,16 +62,16 @@ describe('Mounting Hooks', function(){
     var ComponentA = component({
       afterMount: inc,
       beforeMount: inc,
-      render: function(n, state, props){
-        return n('span', { name: props.name }, [props.text]);
+      render: function(props, state){
+        return dom('span', { name: props.name }, [props.text]);
       }
     });
 
     var ComponentB = component({
       afterMount: inc,
       beforeMount: inc,
-      render: function(n, state, props){
-        return n(ComponentA, { text: 'foo', name: props.name });
+      render: function(props, state){
+        return dom(ComponentA, { text: 'foo', name: props.name });
       }
     });
 
@@ -87,16 +87,16 @@ describe('Mounting Hooks', function(){
     var ComponentA = component({
       afterUnmount: inc,
       beforeUnmount: inc,
-      render: function(n, state, props){
-        return n('span', { name: props.name }, [props.text]);
+      render: function(props, state){
+        return dom('span', { name: props.name }, [props.text]);
       }
     });
 
     var ComponentB = component({
       afterUnmount: inc,
       beforeUnmount: inc,
-      render: function(n, state, props){
-        return n(ComponentA, { text: 'foo', name: props.name });
+      render: function(props, state){
+        return dom(ComponentA, { text: 'foo', name: props.name });
       }
     });
 
@@ -116,11 +116,11 @@ describe('Mounting Hooks', function(){
     });
 
     var ComponentB = component({
-      render: function(n, state, props){
+      render: function(props, state){
         if (!props.showComponent) {
-          return n();
+          return dom();
         } else {
-          return n(ComponentA);
+          return dom(ComponentA);
         }
       }
     });
@@ -147,11 +147,11 @@ describe('Mounting Hooks', function(){
     });
 
     var ComponentB = component({
-      render: function(n, state, props){
+      render: function(props, state){
         if (!props.showComponent) {
-          return n();
+          return dom();
         } else {
-          return n(ComponentA);
+          return dom(ComponentA);
         }
       }
     });

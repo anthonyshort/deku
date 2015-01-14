@@ -1,1 +1,2 @@
-module.exports = require('./lib/component');
+exports.component = require('./lib/component');
+exports.dom = require('./lib/virtual').node;

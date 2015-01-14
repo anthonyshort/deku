@@ -6,7 +6,7 @@ describe('Events', function(){
   it('should add click event', function(){
     var count = 0;
     var Page = component({
-      render: function(dom, state, props){
+      render: function(props, state){
         return dom('span', { onClick: onclick }, ['Hello World']);
       }
     });
@@ -16,7 +16,7 @@ describe('Events', function(){
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
 
-    function onclick(e, state, props) {
+    function onclick(e, props, state) {
       assert(this instanceof Page);
       assert(props.x, 10);
       ++count;
@@ -26,7 +26,7 @@ describe('Events', function(){
   it('should remove click event', function(done){
     var count = 0;
     var Page = component({
-      render: function(dom, state, props){
+      render: function(props, state){
         if (props.click) {
           return dom('span', { onClick: onclick }, ['Hello World']);
         } else {
@@ -53,7 +53,7 @@ describe('Events', function(){
     var count = 0;
 
     var Page = component({
-      render: function(dom, state, props){
+      render: function(props, state){
         return dom('span', { onClick: props.click }, ['Hello World']);
       },
       afterUpdate: function(){

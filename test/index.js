@@ -2,7 +2,8 @@
 // Make life easier.
 
 window.assert = require('component/assert@0.4.0');
-window.component = require('/');
+window.component = require('/lib/component');
+window.dom = require('/lib/virtual').node;
 
 // Create a container.
 

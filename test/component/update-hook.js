@@ -5,7 +5,7 @@ describe('Update Hooks', function () {
     initialState: function(){
       return { count: 1 };
     },
-    render: function(dom, state, props){
+    render: function(props, state){
       return dom('span', null, props.count);
     },
     afterMount: function(){
@@ -16,7 +16,7 @@ describe('Update Hooks', function () {
   it('should fire beforeUpdate', function () {
     var fired = false;
     var Test = component({
-      beforeUpdate: function(state, props, nextState, nextProps){
+      beforeUpdate: function(props, state, nextProps, nextState){
         assert.equal(nextProps.count, 2);
         assert.equal(props.count, 1);
         assert.equal(nextState.count, 2);
@@ -35,7 +35,7 @@ describe('Update Hooks', function () {
   it('should fire afterUpdate', function () {
     var fired = false;
     var Test = component({
-      afterUpdate: function(state, props, prevState, prevProps){
+      afterUpdate: function(props, state, prevProps, prevState){
         assert.equal(props.count, 2);
         assert.equal(prevProps.count, 1);
         assert.equal(state.count, 2);
@@ -70,12 +70,12 @@ describe('Update Hooks', function () {
   it('should only call `beforeUpdate` once', function(done){
     var i = 0;
     var Component = component({
-      beforeUpdate: function(state, props, prevState, nextProps){
+      beforeUpdate: function(props, state, nextProps, nextState){
         i++;
         assert(props.text === 'one');
         assert(nextProps.text === 'three');
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         return dom('div', null, [props.text]);
       }
     });

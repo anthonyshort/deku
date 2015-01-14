@@ -2,7 +2,7 @@
 describe('Patching Attributes', function(){
   var scene;
 
-  var AttrComponent = component(function(dom, state, props){
+  var AttrComponent = component(function(props, state){
     var attrs = {};
     if (props.name) attrs.name = props.name;
     return dom('span', attrs);
@@ -50,7 +50,7 @@ describe('Patching Attributes', function(){
           pass = false;
         }
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         return dom('div', { name: props.name })
       }
     });

@@ -7,8 +7,10 @@
   <main></main>
   <script src="http://localhost:3000/build/index.js"></script>
   <script>
+    var component = deku.component;
+    var dom = deku.dom;
 
-    var MouseOver = component(function(dom, state){
+    var MouseOver = component(function(props, state){
       var self = this;
       function hover() {
         self.setState({ hover: true });
@@ -24,7 +26,7 @@
       ]);
     });
 
-    var MouseDown = component(function(dom, state){
+    var MouseDown = component(function(props, state){
       var self = this;
       function down() {
         self.setState({ down: true });
@@ -40,7 +42,7 @@
       ]);
     });
 
-    var MouseMove = component(function(dom, state){
+    var MouseMove = component(function(props, state){
       var self = this;
       function move() {
         if (self.timer) clearTimeout(self.timer);
@@ -60,7 +62,7 @@
       ]);
     });
 
-    var BlurFocus = component(function(dom, state, props){
+    var BlurFocus = component(function(props, state){
       var self = this;
       function focus(event) {
         self.setState({ focused: true });
@@ -86,7 +88,7 @@
           count: 0
         };
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         var self = this;
         function click() {
           var count = state.count + 1;
@@ -108,7 +110,7 @@
           count: 0
         };
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         var self = this;
         function click() {
           var count = state.count + 1;
@@ -124,7 +126,7 @@
     });
 
     var FormSubmit = component({
-      render: function(dom, state, props){
+      render: function(props, state){
         var self = this;
         function submit(e) {
           e.preventDefault();
@@ -139,7 +141,7 @@
       }
     });
 
-    var KeyDown = component(function(dom, state, props){
+    var KeyDown = component(function(props, state){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -160,7 +162,7 @@
       ]);
     });
 
-    var KeyUp = component(function(dom, state, props){
+    var KeyUp = component(function(props, state){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -181,7 +183,7 @@
       ]);
     });
 
-    var Input = component(function(dom, state, props){
+    var Input = component(function(props, state){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
@@ -202,7 +204,7 @@
       ]);
     });
 
-    var ContextMenu = component(function(dom, state, props){
+    var ContextMenu = component(function(props, state){
       var self = this;
       function down(event) {
         event.preventDefault();
@@ -216,7 +218,7 @@
       ]);
     });
 
-    var Copy = component(function(dom, state, props){
+    var Copy = component(function(props, state){
       var self = this;
       function run(event) {
         self.setState({ active: !state.active });
@@ -229,7 +231,7 @@
       ]);
     });
 
-    var CutPaste = component(function(dom, state, props){
+    var CutPaste = component(function(props, state){
       var self = this;
       function run(event) {
         self.setState({ active: !state.active });
@@ -242,7 +244,7 @@
       ]);
     });
 
-    var Draggable = component(function(dom, state, props){
+    var Draggable = component(function(props, state){
       var self = this;
       function start(event) {
         self.setState({ active: true });
@@ -271,7 +273,7 @@
       ]);
     });
 
-    var Droppable = component(function(dom, state, props){
+    var Droppable = component(function(props, state){
       var self = this;
       function over(event) {
         event.preventDefault();
@@ -292,7 +294,7 @@
       ]);
     });
 
-    var Scroll = component(function(dom, state, props){
+    var Scroll = component(function(props, state){
       var self = this;
       function scroll(event) {
         self.setState({ position: event.target.scrollTop });
@@ -317,8 +319,8 @@
       ]);
     });
 
-    var Examples = component(function(dom, state, props){
-      return dom('div', null, [
+    var Examples = component(function(){
+      return dom('div', [
         MouseOver(),
         MouseMove(),
         MouseDown(),
@@ -338,8 +340,8 @@
       ]);
     });
 
-    var App = component(function(dom){
-      return dom('div.App', null, [
+    var App = component(function(){
+      return dom('div.App', [
         Examples()
       ]);
     });

@@ -6,7 +6,7 @@ describe('Patching Element Nodes', function(){
    */
 
   var Toggle = component({
-    render: function(dom, state, props){
+    render: function(props, state){
       if (!props.showChildren) {
         return dom('div');
       } else {
@@ -16,30 +16,30 @@ describe('Patching Element Nodes', function(){
   });
 
   var CustomTag = component({
-    render: function(n, state, props){
-      return n(props.type);
+    render: function(props, state){
+      return dom(props.type);
     }
   });
 
   var AdjacentTest = component({
-    render: function(dom, state, props){
+    render: function(props, state){
       if (props.i === 1) return dom('div', { id: 'root' }, [dom('span', { id: 'foo' }), dom('span', { id: 'bar' }), dom('span', { id: 'baz' })]);
       if (props.i === 2) return dom('div', { id: 'root' }, [dom('span', { id: 'foo' })]);
     }
   });
 
   var BasicComponent = component({
-    render: function(n, state, props){
-      return n('div', null, ['component']);
+    render: function(props, state){
+      return dom('div', null, ['component']);
     }
   });
 
   var ComponentToggle = component({
-    render: function(n, state, props){
+    render: function(props, state){
       if (!props.showComponent) {
-        return n('span');
+        return dom('span');
       } else {
-        return n(BasicComponent);
+        return dom(BasicComponent);
       }
     }
   });
@@ -113,13 +113,13 @@ describe('Patching Element Nodes', function(){
 
   it('should change tag names and still update correctly', function(){
     var ComponentA = component({
-      render: function(n, state, props){
-        return n(props.type, null, props.text);
+      render: function(props, state){
+        return dom(props.type, null, props.text);
       }
     });
     var Test = component({
-      render: function(n, state, props){
-        return n(ComponentA, { type: props.type, text: props.text });
+      render: function(props, state){
+        return dom(ComponentA, { type: props.type, text: props.text });
       }
     });
     var scene = Test.render(el, { type: 'span', text: 'test' });
@@ -146,16 +146,16 @@ describe('Patching Element Nodes', function(){
       beforeUnmount: inc
     });
     var App = component({
-      render: function(n, state, props){
+      render: function(props, state){
         if (props.showElements) {
-          return n('div', null, [
-            n('div', null, [
-              n(UnmountTest)
+          return dom('div', null, [
+            dom('div', null, [
+              dom(UnmountTest)
             ])
           ]);
         }
         else {
-          return n('div');
+          return dom('div');
         }
       }
     });
@@ -174,8 +174,8 @@ describe('Patching Element Nodes', function(){
 
   it('should change sub-component tag names', function(){
     var Test = component({
-      render: function(n, state, props){
-        return n(CustomTag, { type: props.type });
+      render: function(props, state){
+        return dom(CustomTag, { type: props.type });
       }
     });
     var scene = Test.render(el, { type: 'span' });
@@ -191,11 +191,11 @@ describe('Patching Element Nodes', function(){
 
   it('should replace elements with component nodes', function(){
     var Test = component({
-      render: function(n, state, props){
+      render: function(props, state){
         if (props.showElement) {
-          return n('span', null, ['element']);
+          return dom('span', null, ['element']);
         } else {
-          return n(BasicComponent);
+          return dom(BasicComponent);
         }
       }
     });
@@ -214,19 +214,19 @@ describe('Patching Element Nodes', function(){
 
   it('should replace components', function(done){
     var ComponentA = component({
-      render: function(n, state, props){
-        return n('div', null, ['A']);
+      render: function(props, state){
+        return dom('div', null, ['A']);
       }
     });
     var ComponentB = component({
-      render: function(n, state, props){
-        return n('div', null, ['B']);
+      render: function(props, state){
+        return dom('div', null, ['B']);
       }
     });
     var ComponentC = component({
-      render: function(n, state, props){
-        if (props.type === 'A') return n(ComponentA);
-        return n(ComponentB);
+      render: function(props, state){
+        if (props.type === 'A') return dom(ComponentA);
+        return dom(ComponentB);
       }
     });
     var mount = ComponentC.render(el, { type: 'A' });

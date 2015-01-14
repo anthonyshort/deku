@@ -1,11 +1,8 @@
 {
   "name": "deku",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Create view components using a virtual DOM",
   "main": "deku.js",
-  "scripts": {
-    "prepublish": "duo -s deku index.js > tmp.js && minify tmp.js > deku.js && rm tmp.js"
-  },
   "devDependencies": {
     "duo": "^0.8.10",
     "duo-test": "^0.3.10",

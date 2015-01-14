@@ -25,6 +25,9 @@ default: test
 build.js: $(js)
 	@duo -r ./ test/index.js > build.js
 
+deku.js: $(js)
+	@duo -s deku index.js > tmp.js && minify tmp.js > deku.js && rm tmp.js
+
 #
 # Tasks.
 #
@@ -33,7 +36,7 @@ lint: $(lib)
 	@jshint lib
 
 serve:
-	@duo-serve index.js -g component
+	@duo-serve index.js -g deku
 
 test: build.js
 	@duo-test browser -c 'make build.js'

@@ -1,12 +1,12 @@
 
 describe('Patching Text Nodes', function(){
 
-  var TextComponent = component(function(dom, state, props){
+  var TextComponent = component(function(props, state){
     return dom('span', null, props.text);
   });
 
   var Toggle = component({
-    render: function(dom, state, props) {
+    render: function(props, state) {
       if (props.showElement) return dom('div', null, [dom('span')]);
       if (props.showText) return dom('div', null, ['bar']);
       return dom('div');

@@ -13,7 +13,7 @@ describe('API', function(){
   });
 
   it('should create a component with just a render function', function () {
-    var Simple = component(function(dom){
+    var Simple = component(function(){
       return dom('span', null, 'Hello World');
     });
     this.scene = Simple.render(el);
@@ -28,7 +28,7 @@ describe('API', function(){
 
   it('should allow extending the prototype', function(){
     var Page = component();
-    Page.prototype.render = function(dom, state, props){
+    Page.prototype.render = function(props, state){
       return dom('span', null, ['Hello World']);
     };
     this.scene = Page.render(el);
@@ -37,7 +37,7 @@ describe('API', function(){
 
   it('should mixin plugins when they are objects', function () {
     var plugin = {
-      render: function(dom) {
+      render: function() {
         return dom('span', null, 'Plugin');
       }
     };
@@ -63,7 +63,7 @@ describe('API', function(){
         assert(this instanceof Page);
         done();
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         var fn = this.hack;
         fn();
         return dom();
@@ -81,7 +81,7 @@ describe('API', function(){
   it('should compose without needing to use dom object', function () {
     var Inner = component(Span);
     var Test = component({
-      render: function(n, state, props){
+      render: function(props, state){
         return Inner({ text: 'foo' });
       }
     });
@@ -111,8 +111,8 @@ describe('API', function(){
   it('should compose components', function(){
     var Inner = component(HelloWorld);
     var Composed = component({
-      render: function(n, state, props){
-        return n(Inner);
+      render: function(props, state){
+        return dom(Inner);
       }
     });
     this.scene = Composed.render(el);
@@ -121,8 +121,8 @@ describe('API', function(){
 
   it('should compose components and pass in props', function(){
     var Inner = component(TwoWords);
-    var Composed = component(function(n, state, props){
-      return n(Inner, { one: 'Hello', two: 'World' });
+    var Composed = component(function(props, state){
+      return dom(Inner, { one: 'Hello', two: 'World' });
     });
     this.scene = Composed.render(el);
     assert.equal(el.innerHTML, '<span>Hello World</span>');
@@ -130,9 +130,9 @@ describe('API', function(){
 
   it('should update sub-components', function(){
     var Inner = component(TwoWords);
-    var Composed = component(function(n, state, props){
-      return n('div', null, [
-        n(Inner, { one: 'Hello', two: props.world })
+    var Composed = component(function(props, state){
+      return dom('div', null, [
+        dom(Inner, { one: 'Hello', two: props.world })
       ]);
     });
     this.scene = Composed.render(el, { world: 'Earth' });
@@ -143,14 +143,14 @@ describe('API', function(){
 
   it('should allow components to have child nodes', function () {
     var ComponentA = component({
-      render: function(n, state, props){
-        return n('div', null, props.children);
+      render: function(props, state){
+        return dom('div', null, props.children);
       }
     });
     var ComponentB = component({
-      render: function(n, state, props){
+      render: function(props, state){
         return ComponentA(null, [
-          n('span', null, 'Hello World!')
+          dom('span', null, 'Hello World!')
         ]);
       }
     });
@@ -160,14 +160,14 @@ describe('API', function(){
 
   it('should update component child nodes', function (done) {
     var ComponentA = component({
-      render: function(n, state, props){
-        return n('div', null, props.children);
+      render: function(props, state){
+        return dom('div', null, props.children);
       }
     });
     var ComponentB = component({
-      render: function(n, state, props){
+      render: function(props, state){
         return ComponentA(null, [
-          n('span', null, props.text)
+          dom('span', null, props.text)
         ]);
       }
     });
@@ -182,21 +182,21 @@ describe('API', function(){
 
   it('should allow components to have other components as child nodes', function () {
     var ComponentA = component({
-      render: function(n, state, props){
-        return n('div', { name: 'ComponentA' }, props.children);
+      render: function(props, state){
+        return dom('div', { name: 'ComponentA' }, props.children);
       }
     });
     var ComponentC = component({
-      render: function(n, state, props){
-        return n('div', { name: 'ComponentC' }, props.children);
+      render: function(props, state){
+        return dom('div', { name: 'ComponentC' }, props.children);
       }
     });
     var ComponentB = component({
-      render: function(n, state, props){
-        return n('div', { name: 'ComponentB' }, [
+      render: function(props, state){
+        return dom('div', { name: 'ComponentB' }, [
           ComponentA(null, [
             ComponentC({ text: props.text }, [
-              n('span', null, 'Hello Pluto!')
+              dom('span', null, 'Hello Pluto!')
             ])
           ])
         ]);
@@ -221,14 +221,14 @@ describe('API', function(){
           self.setState({ text: text });
         })
       },
-      render: function(dom, state, props){
+      render: function(props, state){
         i++;
         console.log(state, props);
         return dom('div', null, [props.text, ' ', state.text]);
       }
     });
     var ComponentB = component({
-      render: function(dom, state, props){
+      render: function(props, state){
         i++;
         return dom('div', null, [
           dom(ComponentA, { text: props.text })

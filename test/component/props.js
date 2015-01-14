@@ -78,14 +78,14 @@ describe('Updating Props', function () {
   it('shouldn\'t update child when the props haven\'t changed', function (done) {
     var calls = 0;
     var ComponentA = component({
-      render: function(n, state, props){
+      render: function(props, state){
         calls++;
-        return n('span', null, [props.text]);
+        return dom('span', null, [props.text]);
       }
     });
     var ComponentB = component({
-      render: function(n, state, props){
-        return n('div', { name: props.character }, [
+      render: function(props, state){
+        return dom('div', { name: props.character }, [
           ComponentA({ text: 'foo' })
         ]);
       }

@@ -6,27 +6,27 @@
 
 > This project is still a [work-in-progress](https://github.com/segmentio/deku/issues/3)
 
-Create composable, reactive views that use implement a virtual DOM system similar to React. 
-
-The benefits of using Deku over React:
-
-* Smaller at roughly 5kb
-* Readable source
-* No globals or global state
-* Easily testable components without needing Jest
-* Isolated components that don't need a global to be mounted
-* It doesn't create virtual events
-* It only supports evergreen browsers
-* Easily add plugins
-* Events instead of mixins
-* Render methods can be imported instead of inline reducing the need for JSX
+Create composable, reactive views that use implement a virtual DOM system similar to React. You create components and use lifecycle hooks to change the state of the component.
 
 It has similar capabilities to React:
 
 * Components return a virtual tree using a `render` method
-* Batched rendering using `requestAnimationFrame`
-* Optimized tree diffs
-* Server-side rendering
+* Lifecycle hooks (beforeMount, afterMount etc.)
+* Optimized tree diffing algorithm
+* Components can be rendered to a string for server-side rendering
+
+But why use Deku instead of React?
+
+* It's smaller. Roughly 8kb. And built from
+* Readable source
+* No globals or global state
+* Easily testable components without needing Jest
+* It doesn't create virtual events
+* It only supports evergreen browsers
+* Easily add plugins
+* Batched updates using `requestAnimationFrame`
+
+
 
 ## Install
 
@@ -34,24 +34,26 @@ It has similar capabilities to React:
 npm install deku
 ```
 
-## Example 
+## Example
+
+This example uses ES6 syntax:
 
 ```js
-var component = require('deku');
+var {component, dom} = require('deku');
 
 // Simple button component.
 var ButtonComponent = component({
   onClick() {
     this.setState({ clicked: true });
   }
-  render(dom, state, props) {
+  render(props, state) {
     return dom('button', { onClick: this.onClick }, [props.text]);
   }
 });
 
 // Our main app.
 var App = component({
-  render(dom, state, props) {
+  render(props, state) {
     return dom('div', { class: 'App' }, [
       ButtonComponent({ text: props.buttonText })
     ]);

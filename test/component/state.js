@@ -8,7 +8,7 @@ describe('Updating State', function () {
     afterMount: function(){
       this.setState({ text: 'bar' });
     },
-    render: function(n, state, props){
+    render: function(props, state){
       var Test = component(Span);
       return Test({ text: state.text });
     }
@@ -26,9 +26,9 @@ describe('Updating State', function () {
       afterUpdate: function(){
         throw new Error('Parent should not be updated');
       },
-      render: function(n, state, props){
-        return n('div', null, [
-          n(StateChangeOnMount)
+      render: function(props, state){
+        return dom('div', null, [
+          dom(StateChangeOnMount)
         ]);
       }
     });
@@ -45,7 +45,7 @@ describe('Updating State', function () {
           text: 'Hello World'
         };
       },
-      render: function(dom, state){
+      render: function(props, state){
         return dom('span', null, state.text);
       }
     });
