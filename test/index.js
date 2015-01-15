@@ -1,3 +1,4 @@
+mocha.setup({globals: ['hasCert']});
 
 // Make life easier.
 

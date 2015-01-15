@@ -1,4 +1,5 @@
 var Emitter = require('component/emitter');
+var raf = require('component/raf');
 
 describe('API', function(){
 
@@ -103,7 +104,7 @@ describe('API', function(){
       throw new Error('Oops');
     });
     scene.remove();
-    requestAnimationFrame(function(){
+    raf(function(){
       done();
     });
   });
@@ -223,7 +224,6 @@ describe('API', function(){
       },
       render: function(props, state){
         i++;
-        console.log(state, props);
         return dom('div', null, [props.text, ' ', state.text]);
       }
     });

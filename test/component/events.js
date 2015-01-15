@@ -1,5 +1,6 @@
 
 var trigger = require('adamsanderson/trigger-event');
+var raf = require('component/raf');
 
 describe('Events', function(){
 
@@ -57,7 +58,7 @@ describe('Events', function(){
         return dom('span', { onClick: props.click }, ['Hello World']);
       },
       afterUpdate: function(){
-        requestAnimationFrame(function(){
+        raf(function(){
           trigger(el.querySelector('span'), 'click');
           assert.equal(count, 0);
           done();

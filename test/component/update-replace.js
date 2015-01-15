@@ -1,6 +1,14 @@
 
 describe('Replacing Nodes', function () {
 
+  var Toggle = component({
+    render: function(props, state) {
+      if (props.showElement) return dom('div', null, [dom('span')]);
+      if (props.showText) return dom('div', null, ['bar']);
+      return dom('div');
+    }
+  });
+
   it('should replace elements with text elements', function(){
     var scene = Toggle.render(el, { showElement: true });
     assert.equal(el.innerHTML, '<div><span></span></div>');

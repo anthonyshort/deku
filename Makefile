@@ -22,8 +22,11 @@ default: test
 # Targets.
 #
 
-build.js: node_modules $(js)
+build.js: $(js)
 	@duo -r ./ test/index.js > build.js
+
+tests.js: $(js)
+	@duo -r ./ test/index.js | bfc > tests.js
 
 deku.js: $(js)
 	@duo -s deku index.js | bfc > deku.js
@@ -41,6 +44,9 @@ serve:
 test: build.js
 	@duo-test browser -c 'make build.js'
 
+test-cloud: tests.js
+	@zuul -- tests.js
+
 node_modules: package.json
 	@npm install
 
@@ -56,6 +62,7 @@ distclean:
 
 .PHONY: lint
 .PHONY: test
+.PHONY: test-saucelabs
 .PHONY: serve
 .PHONY: clean
 .PHONY: distclean

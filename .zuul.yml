@@ -1,0 +1,17 @@
+ui: mocha-bdd
+concurrency: 1
+browsers:
+  - name: chrome
+    version: 37..latest
+  - name: ie
+    version: 10..latest
+  - name: firefox
+    version: 32..latest
+  - name: iphone
+    version: 7.0..latest
+  - name: ipad
+    version: 7.0..latest
+  - name: android
+    version: 4.3..latest
+  - name: safari
+    version: 7..latest

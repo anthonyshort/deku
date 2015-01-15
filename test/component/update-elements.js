@@ -110,7 +110,7 @@ describe('Patching Element Nodes', function(){
    * the correct element.
    */
 
-  it('should change tag names and still update correctly', function(){
+  it.skip('should change tag names and still update correctly', function(){
     var ComponentA = component({
       render: function(props, state){
         return dom(props.type, null, props.text);

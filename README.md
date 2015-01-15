@@ -1,6 +1,6 @@
 # Deku
 
-![Build Status](https://circleci.com/gh/segmentio/deku.png)
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
 <img  width="200" align="right" src="http://img4.wikia.nocookie.net/__cb20091220220017/zelda/images/e/ee/Deku_Stick.png" />
 
