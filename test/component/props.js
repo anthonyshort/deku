@@ -4,6 +4,10 @@ describe('Updating Props', function () {
 
   var Test = component(TwoWords);
 
+  afterEach(function () {
+    if (this.scene) this.scene.remove();
+  });
+
   it('should replace props on the scene', function(){
     this.scene = Test.render(el, { one: 'Hello', two: 'World' });
     this.scene.setProps({ one: 'Hello' });
