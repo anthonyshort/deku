@@ -22,11 +22,11 @@ default: test
 # Targets.
 #
 
-build.js: $(js)
+build.js: node_modules $(js)
 	@duo -r ./ test/index.js > build.js
 
 deku.js: $(js)
-	@duo -s deku index.js > tmp.js && minify tmp.js > deku.js && rm tmp.js
+	@duo -s deku index.js | bfc > deku.js
 
 #
 # Tasks.

@@ -75,7 +75,7 @@ describe('Patching Element Nodes', function(){
 
   /**
    * When updating a component it should remove child elements
-   * from the DOM that don't exist in the new rendering.
+   * from the DOM that don't exist in the new rendering but leave the existing nodes.
    */
 
   it('should only remove adjacent element nodes', function(){
@@ -92,8 +92,7 @@ describe('Patching Element Nodes', function(){
   });
 
   /**
-   * It should change the tag name of element and keep
-   * the same content.
+   * It should change the tag name of element
    */
 
   it('should change tag names', function(){
