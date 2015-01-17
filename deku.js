@@ -1265,7 +1265,7 @@ Entity.prototype.update = function(){
   var previousState = this.state;
   var previousProps = this.props;
   this.state = nextState;
-  this.props = nextProps;
+  this.props = nextProps || this.props;
 
   // reset.
   this._pendingState = null;
@@ -2460,7 +2460,7 @@ module.exports = Interactions;
 function Interactions(el) {
   this.el = el;
   this.handlers = {};
-  this.handle = throttle(handle.bind(this));
+  this.handle = handle.bind(this);
   this.resume();
 }
 
@@ -2473,7 +2473,7 @@ function Interactions(el) {
  */
 
 Interactions.prototype.bind = function(namespace, path, event, fn){
-  keypath.set(this.handlers, [namespace, path, event], fn);
+  keypath.set(this.handlers, [namespace, path, event], throttle(fn));
 };
 
 /**
@@ -3217,5 +3217,5 @@ exports.afterUnmount = function(el, state, props){
 exports.propsChanged = function(nextProps){
 
 };
-}, {"sindresorhus/object-assign":4}]}, {}, {"1":""})
+}, {"sindresorhus/object-assign":4}]}, {}, {"1":"deku"})
 );
