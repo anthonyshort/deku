@@ -26,8 +26,6 @@ But why use Deku instead of React?
 * Easily add plugins
 * Batched updates using `requestAnimationFrame`
 
-
-
 ## Install
 
 ```
@@ -55,7 +53,7 @@ var ButtonComponent = component({
 var App = component({
   render(props, state) {
     return dom('div', { class: 'App' }, [
-      ButtonComponent({ text: props.buttonText })
+      dom(ButtonComponent, { text: props.buttonText })
     ]);
   }
 });
@@ -70,3 +68,12 @@ scene.setProps({
   buttonText: 'Do it...'
 });
 ```
+
+## Todo
+
+- [] Tests for propsChanged
+- [] Emit events on Component events
+- [] Return a promise from setState
+- [] Add test for invalidate
+- [] key property diffing
+- [] entity.setProps should merge instead of replacing
