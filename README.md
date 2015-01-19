@@ -63,3 +63,7 @@ var deku = require('segmentio/deku');
 Or [download the latest release](https://github.com/segmentio/deku/tree/master/dist) manually.
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+
+## License
+
+MIT
