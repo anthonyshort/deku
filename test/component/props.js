@@ -104,4 +104,52 @@ describe('Updating Props', function () {
     });
   });
 
+  it('should call propsChanged when props are changed', function (done) {
+    var Test = component({
+      propsChanged: function(nextProps){
+        assert(nextProps.foo);
+        done();
+      }
+    });
+    var scene = Test.render(el, { foo: false });
+    scene.setProps({ foo: true });
+    scene.update();
+    scene.remove();
+  });
+
+  it('should call propsChanged on child components', function (done) {
+    var Child = component({
+      propsChanged: function(nextProps){
+        assert(nextProps.count === 1);
+        done();
+      }
+    });
+    var Parent = component({
+      render: function(props){
+        return dom(Child, { count: props.count });
+      }
+    });
+    var scene = Parent.render(el, { count: 0 });
+    scene.setProps({ count: 1 });
+    scene.update();
+    scene.remove();
+  });
+
+  it.skip('should not call propsChanged on child components when they props don\'t change', function () {
+    var Child = component({
+      propsChanged: function(nextProps){
+        throw new Error('Child should not be called');
+      }
+    });
+    var Parent = component({
+      render: function(props){
+        return dom(Child);
+      }
+    });
+    var scene = Parent.render(el, { count: 0 });
+    scene.setProps({ count: 1 });
+    scene.update();
+    scene.remove();
+  });
+
 });

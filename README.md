@@ -60,7 +60,12 @@ Using [Duo](https://github.com/duojs/duo):
 var deku = require('segmentio/deku');
 ```
 
-Or [download the latest release](https://github.com/segmentio/deku/tree/master/dist) manually.
+Or download and use them manually:
+
+* [dist/deku.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.js)
+* [dist/deku.min.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.min.js)
+
+## Build Status
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
