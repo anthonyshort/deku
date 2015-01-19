@@ -28,6 +28,7 @@ describe('Component', function () {
   require('./component/mount-hook');
   require('./component/render-hook');
   require('./component/update-hook');
+  require('./component/hook-events');
   require('./component/props');
   require('./component/state');
   require('./component/update-elements');

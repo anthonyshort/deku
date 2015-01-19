@@ -7,7 +7,8 @@ describe('Mounting Hooks', function(){
         done();
       }
     });
-    this.scene = Page.render(el);
+    var scene = Page.render(el);
+    scene.remove();
   })
 
   it('should fire the `afterUnmount` hook', function(done){
