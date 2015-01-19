@@ -28,9 +28,28 @@ But why use Deku instead of React?
 
 ## Install
 
+npm: 
+
 ```
 npm install deku
 ```
+
+Bower: 
+
+```
+bower install deku
+```
+
+Duo: 
+
+```
+var deku = require('segmentio/deku');
+```
+
+## Getting Started
+
+* [Documentation](https://github.com/segmentio/deku/tree/master/docs)
+* [Examples](https://github.com/segmentio/deku/tree/master/examples)
 
 ## Example
 
@@ -68,12 +87,3 @@ scene.setProps({
   buttonText: 'Do it...'
 });
 ```
-
-## Todo
-
-- [] Tests for propsChanged
-- [] Emit events on Component events
-- [] Return a promise from setState
-- [] Add test for invalidate
-- [] key property diffing
-- [] entity.setProps should merge instead of replacing

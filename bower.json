@@ -1,0 +1,5 @@
+{
+  "name": "deku",
+  "version": "0.0.9",
+  "main": "dist/deku.js"
+}
