@@ -1,3 +1,4 @@
+var trigger = require('adamsanderson/trigger-event');
 var Emitter = require('component/emitter');
 var raf = require('component/raf');
 
@@ -247,6 +248,22 @@ describe('API', function(){
       assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>");
       done();
     });
+  });
+
+  it('should invalidate itself so it is updated on the next frame anyway', function (done) {
+    var Invalidate = component({
+      onClick: function(){
+        this.invalidate();
+      },
+      render: function(){
+        return dom('span', { onClick: this.onClick });
+      },
+      afterUpdate: function(){
+        done();
+      }
+    });
+    this.scene = Invalidate.render(el);
+    trigger(el.querySelector('span'), 'click');
   });
 
 });
