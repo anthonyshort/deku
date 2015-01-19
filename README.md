@@ -1,89 +1,65 @@
 # Deku
 
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+[![npm version](https://badge.fury.io/js/deku.svg)](http://badge.fury.io/js/deku)
 
-<img  width="200" align="right" src="http://img4.wikia.nocookie.net/__cb20091220220017/zelda/images/e/ee/Deku_Stick.png" />
+<img  width="200" align="right" src="https://i.cloudup.com/fDqKHg1ude.png" />
 
-> This project is still a [work-in-progress](https://github.com/segmentio/deku/issues/3)
+A library for creating UI components using a [virtual DOM](https://github.com/segmentio/deku/blob/master/docs/virtual-dom.md).
 
-Create composable, reactive views that use implement a virtual DOM system similar to React. You create components and use lifecycle hooks to change the state of the component.
-
-It has similar capabilities to React:
-
-* Components return a virtual tree using a `render` method
-* Lifecycle hooks (beforeMount, afterMount etc.)
-* Optimized tree diffing algorithm
-* Components can be rendered to a string for server-side rendering
-
-But why use Deku instead of React?
-
-* It's smaller. Roughly 8kb. And built from
-* Readable source
-* No globals or global state
-* Easily testable components without needing Jest
-* It doesn't create virtual events
-* It only supports evergreen browsers
-* Easily add plugins
-* Batched updates using `requestAnimationFrame`
-
-## Install
-
-npm: 
-
-```
-npm install deku
-```
-
-Bower: 
-
-```
-bower install deku
-```
-
-Duo: 
-
-```
-var deku = require('segmentio/deku');
-```
-
-## Getting Started
-
-* [Documentation](https://github.com/segmentio/deku/tree/master/docs)
-* [Examples](https://github.com/segmentio/deku/tree/master/examples)
-
-## Example
-
-This example uses ES6 syntax:
+* It's small and modular. Roughly **8kb minified**. 
+* Supports **npm, duo, and bower**.
+* It has a beautiful, **simple API** for defining components.
+* Uses a **virtual DOM** and diffing to run updates.
+* It only supports **evergreen browsers**.
+* Components can be used **without the library**.
+* Components can be rendered to a string for **server-side rendering**.
+* Easily **testable components**.
+* Handles all **event delegation** for you without virtual events.
+* **Batched and optimized updates** using `requestAnimationFrame`.
 
 ```js
-var {component, dom} = require('deku');
+var {component,dom} = require('deku');
 
-// Simple button component.
-var ButtonComponent = component({
+var Button = component({
   onClick() {
     this.setState({ clicked: true });
-  }
+  },
   render(props, state) {
     return dom('button', { onClick: this.onClick }, [props.text]);
   }
 });
 
-// Our main app.
-var App = component({
-  render(props, state) {
-    return dom('div', { class: 'App' }, [
-      dom(ButtonComponent, { text: props.buttonText })
-    ]);
-  }
-});
-
-// Returns a scene.
-var scene = App.mount(document.body, {
-  buttonText: 'Click Me!'
-});
-
-// We set the props from the top and render the scene top-down
-scene.setProps({
-  buttonText: 'Do it...'
+Button.render(document.body, {
+  text: 'Click Me!'
 });
 ```
+
+## Getting Started
+
+* [Quick Start](https://github.com/segmentio/deku/tree/master/docs/quick-start.md)
+* [Documentation](https://github.com/segmentio/deku/tree/master/docs)
+* [What is components?](https://github.com/segmentio/deku/blob/master/docs/components.md)
+* [What is virtual DOM?](https://github.com/segmentio/deku/blob/master/docs/virtual-dom.md)
+* [How it works](https://github.com/segmentio/deku/blob/master/docs/how-it-works.md)
+* [Deku vs. React](https://github.com/segmentio/deku/blob/master/docs/react.md)
+* [Developing](https://github.com/segmentio/deku/tree/master/docs/dev.md)
+* [Examples](https://github.com/segmentio/deku/tree/master/examples)
+
+## Download
+
+```
+npm install deku
+```
+```
+bower install deku
+```
+
+Using [Duo](https://github.com/duojs/duo): 
+
+```
+var deku = require('segmentio/deku');
+```
+
+Or [download the latest release](https://github.com/segmentio/deku/tree/master/dist) manually.
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
