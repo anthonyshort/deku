@@ -42,6 +42,16 @@ Button.prototype.render = function(props, state){
 };
 ```
 
+Or even just initialize them for testing:
+
+```js
+var button = new Button();
+button.on('change', function(state){
+  assert(state.text === 'Hello Steve!');
+});
+button.propsChanged({ name: 'Steve' });
+```
+
 ## Component
 
 The Component classes are what define parts of your UI. There are two type of data you need to use - `props` and `state` - or external and internal data. `props` is an immutable object of state passed down from the parent component or scene. `state` is internal data that only this component cares about. `state` can only be updated internally and `props` are updated externally.
