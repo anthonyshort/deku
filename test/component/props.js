@@ -10,9 +10,24 @@ describe('Updating Props', function () {
 
   it('should replace props on the scene', function(){
     this.scene = Test.render(el, { one: 'Hello', two: 'World' });
-    this.scene.setProps({ one: 'Hello' });
+    this.scene.replaceProps({ one: 'Hello' });
     this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello undefined</span>');
+  });
+
+  it('should merge props on the scene', function(){
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
+    this.scene.setProps({ two: 'Pluto' });
+    this.scene.update();
+    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
+  });
+
+  it('should replace then set props on the scene', function(){
+    this.scene = Test.render(el, { one: 'Hello', two: 'World' });
+    this.scene.replaceProps({ one: 'Hello' });
+    this.scene.setProps({ two: 'Pluto' });
+    this.scene.update();
+    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
   });
 
   it('should update on the next frame', function(){
