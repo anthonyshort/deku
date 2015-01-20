@@ -61,8 +61,13 @@ clean:
 distclean:
 	@-rm -rf components node_modules
 
-release: dist/deku.js
-	@bump patch
+release: clean dist/deku.js
+	@bump $(VERSION)
+	@git changelog --version $(VERSION) CHANGELOG.md
+	@git commit --all -m "Release $(VERSION)"
+	@git tag $(VERSION)
+	@git push origin master --tags
+	# @npm publish
 
 
 #

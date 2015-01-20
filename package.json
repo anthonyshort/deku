@@ -1,6 +1,6 @@
 {
   "name": "deku",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Create view components using a virtual DOM",
   "main": "dist/deku.js",
   "devDependencies": {

@@ -1083,10 +1083,11 @@ module.exports = Entity;
 
 function Entity(Component, props) {
   this.id = (i++).toString(32);
+  this.type = Component;
   this.component = new Component();
   this.component.on('change', this.setState.bind(this));
   this.props = props || {};
-  this.state = this.component.initialState();
+  this.state = this.component.initialState(this.props);
   this.children = {};
   this.current = this.render();
   this.previous = null;
@@ -1094,6 +1095,7 @@ function Entity(Component, props) {
   this.lifecycle = null;
   this._pendingProps = null;
   this._pendingState = null;
+  this._propsReplaced = false;
 }
 
 /**
@@ -1127,6 +1129,21 @@ Entity.prototype.render = function(){
 
 Entity.prototype.setProps = function(nextProps, done){
   if (done) this.once('update', done);
+  this._pendingProps = assign(this._pendingProps || {}, nextProps);
+  this.propsChanged(nextProps);
+  this.invalidate();
+};
+
+/**
+ * Replace all the properties
+ *
+ * @param {Object} nextProps
+ * @param {Function} done
+ */
+
+Entity.prototype.replaceProps = function(nextProps, done){
+  if (done) this.once('update', done);
+  this._propsReplaced = true;
   this._pendingProps = nextProps;
   this.propsChanged(nextProps);
   this.invalidate();
@@ -1251,15 +1268,25 @@ Entity.prototype.shouldUpdate = function(nextState, nextProps){
  */
 
 Entity.prototype.update = function(){
-  var nextProps = this._pendingProps;
+  var nextProps;
+
+  // If we've flagged that we want all of the props replaced, we
+  // won't merge it in, we'll replace it entirely.
+  if (this._propsReplaced) {
+    nextProps = this._pendingProps;
+    this._propsReplaced = false;
+  } else {
+    nextProps = assign({}, this.props, this._pendingProps);
+  }
+
   var nextState = assign({}, this.state, this._pendingState);
+
+  // Compare the state and props to see if we really need to render
+  if (!this.shouldUpdate(nextState, nextProps)) return false;
 
   // pre-update. This callback could mutate the
   // state or props just before the render occurs
   this.beforeUpdate(nextState, nextProps);
-
-  // Compare the state and props to see if we really need to render
-  if (!this.shouldUpdate(nextState, nextProps)) return false;
 
   // commit the changes.
   var previousState = this.state;
@@ -1314,6 +1341,7 @@ Entity.prototype.remove = function(){
 Entity.prototype.beforeUpdate = function(nextState, nextProps){
   this.lifecycle = 'beforeUpdate';
   this.component.beforeUpdate(this.props, this.state, nextProps, nextState);
+  this.type.emit('beforeUpdate', this.component, this.props, this.state, nextProps, nextState);
   this.lifecycle = null;
 };
 
@@ -1327,6 +1355,7 @@ Entity.prototype.beforeUpdate = function(nextState, nextProps){
 Entity.prototype.afterUpdate = function(previousState, previousProps){
   this.emit('update');
   this.component.afterUpdate(this.props, this.state, previousProps, previousState);
+  this.type.emit('afterUpdate', this.component, this.props, this.state, previousProps, previousState);
 };
 
 /**
@@ -1337,6 +1366,7 @@ Entity.prototype.afterUpdate = function(previousState, previousProps){
 
 Entity.prototype.beforeUnmount = function(el){
   this.component.beforeUnmount(el, this.props, this.state);
+  this.type.emit('beforeUnmount', this.component, el, this.props, this.state);
 };
 
 /**
@@ -1345,6 +1375,7 @@ Entity.prototype.beforeUnmount = function(el){
 
 Entity.prototype.afterUnmount = function(){
   this.component.afterUnmount(this.props, this.state);
+  this.type.emit('afterUnmount', this.component, this.props, this.state);
 };
 
 /**
@@ -1353,6 +1384,7 @@ Entity.prototype.afterUnmount = function(){
 
 Entity.prototype.beforeMount = function(){
   this.component.beforeMount(this.props, this.state);
+  this.type.emit('beforeMount', this.component, this.props, this.state);
 };
 
 /**
@@ -1363,6 +1395,7 @@ Entity.prototype.beforeMount = function(){
 
 Entity.prototype.afterMount = function(el){
   this.component.afterMount(el, this.props, this.state);
+  this.type.emit('afterMount', this.component, el, this.props, this.state);
 };
 
 /**
@@ -1372,7 +1405,8 @@ Entity.prototype.afterMount = function(el){
  */
 
 Entity.prototype.propsChanged = function(nextProps){
-  this.component.propsChanged(nextProps);
+  this.component.propsChanged(nextProps, this.props, this.state);
+  this.type.emit('propsChanged', this.component, nextProps, this.props, this.state);
 };
 }, {"sindresorhus/object-assign":4,"component/emitter":6,"jkroso/equals":19,"component/each":20,"../virtual":3}],
 19: [function(_require, module, exports) {
@@ -1975,8 +2009,6 @@ Scene.prototype.update = function(){
 /**
  * Set new props on the component and trigger a re-render.
  *
- * TODO: could we use promises instead of callbacks?
- *
  * @param {Object} newProps
  * @param {Function} [done]
  */
@@ -1984,6 +2016,31 @@ Scene.prototype.update = function(){
 Scene.prototype.setProps = function(newProps, done){
   if (done) this.once('update', done);
   this.entity.setProps(newProps);
+
+  // Return a promise if the environment
+  // supports the native version.
+  var self = this;
+  if (typeof Promise !== 'undefined') {
+    return new Promise(function(resolve){
+      self.once('update', function(){
+        resolve();
+      });
+    });
+  }
+};
+
+/**
+ * Replace all the props on the current entity
+ *
+ * @param {Objct} newProps
+ * @param {Function} done
+ *
+ * @return {Promise}
+ */
+
+Scene.prototype.replaceProps = function(newProps, done){
+  if (done) this.once('update', done);
+  this.entity.replaceProps(newProps);
 
   // Return a promise if the environment
   // supports the native version.
@@ -2815,6 +2872,8 @@ exports.set = function(obj, path, value) {
 }, {}],
 28: [function(_require, module, exports) {
 
+var equals = _require('jkroso/equals');
+
 module.exports = patch;
 
 /**
@@ -2969,7 +3028,13 @@ function diffComponent(previous, current, context){
   }
 
   var entity = context.entity.getChild(context.path);
-  entity.setProps(current.props);
+
+  // The props are different, replace them
+  // if (!equals(current.props, entity.props)) {
+  //   entity.replaceProps(current.props);
+  // }
+
+  entity.replaceProps(current.props);
 }
 
 /**
@@ -3061,7 +3126,7 @@ function zip() {
   });
 }
 
-}, {}],
+}, {"jkroso/equals":19}],
 8: [function(_require, module, exports) {
 
 /**
