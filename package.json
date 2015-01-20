@@ -5,7 +5,7 @@
   "main": "dist/deku.js",
   "devDependencies": {
     "bfc": "~0.3.1",
-    "bump": "^0.2.5",
+    "bump": "ianstormtaylor/bump",
     "duo": "^0.8.10",
     "duo-serve": "~0.6.1",
     "duo-test": "^0.3.10",
