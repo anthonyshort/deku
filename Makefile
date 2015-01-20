@@ -62,13 +62,14 @@ distclean:
 	@-rm -rf components node_modules
 
 release: clean dist/deku.js
-	@bump $(VERSION)
-	@git changelog --version $(VERSION) CHANGELOG.md
-	@git commit --all -m "Release $(VERSION)"
-	@git tag $(VERSION)
-	@git push origin master --tags
-	# @npm publish
-
+	@git checkout master && \
+	@git reset --hard && \
+	@bump $(VERSION) && \
+	@git changelog --tag $(VERSION) CHANGELOG.md && \
+	@git commit --all -m "Release $(VERSION)" && \
+	@git tag $(VERSION) && \
+	@git push origin master --tags && \
+	@npm publish
 
 #
 # Phonies.
