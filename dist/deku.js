@@ -3282,5 +3282,5 @@ exports.afterUnmount = function(el, state, props){
 exports.propsChanged = function(nextProps){
 
 };
-}, {"sindresorhus/object-assign":4}]}, {}, {"1":"deku"})
+}, {"sindresorhus/object-assign":4}]}, {}, {"1":""})
 );

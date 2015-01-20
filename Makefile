@@ -16,20 +16,20 @@ js = $(shell find index.js lib/*/*.js test/*.js)
 # Default.
 #
 
-default: test
+default: dist/deku.js
 
 #
 # Targets.
 #
 
-build.js: $(js)
+build.js: node_modules $(js)
 	@duo -r ./ test/index.js > build.js
 
-tests.js: $(js)
+tests.js: node_modules $(js)
 	@duo -r ./ test/index.js | bfc > tests.js
 
-dist/deku.js: $(js)
-	@-mkdir dist
+dist/deku.js: node_modules $(js)
+	-@mkdir dist 2>/dev/null || true
 	@duo -s deku index.js | bfc > dist/deku.js
 	@minify dist/deku.js > dist/deku.min.js
 
@@ -40,7 +40,7 @@ dist/deku.js: $(js)
 lint: $(lib)
 	@jshint lib
 
-serve:
+serve: node_modules
 	@duo-serve index.js -g deku
 
 test: build.js
@@ -56,20 +56,18 @@ node_modules: package.json
 	@npm install
 
 clean:
-	@-rm -rf build.js dist
+	@-rm -rf build.js tests.js dist
 
-distclean:
+distclean: clean
 	@-rm -rf components node_modules
 
 release: clean dist/deku.js
-	@git checkout master && \
-	@git reset --hard && \
-	@bump $(VERSION) && \
-	@git changelog --tag $(VERSION) CHANGELOG.md && \
-	@git commit --all -m "Release $(VERSION)" && \
-	@git tag $(VERSION) && \
-	@git push origin master --tags && \
-	@npm publish
+	bump $$VERSION && \
+	git changelog --tag $$VERSION && \
+	git commit --all -m "Release $$VERSION" && \
+	git tag $$VERSION && \
+	git push origin master --tags && \
+	npm publish
 
 #
 # Phonies.
