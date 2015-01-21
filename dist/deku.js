@@ -676,7 +676,7 @@ function dom(type, props, children) {
   }
 
   // set the unique ID
-  node.id = (i++).toString(32);
+  node.id = (++i).toString(32);
 
   return node;
 }
@@ -1082,7 +1082,7 @@ module.exports = Entity;
  */
 
 function Entity(Component, props) {
-  this.id = (i++).toString(32);
+  this.id = (++i).toString(32);
   this.type = Component;
   this.component = new Component();
   this.component.on('change', this.setState.bind(this));

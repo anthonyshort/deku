@@ -1,6 +1,6 @@
 {
   "name": "deku",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "dependencies": {
     "component/each": "0.2.5",
     "component/bind": "1.0.0",
