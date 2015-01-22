@@ -31,6 +31,7 @@ describe('Component', function () {
   require('./component/hook-events');
   require('./component/props');
   require('./component/state');
+  require('./component/send');
   require('./component/update-elements');
   require('./component/update-text');
   require('./component/update-attributes');

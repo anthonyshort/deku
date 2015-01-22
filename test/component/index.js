@@ -266,4 +266,5 @@ describe('API', function(){
     trigger(el.querySelector('span'), 'click');
   });
 
+
 });
