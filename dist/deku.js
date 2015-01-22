@@ -1086,6 +1086,7 @@ function Entity(Component, props) {
   this.type = Component;
   this.component = new Component();
   this.component.on('change', this.setState.bind(this));
+  this.component.on('send', this.send.bind(this));
   this.props = props || {};
   this.state = this.component.initialState(this.props);
   this.children = {};
@@ -1103,6 +1104,19 @@ function Entity(Component, props) {
  */
 
 Emitter(Entity.prototype);
+
+/**
+ * Send a message to the scene
+ *
+ * @param {String} name
+ * @param {Mixed} data
+ *
+ * @return {void}
+ */
+
+Entity.prototype.send = function(name, data){
+  this.scene.send(name, data);
+};
 
 /**
  * Get an updated version of the virtual tree.
@@ -1981,6 +1995,8 @@ module.exports = Scene;
  */
 
 function Scene(renderer, entity) {
+  this._pendingMessages = [];
+  this.messages = new Emitter();
   this.tick = this.update.bind(this);
   this.renderer = renderer;
   this.dirty = true;
@@ -1993,6 +2009,43 @@ function Scene(renderer, entity) {
 Emitter(Scene.prototype);
 
 /**
+ * Push a message to the queue
+ *
+ * @api private
+ *
+ * @return {void}
+ */
+Scene.prototype.send = function(name, data){
+  this._pendingMessages.push({ name: name, data: data });
+};
+
+/**
+ * Listen for messages
+ *
+ * @param {String} name
+ * @param {Function} fn
+ *
+ * @api public
+ */
+
+Scene.prototype.onMessage = function(name, fn){
+  this.messages.on(name, fn);
+};
+
+/**
+ * Flush all messages from the queue
+ *
+ * @api private
+ */
+
+Scene.prototype.flush = function(){
+  var messages = this.messages;
+  this._pendingMessages.forEach(function(message){
+    messages.emit(message.name, message.data);
+  });
+};
+
+/**
  * Schedule this component to be updated on the next frame.
  *
  * @param {Function} done
@@ -2000,6 +2053,7 @@ Emitter(Scene.prototype);
  */
 
 Scene.prototype.update = function(){
+  this.flush();
   if (!this.dirty) return;
   this.dirty = false;
   this.renderer.render(this.entity);
@@ -2061,6 +2115,7 @@ Scene.prototype.replaceProps = function(newProps, done){
 Scene.prototype.remove = function(){
   this.pause();
   this.renderer.clear();
+  this._pendingMessages = [];
 };
 
 /**
@@ -3159,6 +3214,19 @@ exports.setState = function(state, done){
 
 exports.invalidate = function(){
   this.emit('change', { __force__: true });
+};
+
+/**
+ * Send a message
+ *
+ * @param {String} name
+ * @param {Mixed} data
+ *
+ * @return {void}
+ */
+
+exports.send = function(name, data){
+  this.emit('send', name, data);
 };
 
 /**

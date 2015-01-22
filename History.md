@@ -1,4 +1,9 @@
 
+0.0.14 / 2015-01-21
+==================
+
+ * Add .send and .onMessage methods. You can call this.send(name, payload) within components and listen for those events on the scene with scene.onMessage(name, fn); 
+
 0.0.13 / 2015-01-20
 ==================
 
