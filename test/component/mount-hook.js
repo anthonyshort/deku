@@ -8,6 +8,7 @@ describe('Mounting Hooks', function(){
       }
     });
     var scene = Page.render(el);
+    scene.update();
     scene.remove();
   })
 
@@ -17,7 +18,9 @@ describe('Mounting Hooks', function(){
         done();
       }
     });
-    Page.render(el).remove();
+    var scene = Page.render(el)
+    scene.update();
+    scene.remove();
   })
 
   it('should fire the `beforeMount` hook before `mount`', function(){
@@ -30,7 +33,9 @@ describe('Mounting Hooks', function(){
         pass = true;
       }
     });
-    Page.render(el).remove();
+    var scene = Page.render(el)
+    scene.update();
+    scene.remove();
     assert(pass);
   })
 
@@ -44,15 +49,18 @@ describe('Mounting Hooks', function(){
         pass = true;
       }
     });
-    Page.render(el).remove();
+    var scene = Page.render(el)
+    scene.update();
+    scene.remove();
     assert(pass);
   })
 
   it('should not unmount twice', function(){
     var Page = component();
-    var mount = Page.render(el);
-    mount.remove();
-    mount.remove();
+    var scene = Page.render(el);
+    scene.update();
+    scene.remove();
+    scene.remove();
   })
 
   it('should fire mount events on sub-components', function(){
@@ -76,8 +84,10 @@ describe('Mounting Hooks', function(){
       }
     });
 
-    var mount = ComponentB.render(el, { name: 'Bob' });
+    var scene = ComponentB.render(el, { name: 'Bob' });
+    scene.update();
     assert(i === 4, i);
+    scene.remove();
   });
 
   it('should fire unmount events on sub-components', function(){
@@ -101,13 +111,14 @@ describe('Mounting Hooks', function(){
       }
     });
 
-    var mount = ComponentB.render(el, { name: 'Bob' });
-    mount.remove();
+    var scene = ComponentB.render(el, { name: 'Bob' });
+    scene.update();
+    scene.remove();
     assert(i === 4, i);
     assert(el.innerHTML === "");
   });
 
-  it('should fire mount events on sub-components created later', function(done){
+  it('should fire mount events on sub-components created later', function(){
     var calls = 0;
     function inc() { calls++ }
 
@@ -129,16 +140,16 @@ describe('Mounting Hooks', function(){
     var scene = ComponentB.render(el, {
       showComponent: false
     });
+    scene.update();
     scene.setProps({
       showComponent: true
     });
-    scene.on('update', function(){
-      assert.equal(calls, 2);
-      done();
-    });
+    scene.update();
+    assert.equal(calls, 2);
+    scene.remove();
   });
 
-  it('should fire unmount events on sub-components created later', function(done){
+  it('should fire unmount events on sub-components created later', function(){
     var calls = 0;
     function inc() { calls++ }
 
@@ -157,16 +168,12 @@ describe('Mounting Hooks', function(){
       }
     });
 
-    var scene = ComponentB.render(el, {
-      showComponent: true
-    });
-    scene.setProps({
-      showComponent: false
-    });
-    scene.on('update', function(){
-      assert.equal(calls, 2);
-      done();
-    });
+    var scene = ComponentB.render(el, { showComponent: true });
+    scene.update();
+    scene.setProps({ showComponent: false });
+    scene.update();
+    assert.equal(calls, 2);
+    scene.remove();
   });
 
 });

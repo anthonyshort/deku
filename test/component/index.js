@@ -11,6 +11,7 @@ describe('API', function(){
   it('should render a component', function(){
     var Test = component(HelloWorld);
     this.scene = Test.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -19,12 +20,14 @@ describe('API', function(){
       return dom('span', null, 'Hello World');
     });
     this.scene = Simple.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
   it('should render nothing visible on the page by default', function(){
     var Blank = component();
     this.scene = Blank.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<noscript></noscript>');
   });
 
@@ -34,6 +37,7 @@ describe('API', function(){
       return dom('span', null, ['Hello World']);
     };
     this.scene = Page.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -46,6 +50,7 @@ describe('API', function(){
     var Test = component();
     Test.use(plugin);
     this.scene = Test.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Plugin</span>');
   });
 
@@ -72,11 +77,13 @@ describe('API', function(){
       }
     });
     this.scene = Page.render(el);
+    this.scene.update();
   });
 
   it('should create a component with properties', function(){
     var Test = component(Span);
     this.scene = Test.render(el, { text: 'Hello World' });
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -88,12 +95,14 @@ describe('API', function(){
       }
     });
     this.scene = Test.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>foo</span>');
   });
 
   it('should remove from the DOM', function () {
     var Test = component(HelloWorld);
     var scene = Test.render(el);
+    scene.update();
     scene.remove();
     assert.equal(el.innerHTML, '');
   });
@@ -101,6 +110,7 @@ describe('API', function(){
   it('should not call flush callbacks if removed', function (done) {
     var Test = component(Span);
     var scene = Test.render(el, { text: 'foo' });
+    scene.update();
     scene.setProps({ text: 'bar' }, function(){
       throw new Error('Oops');
     });
@@ -118,6 +128,7 @@ describe('API', function(){
       }
     });
     this.scene = Composed.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -127,6 +138,7 @@ describe('API', function(){
       return dom(Inner, { one: 'Hello', two: 'World' });
     });
     this.scene = Composed.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
@@ -138,6 +150,7 @@ describe('API', function(){
       ]);
     });
     this.scene = Composed.render(el, { world: 'Earth' });
+    this.scene.update();
     this.scene.setProps({ world: 'Pluto' });
     this.scene.update();
     assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>');
@@ -156,11 +169,13 @@ describe('API', function(){
         ]);
       }
     });
-    var mount = ComponentB.render(el);
+    var scene = ComponentB.render(el);
+    scene.update();
     assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
+    scene.remove();
   });
 
-  it('should update component child nodes', function (done) {
+  it('should update component child nodes', function () {
     var ComponentA = component({
       render: function(props, state){
         return dom('div', null, props.children);
@@ -173,13 +188,12 @@ describe('API', function(){
         ]);
       }
     });
-    var mount = ComponentB.render(el, { text: 'Hello World!' });
-    mount.setProps({
-      text: 'Hello Pluto!'
-    }, function(){
-      assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
-      done();
-    });
+    this.scene = ComponentB.render(el, { text: 'Hello World!' });
+    this.scene.update();
+    this.scene.setProps({ text: 'Hello Pluto!' });
+    this.scene.update();
+    assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
+    this.scene.remove();
   });
 
   it('should allow components to have other components as child nodes', function () {
@@ -204,11 +218,12 @@ describe('API', function(){
         ]);
       }
     });
-    var mount = ComponentB.render(el, { text: 'Hello World!' });
+    this.scene = ComponentB.render(el, { text: 'Hello World!' });
+    this.scene.update();
     assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>');
   });
 
-  it('should only update components once when state and props change', function(done){
+  it('should only update components once when state and props change', function(){
     var i = 0;
     var emitter = new Emitter();
     var ComponentA = component({
@@ -236,18 +251,19 @@ describe('API', function(){
         ]);
       }
     });
-    var mount = ComponentB.render(el, { text: '2x' });
+    this.scene = ComponentB.render(el, { text: '2x' });
+    this.scene.update();
     i = 0;
 
     // Mark ComponentA as dirty from a state change
     emitter.emit('data', 'Mirror Shield');
 
     // Mark ComponentB as dirty
-    mount.setProps({ text: '3x' }, function(){
-      assert.equal(i, 2);
-      assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>");
-      done();
-    });
+    this.scene.setProps({ text: '3x' });
+    this.scene.update();
+    assert.equal(i, 2);
+    assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>");
+    this.scene.remove();
   });
 
   it('should invalidate itself so it is updated on the next frame anyway', function (done) {
@@ -263,7 +279,10 @@ describe('API', function(){
       }
     });
     this.scene = Invalidate.render(el);
+    this.scene.update();
     trigger(el.querySelector('span'), 'click');
+    this.scene.update();
+    this.scene.remove();
   });
 
 

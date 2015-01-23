@@ -16,6 +16,7 @@ describe('Updating State', function () {
 
   it('should update components when state changes', function(){
     this.scene = StateChangeOnMount.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>foo</span>');
     this.scene.update();
     assert.equal(el.innerHTML, '<span>bar</span>');
@@ -33,6 +34,7 @@ describe('Updating State', function () {
       }
     });
     this.scene = Composed.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<div><span>foo</span></div>');
     this.scene.update();
     assert.equal(el.innerHTML, '<div><span>bar</span></div>');
@@ -49,7 +51,8 @@ describe('Updating State', function () {
         return dom('span', null, state.text);
       }
     });
-    var scene = DefaultState.render(el);
+    this.scene = DefaultState.render(el);
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 

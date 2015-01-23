@@ -52,6 +52,7 @@ describe('Patching Element Nodes', function(){
 
   it('should add element nodes', function(){
     var scene = Toggle.render(el, { showChildren: false });
+    scene.update();
     assert.equal(el.innerHTML, '<div></div>');
     scene.setProps({ showChildren: true });
     scene.update();
@@ -66,6 +67,7 @@ describe('Patching Element Nodes', function(){
 
   it('should remove element nodes', function(){
     var scene = Toggle.render(el, { showChildren: true });
+    scene.update();
     assert.equal(el.innerHTML, '<div><span id="foo"></span></div>');
     scene.setProps({ showChildren: false });
     scene.update();
@@ -80,6 +82,7 @@ describe('Patching Element Nodes', function(){
 
   it('should only remove adjacent element nodes', function(){
     var scene = AdjacentTest.render(el, { i: 1 });
+    scene.update();
     assert(document.querySelector('#foo'));
     assert(document.querySelector('#bar'));
     assert(document.querySelector('#baz'));
@@ -97,6 +100,7 @@ describe('Patching Element Nodes', function(){
 
   it('should change tag names', function(){
     var scene = CustomTag.render(el, { type: 'span' });
+    scene.update();
     assert.equal(el.innerHTML, '<span></span>');
     scene.setProps({ type: 'div' });
     scene.update();
@@ -122,6 +126,7 @@ describe('Patching Element Nodes', function(){
       }
     });
     var scene = Test.render(el, { type: 'span', text: 'test' });
+    scene.update();
     assert.equal(el.innerHTML, '<span>test</span>');
     scene.setProps({ type: 'div', text: 'test' });
     scene.update();
@@ -159,6 +164,7 @@ describe('Patching Element Nodes', function(){
       }
     });
     var scene = App.render(el, { showElements: true });
+    scene.update();
     scene.setProps({ showElements: false });
     scene.update();
     assert.equal(i, 2);
@@ -178,6 +184,7 @@ describe('Patching Element Nodes', function(){
       }
     });
     var scene = Test.render(el, { type: 'span' });
+    scene.update();
     scene.setProps({ type: 'div' });
     scene.update();
     assert.equal(el.innerHTML, '<div></div>');
@@ -199,6 +206,7 @@ describe('Patching Element Nodes', function(){
       }
     });
     var scene = Test.render(el, { showElement: true });
+    scene.update();
     assert.equal(el.innerHTML, '<span>element</span>');
     scene.setProps({ showElement: false });
     scene.update();
@@ -228,12 +236,14 @@ describe('Patching Element Nodes', function(){
         return dom(ComponentB);
       }
     });
-    var mount = ComponentC.render(el, { type: 'A' });
+    var scene = ComponentC.render(el, { type: 'A' });
+    scene.update();
     assert.equal(el.innerHTML, '<div>A</div>');
-    mount.setProps({ type: 'B' }, function(){
+    scene.setProps({ type: 'B' }, function(){
       assert.equal(el.innerHTML, '<div>B</div>');
-      assert(mount.entity.children['0'].component instanceof ComponentB);
+      assert(scene.entity.children['0'].component instanceof ComponentB);
       done();
+      scene.remove();
     });
   })
 
@@ -244,6 +254,7 @@ describe('Patching Element Nodes', function(){
 
   it('should remove references to child components when they are removed', function(){
     var scene = ComponentToggle.render(el, { showComponent: true });
+    scene.update();
     assert(scene.entity.children['0']);
     scene.setProps({ showComponent: false });
     scene.update();

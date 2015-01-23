@@ -10,6 +10,7 @@ describe('Patching Attributes', function(){
 
   beforeEach(function () {
     scene = AttrComponent.render(window.el);
+    scene.update();
   });
 
   afterEach(function () {

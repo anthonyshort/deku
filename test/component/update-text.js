@@ -15,6 +15,7 @@ describe('Patching Text Nodes', function(){
 
   it('should update text nodes', function(){
     var scene = TextComponent.render(el, { text: 'Hello World' });
+    scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
     scene.setProps({ text: 'Hello Pluto' });
     scene.update();
@@ -24,6 +25,7 @@ describe('Patching Text Nodes', function(){
 
   it('should add text node', function(){
     var scene = Toggle.render(el, { showText: false });
+    scene.update();
     assert.equal(el.innerHTML, '<div></div>');
     scene.setProps({ showText: true });
     scene.update();
@@ -34,6 +36,7 @@ describe('Patching Text Nodes', function(){
 
   it('should remove text nodes', function(){
     var scene = Toggle.render(el, { showText: true });
+    scene.update();
     assert.equal(el.innerHTML, '<div>bar</div>');
     scene.setProps({ showText: false });
     scene.update();

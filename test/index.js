@@ -6,6 +6,7 @@ window.assert = require('component/assert@0.4.0');
 window.component = require('/lib/component');
 window.dom = require('/lib/virtual').node;
 
+
 // Create a container.
 
 beforeEach(function () {
@@ -14,6 +15,10 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+  if (this.scene) this.scene.remove();
+  if (window.el.innerHTML !== "") {
+    console.warn("Warning: The test '" + this.currentTest.title + "' should remove the scene after the test.");
+  }
   window.el.innerHTML = "";
 });
 
@@ -31,7 +36,7 @@ describe('Component', function () {
   require('./component/hook-events');
   require('./component/props');
   require('./component/state');
-  require('./component/send');
+  require('./component/channels');
   require('./component/update-elements');
   require('./component/update-text');
   require('./component/update-attributes');

@@ -9,6 +9,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el);
+    scene.update()
     scene.remove();
   })
 
@@ -22,6 +23,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el);
+    scene.update()
     scene.remove();
   })
 
@@ -31,6 +33,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el, { foo: 'baz' });
+    scene.update();
     scene.setProps({ foo: 'bar' });
     scene.update();
     scene.remove();
@@ -42,6 +45,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el, { foo: 'baz' });
+    scene.update();
     scene.setProps({ foo: 'bar' });
     scene.update();
     scene.remove();
@@ -54,6 +58,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el);
+    scene.update();
     scene.remove();
   })
 
@@ -64,6 +69,7 @@ describe('Plugin Hooks', function () {
       done();
     });
     var scene = Page.render(el);
+    scene.update();
     scene.remove();
   })
 

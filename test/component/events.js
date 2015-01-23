@@ -12,7 +12,8 @@ describe('Events', function(){
       }
     });
 
-    Page.render(el, { x: 20 });
+    this.scene = Page.render(el, { x: 20 });
+    this.scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
@@ -40,17 +41,17 @@ describe('Events', function(){
         done();
       }
     });
-    var mount = Page.render(el, { click: true });
+    this.scene = Page.render(el, { click: true });
+    this.scene.update();
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-    mount.setProps({ click: false });
+    this.scene.setProps({ click: false });
     function onclick() {
       ++count;
     }
   });
 
   it('should update click event', function(done){
-    var mount;
     var count = 0;
 
     var Page = component({
@@ -66,10 +67,12 @@ describe('Events', function(){
       }
     });
 
-    mount = Page.render(el, { click: onclicka });
+    this.scene = Page.render(el, { click: onclicka });
+    this.scene.update();
+
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-    mount.setProps({ click: onclickb });
+    this.scene.setProps({ click: onclickb });
 
     function onclicka() {
       count += 1;

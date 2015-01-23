@@ -27,6 +27,7 @@ describe('Update Hooks', function () {
     });
     Test.use(updateMixin);
     var scene = Test.render(el, {count: 1});
+    scene.update();
     scene.setProps({count:2});
     scene.update();
     assert(fired);
@@ -46,6 +47,7 @@ describe('Update Hooks', function () {
     });
     Test.use(updateMixin);
     var scene = Test.render(el, {count: 1});
+    scene.update();
     scene.setProps({count:2});
     scene.update();
     assert(fired);
@@ -58,6 +60,7 @@ describe('Update Hooks', function () {
       }
     });
     var scene = Impure.render(el, {count: 1});
+    scene.update();
     scene.setProps({count:2});
     try {
       scene.update();
@@ -67,7 +70,7 @@ describe('Update Hooks', function () {
     throw new Error('Did not prevent set state during beforeUpdate');
   });
 
-  it('should only call `beforeUpdate` once', function(done){
+  it('should only call `beforeUpdate` once', function(){
     var i = 0;
     var Component = component({
       beforeUpdate: function(props, state, nextProps, nextState){
@@ -79,14 +82,15 @@ describe('Update Hooks', function () {
         return dom('div', null, [props.text]);
       }
     });
-    var mount = Component.render(el, {
+    var scene = Component.render(el, {
       text: 'one'
     });
-    mount.setProps({ text: 'two' });
-    mount.setProps({ text: 'three' }, function(){
-      assert(i === 1);
-      done();
-    });
+    scene.update();
+    scene.setProps({ text: 'two' });
+    scene.setProps({ text: 'three' });
+    scene.update();
+    assert(i === 1);
+    scene.remove();
   });
 
 });

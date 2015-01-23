@@ -6,7 +6,8 @@ describe('Render Hook', function () {
       return false;
     });
     try {
-      InvalidRender.render(el);
+      var scene = InvalidRender.render(el);
+      scene.update();
       done(false);
     } catch (e) {
       done();
@@ -19,7 +20,8 @@ describe('Render Hook', function () {
       return dom();
     });
     try {
-      Impure.render(el);
+      var scene = Impure.render(el);
+      scene.update();
     } catch(e) {
       return done();
     }
