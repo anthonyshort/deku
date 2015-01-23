@@ -143,6 +143,16 @@ function component(spec) {
     bindAll(this);
   }
 
+  // statics.
+
+  Component.props = {};
+  Component.channels = [];
+  assign(Component, statics, Emitter.prototype);
+
+  // protos.
+
+  assign(Component.prototype, protos, spec, Emitter.prototype);
+
   // for debugging.
 
   if (spec.displayName) {
@@ -150,13 +160,23 @@ function component(spec) {
     delete spec.displayName;
   }
 
-  // statics.
+  // extract props
 
-  assign(Component, statics, Emitter.prototype);
+  if (spec.props) {
+    for (var key in spec.props) {
+      Component.prop(key, spec.props[key]);
+    }
+    delete spec.props;
+  }
 
-  // protos.
+  // extract channels
 
-  assign(Component.prototype, protos, spec, Emitter.prototype);
+  if (spec.channels) {
+    spec.channels.forEach(function(name){
+      Component.channel(name);
+    });
+    delete spec.channels;
+  }
 
   return Component;
 }
@@ -482,6 +502,29 @@ exports.use = function(plugin){
   } else {
     for (var k in plugin) this.prototype[k] = plugin[k];
   }
+  return this;
+};
+
+/**
+ * Define a property
+ *
+ * @param {String} name
+ * @param {Object} options
+ */
+
+exports.prop = function(name, options){
+  this.props[name] = options;
+  return this;
+};
+
+/**
+ * Connect to channels
+ *
+ * @param {String} name
+ */
+
+exports.channel = function(name){
+  this.channels.push(name);
   return this;
 };
 
@@ -1054,6 +1097,7 @@ Tree.prototype.parse = function(node, path){
  * Module dependencies.
  */
 
+var camel = _require('ianstormtaylor/to-camel-case');
 var assign = _require('sindresorhus/object-assign');
 var Emitter = _require('component/emitter');
 var equals = _require('jkroso/equals');
@@ -1084,10 +1128,8 @@ module.exports = Entity;
 function Entity(Component, props) {
   this.id = (++i).toString(32);
   this.type = Component;
-  this.component = new Component();
-  this.component.on('change', this.setState.bind(this));
-  this.component.on('send', this.send.bind(this));
   this.props = props || {};
+  this.component = this.createComponent(Component);
   this.state = this.component.initialState(this.props);
   this.children = {};
   this.current = this.render();
@@ -1106,16 +1148,17 @@ function Entity(Component, props) {
 Emitter(Entity.prototype);
 
 /**
- * Send a message to the scene
+ * Create the component instance
  *
- * @param {String} name
- * @param {Mixed} data
+ * @param {Component} Component
  *
- * @return {void}
+ * @return {Object}
  */
 
-Entity.prototype.send = function(name, data){
-  this.scene.send(name, data);
+Entity.prototype.createComponent = function(Component) {
+  var component = new Component();
+  component.on('change', this.setState.bind(this));
+  return component;
 };
 
 /**
@@ -1346,6 +1389,45 @@ Entity.prototype.remove = function(){
 };
 
 /**
+ * Connect to all off the channels on the scene
+ */
+
+Entity.prototype.connect = function(){
+  var channels = this.channels = {};
+  var scene = this.scene;
+  this.type.channels.forEach(function(name){
+    var socket = scene.channel(name).connect();
+    channels[camel(name)] = socket;
+  });
+};
+
+/**
+ * Disconnect from all of the channels
+ */
+
+Entity.prototype.disconnect = function(){
+  for (var name in this.channels) {
+    var socket = this.channels[name];
+    socket.disconnect();
+  }
+  delete this.channels;
+};
+
+/**
+ * Get the props object that is passed into the hook functions.
+ * This includes extra props that are sent to the user but
+ * don't necessarily update the view.
+ *
+ * @return {Object}
+ */
+
+Entity.prototype.getProps = function(){
+  var props = Object.create(this.props);
+  props.channels = this.channels;
+  return props;
+};
+
+/**
  * Trigger `beforeUpdate` lifecycle hook.
  *
  * @param {Object} nextState
@@ -1353,9 +1435,10 @@ Entity.prototype.remove = function(){
  */
 
 Entity.prototype.beforeUpdate = function(nextState, nextProps){
+  var props = this.getProps();
   this.lifecycle = 'beforeUpdate';
-  this.component.beforeUpdate(this.props, this.state, nextProps, nextState);
-  this.type.emit('beforeUpdate', this.component, this.props, this.state, nextProps, nextState);
+  this.component.beforeUpdate(props, this.state, nextProps, nextState);
+  this.type.emit('beforeUpdate', this.component, props, this.state, nextProps, nextState);
   this.lifecycle = null;
 };
 
@@ -1367,9 +1450,10 @@ Entity.prototype.beforeUpdate = function(nextState, nextProps){
  */
 
 Entity.prototype.afterUpdate = function(previousState, previousProps){
+  var props = this.getProps();
   this.emit('update');
-  this.component.afterUpdate(this.props, this.state, previousProps, previousState);
-  this.type.emit('afterUpdate', this.component, this.props, this.state, previousProps, previousState);
+  this.component.afterUpdate(props, this.state, previousProps, previousState);
+  this.type.emit('afterUpdate', this.component, props, this.state, previousProps, previousState);
 };
 
 /**
@@ -1379,8 +1463,9 @@ Entity.prototype.afterUpdate = function(previousState, previousProps){
  */
 
 Entity.prototype.beforeUnmount = function(el){
-  this.component.beforeUnmount(el, this.props, this.state);
-  this.type.emit('beforeUnmount', this.component, el, this.props, this.state);
+  var props = this.getProps();
+  this.component.beforeUnmount(el, props, this.state);
+  this.type.emit('beforeUnmount', this.component, el, props, this.state);
 };
 
 /**
@@ -1388,8 +1473,10 @@ Entity.prototype.beforeUnmount = function(el){
  */
 
 Entity.prototype.afterUnmount = function(){
-  this.component.afterUnmount(this.props, this.state);
-  this.type.emit('afterUnmount', this.component, this.props, this.state);
+  this.disconnect();
+  var props = this.getProps();
+  this.component.afterUnmount(props, this.state);
+  this.type.emit('afterUnmount', this.component, props, this.state);
 };
 
 /**
@@ -1397,8 +1484,10 @@ Entity.prototype.afterUnmount = function(){
  */
 
 Entity.prototype.beforeMount = function(){
-  this.component.beforeMount(this.props, this.state);
-  this.type.emit('beforeMount', this.component, this.props, this.state);
+  this.connect();
+  var props = this.getProps();
+  this.component.beforeMount(props, this.state);
+  this.type.emit('beforeMount', this.component, props, this.state);
 };
 
 /**
@@ -1408,8 +1497,9 @@ Entity.prototype.beforeMount = function(){
  */
 
 Entity.prototype.afterMount = function(el){
-  this.component.afterMount(el, this.props, this.state);
-  this.type.emit('afterMount', this.component, el, this.props, this.state);
+  var props = this.getProps();
+  this.component.afterMount(el, props, this.state);
+  this.type.emit('afterMount', this.component, el, props, this.state);
 };
 
 /**
@@ -1419,11 +1509,140 @@ Entity.prototype.afterMount = function(el){
  */
 
 Entity.prototype.propsChanged = function(nextProps){
-  this.component.propsChanged(nextProps, this.props, this.state);
-  this.type.emit('propsChanged', this.component, nextProps, this.props, this.state);
+  var props = this.getProps();
+  this.component.propsChanged(nextProps, props, this.state);
+  this.type.emit('propsChanged', this.component, nextProps, props, this.state);
 };
-}, {"sindresorhus/object-assign":4,"component/emitter":6,"jkroso/equals":19,"component/each":20,"../virtual":3}],
+}, {"ianstormtaylor/to-camel-case":19,"sindresorhus/object-assign":4,"component/emitter":6,"jkroso/equals":20,"component/each":21,"../virtual":3}],
 19: [function(_require, module, exports) {
+
+var toSpace = _require('to-space-case');
+
+
+/**
+ * Expose `toCamelCase`.
+ */
+
+module.exports = toCamelCase;
+
+
+/**
+ * Convert a `string` to camel case.
+ *
+ * @param {String} string
+ * @return {String}
+ */
+
+
+function toCamelCase (string) {
+  return toSpace(string).replace(/\s(\w)/g, function (matches, letter) {
+    return letter.toUpperCase();
+  });
+}
+}, {"to-space-case":22}],
+22: [function(_require, module, exports) {
+
+var clean = _require('to-no-case');
+
+
+/**
+ * Expose `toSpaceCase`.
+ */
+
+module.exports = toSpaceCase;
+
+
+/**
+ * Convert a `string` to space case.
+ *
+ * @param {String} string
+ * @return {String}
+ */
+
+
+function toSpaceCase (string) {
+  return clean(string).replace(/[\W_]+(.|$)/g, function (matches, match) {
+    return match ? ' ' + match : '';
+  });
+}
+}, {"to-no-case":23}],
+23: [function(_require, module, exports) {
+
+/**
+ * Expose `toNoCase`.
+ */
+
+module.exports = toNoCase;
+
+
+/**
+ * Test whether a string is camel-case.
+ */
+
+var hasSpace = /\s/;
+var hasCamel = /[a-z][A-Z]/;
+var hasSeparator = /[\W_]/;
+
+
+/**
+ * Remove any starting case from a `string`, like camel or snake, but keep
+ * spaces and punctuation that may be important otherwise.
+ *
+ * @param {String} string
+ * @return {String}
+ */
+
+function toNoCase (string) {
+  if (hasSpace.test(string)) return string.toLowerCase();
+
+  if (hasSeparator.test(string)) string = unseparate(string);
+  if (hasCamel.test(string)) string = uncamelize(string);
+  return string.toLowerCase();
+}
+
+
+/**
+ * Separator splitter.
+ */
+
+var separatorSplitter = /[\W_]+(.|$)/g;
+
+
+/**
+ * Un-separate a `string`.
+ *
+ * @param {String} string
+ * @return {String}
+ */
+
+function unseparate (string) {
+  return string.replace(separatorSplitter, function (m, next) {
+    return next ? ' ' + next : '';
+  });
+}
+
+
+/**
+ * Camelcase splitter.
+ */
+
+var camelSplitter = /(.)([A-Z]+)/g;
+
+
+/**
+ * Un-camelcase a `string`.
+ *
+ * @param {String} string
+ * @return {String}
+ */
+
+function uncamelize (string) {
+  return string.replace(camelSplitter, function (m, previous, uppers) {
+    return previous + ' ' + uppers.toLowerCase().split('').join(' ');
+  });
+}
+}, {}],
+20: [function(_require, module, exports) {
 var type = _require('type')
 
 // (any, any, [array]) -> boolean
@@ -1545,8 +1764,8 @@ function getEnumerableProperties (object) {
 
 module.exports = equal
 
-}, {"type":21}],
-21: [function(_require, module, exports) {
+}, {"type":24}],
+24: [function(_require, module, exports) {
 
 var toString = {}.toString
 var DomNode = typeof window != 'undefined'
@@ -1599,7 +1818,7 @@ var types = exports.types = {
 }
 
 }, {}],
-20: [function(_require, module, exports) {
+21: [function(_require, module, exports) {
 
 /**
  * Module dependencies.
@@ -1690,8 +1909,8 @@ function array(obj, fn, ctx) {
   }
 }
 
-}, {"type":22,"component-type":22,"to-function":23}],
-22: [function(_require, module, exports) {
+}, {"type":25,"component-type":25,"to-function":26}],
+25: [function(_require, module, exports) {
 
 /**
  * toString ref.
@@ -1726,7 +1945,7 @@ module.exports = function(val){
 };
 
 }, {}],
-23: [function(_require, module, exports) {
+26: [function(_require, module, exports) {
 
 /**
  * Module Dependencies
@@ -1880,8 +2099,8 @@ function stripNested (prop, str, val) {
   });
 }
 
-}, {"props":24,"component-props":24}],
-24: [function(_require, module, exports) {
+}, {"props":27,"component-props":27}],
+27: [function(_require, module, exports) {
 /**
  * Global Names
  */
@@ -1975,8 +2194,9 @@ function prefixed(str) {
  * Module dependencies
  */
 
-var loop = _require('./loop');
 var Emitter = _require('component/emitter');
+var Signals = _require('segmentio/tower');
+var loop = _require('./loop');
 
 /**
  * Expose `Scene`
@@ -1995,54 +2215,38 @@ module.exports = Scene;
  */
 
 function Scene(renderer, entity) {
-  this._pendingMessages = [];
-  this.messages = new Emitter();
   this.tick = this.update.bind(this);
+  this.signals = new Signals();
   this.renderer = renderer;
   this.dirty = true;
   this.entity = entity;
   entity.addToScene(this);
-  this.update();
   this.resume();
 }
 
 Emitter(Scene.prototype);
 
 /**
- * Push a message to the queue
- *
- * @api private
- *
- * @return {void}
- */
-Scene.prototype.send = function(name, data){
-  this._pendingMessages.push({ name: name, data: data });
-};
-
-/**
- * Listen for messages
- *
- * @param {String} name
- * @param {Function} fn
+ * Add a plugin
  *
  * @api public
  */
 
-Scene.prototype.onMessage = function(name, fn){
-  this.messages.on(name, fn);
+Scene.prototype.use = function(plugin){
+  plugin(this);
+  return this;
 };
 
 /**
- * Flush all messages from the queue
+ * Get a channel
  *
- * @api private
+ * @param {String} name
+ *
+ * @return {Emitter}
  */
 
-Scene.prototype.flush = function(){
-  var messages = this.messages;
-  this._pendingMessages.forEach(function(message){
-    messages.emit(message.name, message.data);
-  });
+Scene.prototype.channel = function(name){
+  return this.signals.channel(name);
 };
 
 /**
@@ -2053,11 +2257,11 @@ Scene.prototype.flush = function(){
  */
 
 Scene.prototype.update = function(){
-  this.flush();
   if (!this.dirty) return;
   this.dirty = false;
   this.renderer.render(this.entity);
   this.emit('update');
+  return this;
 };
 
 /**
@@ -2114,8 +2318,9 @@ Scene.prototype.replaceProps = function(newProps, done){
 
 Scene.prototype.remove = function(){
   this.pause();
+  this.signals.closeAll();
   this.renderer.clear();
-  this._pendingMessages = [];
+  this.off();
 };
 
 /**
@@ -2124,6 +2329,8 @@ Scene.prototype.remove = function(){
 
 Scene.prototype.resume = function(){
   loop.on('tick', this.tick);
+  this.emit('resume');
+  return this;
 };
 
 /**
@@ -2132,9 +2339,142 @@ Scene.prototype.resume = function(){
 
 Scene.prototype.pause = function(){
   loop.off('tick', this.tick);
+  this.emit('pause');
+  return this;
 };
-}, {"./loop":25,"component/emitter":6}],
-25: [function(_require, module, exports) {
+}, {"component/emitter":6,"segmentio/tower":28,"./loop":29}],
+28: [function(_require, module, exports) {
+var Emitter = _require('component/emitter');
+
+module.exports = Tower;
+
+/**
+ * Create a new set of channels
+ *
+ * @return {Function}
+ */
+
+function Tower() {
+  this.channels = {};
+}
+
+/**
+ * Close all channels
+ */
+
+Tower.prototype.closeAll = function(){
+  for (var key in this.channels) {
+    var channel = this.channels[key];
+    channel.close();
+  }
+};
+
+/**
+ * Get a channel
+ *
+ * @param {String} name
+ *
+ * @return {Channel}
+ */
+
+Tower.prototype.channel = function(name) {
+  var channels = this.channels;
+  if (channels[name]) return channels[name];
+  var channel = new Channel();
+  channel.on('close', function(){
+    delete channels[name];
+  });
+  channels[name] = channel;
+  return channel;
+};
+
+/**
+ * A channel is a group of sockets using a name. We can create
+ * new connections to the channel and disconnect them.
+ *
+ *   new Channel()
+ *     .connect([options]) => Socket
+ *     .broadcast(name, data)
+ *     .close()
+ */
+
+function Channel() {
+  this.sockets = [];
+}
+
+/**
+ * Mixin
+ */
+
+Emitter(Channel.prototype);
+
+/**
+ * Connect to this channel by creating a new socket
+ *
+ * @param {Object} options
+ *
+ * @return {Emitter}
+ */
+
+Channel.prototype.connect = function(options){
+  var self = this;
+  var socket = new Emitter();
+  socket.disconnect = function(){
+    removeFromArray(socket, self.sockets);
+    self.emit('disconnect', socket, options);
+    socket.emit('disconnect', options);
+    socket.off();
+  };
+  this.sockets.push(socket);
+  this.emit('connection', socket, options);
+  return socket;
+};
+
+/**
+ * Broadcast an event to all connected sockets
+ *
+ * @param {String} name
+ * @param {*} data
+ *
+ * @return {void}
+ */
+
+Channel.prototype.broadcast = function(name, data){
+  this.sockets.forEach(function(socket){
+    socket.emit(name, data);
+  });
+};
+
+/**
+ * Close this channel and close all connections
+ *
+ * @return {void}
+ */
+
+Channel.prototype.close = function(){
+  while(this.sockets.length) {
+    var socket = this.sockets.pop();
+    socket.disconnect();
+  }
+  this.emit('close');
+  this.off();
+};
+
+/**
+ * Remove an item from an array
+ *
+ * @param {[type]} item
+ * @param {[type]} array
+ *
+ * @return {[type]}
+ */
+function removeFromArray(item, array) {
+  var index = array.indexOf(item);
+  if (index === -1) return;
+  array.splice(index, 1);
+}
+}, {"component/emitter":6}],
+29: [function(_require, module, exports) {
 
 /**
  * Module dependecies
@@ -2169,8 +2509,8 @@ raf(tick);
  */
 
 module.exports = frames;
-}, {"component/raf":26,"component/emitter":6}],
-26: [function(_require, module, exports) {
+}, {"component/raf":30,"component/emitter":6}],
+30: [function(_require, module, exports) {
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2511,8 +2851,8 @@ HTMLRenderer.prototype.createElement = function(node, tree, entity, optParentEl)
   }
 };
 
-}, {"./interactions":27,"component/each":20,"./diff":28}],
-27: [function(_require, module, exports) {
+}, {"./interactions":31,"component/each":21,"./diff":32}],
+31: [function(_require, module, exports) {
 
 var delegate = _require('component/delegate');
 var throttle = _require('component/per-frame');
@@ -2641,8 +2981,8 @@ function handle(event){
     fn(event);
   }
 }
-}, {"component/delegate":29,"component/per-frame":30,"./keypath":31}],
-29: [function(_require, module, exports) {
+}, {"component/delegate":33,"component/per-frame":34,"./keypath":35}],
+33: [function(_require, module, exports) {
 /**
  * Module dependencies.
  */
@@ -2686,8 +3026,8 @@ exports.unbind = function(el, type, fn, capture){
   event.unbind(el, type, fn, capture);
 };
 
-}, {"closest":32,"event":33}],
-32: [function(_require, module, exports) {
+}, {"closest":36,"event":37}],
+36: [function(_require, module, exports) {
 var matches = _require('matches-selector')
 
 module.exports = function (element, selector, checkYoSelf, root) {
@@ -2708,8 +3048,8 @@ module.exports = function (element, selector, checkYoSelf, root) {
   }
 }
 
-}, {"matches-selector":34}],
-34: [function(_require, module, exports) {
+}, {"matches-selector":38}],
+38: [function(_require, module, exports) {
 /**
  * Module dependencies.
  */
@@ -2757,8 +3097,8 @@ function match(el, selector) {
   return false;
 }
 
-}, {"query":35}],
-35: [function(_require, module, exports) {
+}, {"query":39}],
+39: [function(_require, module, exports) {
 function one(selector, el) {
   return el.querySelector(selector);
 }
@@ -2782,7 +3122,7 @@ exports.engine = function(obj){
 };
 
 }, {}],
-33: [function(_require, module, exports) {
+37: [function(_require, module, exports) {
 var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
     unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent',
     prefix = bind !== 'addEventListener' ? 'on' : '';
@@ -2819,7 +3159,7 @@ exports.unbind = function(el, type, fn, capture){
   return fn;
 };
 }, {}],
-30: [function(_require, module, exports) {
+34: [function(_require, module, exports) {
 /**
  * Module Dependencies.
  */
@@ -2858,8 +3198,8 @@ function throttle(fn) {
   };
 }
 
-}, {"raf":36}],
-36: [function(_require, module, exports) {
+}, {"raf":40}],
+40: [function(_require, module, exports) {
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2900,7 +3240,7 @@ exports.cancel = function(id){
 };
 
 }, {}],
-31: [function(_require, module, exports) {
+35: [function(_require, module, exports) {
 exports.get = function(obj, path) {
   var parts = path;
   var value = obj;
@@ -2925,7 +3265,7 @@ exports.set = function(obj, path, value) {
 };
 
 }, {}],
-28: [function(_require, module, exports) {
+32: [function(_require, module, exports) {
 
 var equals = _require('jkroso/equals');
 
@@ -3181,7 +3521,7 @@ function zip() {
   });
 }
 
-}, {"jkroso/equals":19}],
+}, {"jkroso/equals":20}],
 8: [function(_require, module, exports) {
 
 /**
@@ -3214,19 +3554,6 @@ exports.setState = function(state, done){
 
 exports.invalidate = function(){
   this.emit('change', { __force__: true });
-};
-
-/**
- * Send a message
- *
- * @param {String} name
- * @param {Mixed} data
- *
- * @return {void}
- */
-
-exports.send = function(name, data){
-  this.emit('send', name, data);
 };
 
 /**

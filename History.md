@@ -1,4 +1,11 @@
 
+0.0.15 / 2015-01-23
+==================
+
+ * Added .channel and .prop methods
+ * Removed .send and .onMessage in favour of channels
+ * Scene is no longer immediately rendered
+
 0.0.14 / 2015-01-21
 ==================
 
