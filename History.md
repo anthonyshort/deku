@@ -1,4 +1,9 @@
 
+0.0.16 / 2015-01-23
+==================
+
+ * Fixed issue with channels not being sent to render
+
 0.0.15 / 2015-01-23
 ==================
 

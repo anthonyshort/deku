@@ -1132,7 +1132,7 @@ function Entity(Component, props) {
   this.component = this.createComponent(Component);
   this.state = this.component.initialState(this.props);
   this.children = {};
-  this.current = this.render();
+  this.current = null;
   this.previous = null;
   this.dirty = false;
   this.lifecycle = null;
@@ -1169,7 +1169,8 @@ Entity.prototype.createComponent = function(Component) {
 
 Entity.prototype.render = function(){
   this.lifecycle = 'rendering';
-  var node = this.component.render(this.props, this.state);
+  var props = this.getProps();
+  var node = this.component.render(props, this.state);
   this.lifecycle = null;
   if (!node) {
     node = virtual.node('noscript');
@@ -2593,15 +2594,15 @@ function HTMLRenderer(container) {
 
 HTMLRenderer.prototype.render = function(entity) {
 
-  // We're rendering a new entity to the scene.
-  if (this.rendered !== entity) {
-    this.clear();
-    this.mountEntity(entity, this.container);
-    this.rendered = entity;
-    return;
+  if (entity.current) {
+   this.update(entity);
+   return;
   }
 
-  this.update(entity);
+  // This entity has never been rendered before
+  this.clear();
+  this.mountEntity(entity, this.container);
+  this.rendered = entity;
 };
 
 /**
@@ -2679,8 +2680,8 @@ HTMLRenderer.prototype.clear = function(){
  */
 
 HTMLRenderer.prototype.mountEntity = function(entity, container) {
-  var el = this.addEntity(entity, container);
   entity.beforeMount();
+  var el = this.addEntity(entity, container);
   container.appendChild(el);
   this.updateEvents(entity);
   entity.afterMount(el);
@@ -2782,7 +2783,9 @@ HTMLRenderer.prototype.removeEvents = function(entity) {
  */
 
 HTMLRenderer.prototype.addEntity = function(entity, parentEl) {
-  var el = this.createElement(entity.current.root, entity.current, entity, parentEl);
+  var current = entity.render();
+  var el = this.createElement(current.root, current, entity, parentEl);
+  entity.setCurrent(current);
   this.elements[entity.id] = el;
   // entity.on('update', this.updateEntity);
   // entity.on('remove', this.unmountEntity);
