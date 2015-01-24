@@ -79,6 +79,20 @@ describe('Channels', function () {
     scene.remove();
   });
 
+  it('should have access to the channel in render', function (done) {
+    var Test = component({
+      channels: ['events'],
+      render: function(props){
+        assert(props.channels.events);
+        done();
+        return dom();
+      }
+    });
+    var scene = Test.render(el, { count: 1 });
+    scene.update();
+    scene.remove();
+  });
+
   it('should disconnect from channels when the scene is removed', function () {
     var count = 0;
     var Test = component({
