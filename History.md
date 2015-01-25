@@ -1,4 +1,11 @@
 
+0.0.18 / 2015-01-25
+==================
+
+ * Fixed event delegation
+ * Added some super basic perf tests
+ * Fixed issue with scene not removing listeners
+
 0.0.17 / 2015-01-24
 ==================
 

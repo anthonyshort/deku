@@ -2204,7 +2204,7 @@ function prefixed(str) {
  */
 
 var Emitter = _require('component/emitter');
-var Signals = _require('segmentio/tower');
+var Signals = _require('segmentio/tower@0.0.1');
 var loop = _require('./loop');
 
 /**
@@ -2328,7 +2328,7 @@ Scene.prototype.replaceProps = function(newProps, done){
 Scene.prototype.remove = function(){
   this.pause();
   this.signals.closeAll();
-  this.renderer.clear();
+  this.renderer.remove();
   this.off();
 };
 
@@ -2351,7 +2351,7 @@ Scene.prototype.pause = function(){
   this.emit('pause');
   return this;
 };
-}, {"component/emitter":6,"segmentio/tower":28,"./loop":29}],
+}, {"component/emitter":6,"segmentio/tower@0.0.1":28,"./loop":29}],
 28: [function(_require, module, exports) {
 var Emitter = _require('component/emitter');
 
@@ -2683,6 +2683,15 @@ HTMLRenderer.prototype.clear = function(){
 };
 
 /**
+ * Clear the scene
+ */
+
+HTMLRenderer.prototype.remove = function(){
+  this.clear();
+  this.events.remove();
+};
+
+/**
  * Append an entity to an element
  *
  * @param {Entity} entity
@@ -2927,7 +2936,7 @@ module.exports = Interactions;
 function Interactions(el) {
   this.el = el;
   this.handlers = {};
-  this.handle = handle.bind(this);
+  this.handle = this.handle.bind(this);
   this.resume();
 }
 
@@ -2969,7 +2978,7 @@ Interactions.prototype.resume = function(){
 
 Interactions.prototype.pause = function(){
   events.forEach(function(name){
-    this.el.removeEventListener(name, this.handle);
+    this.el.removeEventListener(name, this.handle, true);
   }, this);
 };
 
@@ -2988,14 +2997,25 @@ Interactions.prototype.remove = function(){
  * @param {Event} event
  */
 
-function handle(event){
+Interactions.prototype.handle = function(event){
   var target = event.target;
   var handlers = this.handlers;
-  var fn = keypath.get(this.handlers, [target.__entity__, target.__path__, event.type]);
-  if (fn) {
-    fn(event);
+  var entityId = target.__entity__;
+  var eventType = event.type;
+  var fn;
+
+  // Walk up the DOM tree and see if there is a handler
+  // for this event type higher up.
+  while (target && target.__entity__ === entityId) {
+    var fn = keypath.get(handlers, [entityId, target.__path__, eventType]);
+    if (fn) {
+      event.delegateTarget = target;
+      fn(event);
+      break;
+    }
+    target = target.parentNode;
   }
-}
+};
 }, {"component/delegate":33,"component/per-frame":34,"./keypath":35}],
 33: [function(_require, module, exports) {
 /**
