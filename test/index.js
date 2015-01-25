@@ -6,13 +6,10 @@ window.assert = require('component/assert@0.4.0');
 window.component = require('/lib/component');
 window.dom = require('/lib/virtual').node;
 
-
 // Create a container.
 
-beforeEach(function () {
-  window.el = document.createElement('div');
-  document.body.appendChild(window.el);
-});
+window.el = document.createElement('div');
+document.body.appendChild(window.el);
 
 afterEach(function () {
   if (this.scene) this.scene.remove();
