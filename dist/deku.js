@@ -1207,6 +1207,14 @@ Entity.prototype.replaceProps = function(nextProps, done){
   this.invalidate();
 };
 
+
+Entity.prototype.validateProps = function(){
+  var props = this.type.props;
+  // if they've added a prop not in the definitions
+  // if they've missed a prop in the definition
+  // if they've sent the wrong type for a prop
+};
+
 /**
  * Set the state. This can be called multiple times
  * and the state will be MERGED.
@@ -2637,7 +2645,11 @@ HTMLRenderer.prototype.update = function(entity) {
   var nextTree = entity.render();
 
   // Run the diff and patch the element.
-  patch(entity, nextTree, this.getElement(entity.id), this);
+  var rootEl = patch(entity, nextTree, this.getElement(entity.id), this);
+
+  // Update the element for this component in case
+  // the root node has changed.
+  this.elements[entity.id] = rootEl;
 
   // Commit the changes.
   entity.setCurrent(nextTree);
@@ -3281,15 +3293,18 @@ module.exports = patch;
  */
 
 function patch(entity, nextTree, el, renderer){
-  diffNode(entity.current.root, nextTree.root, {
+  var context = {
     entity: entity,
     nextTree: nextTree,
     renderer: renderer,
+    rootEl: el,
     el: el,
     path: '0',
     id: entity.id,
     isRoot: true
-  });
+  };
+  diffNode(entity.current.root, nextTree.root, context);
+  return context.rootEl;
 }
 
 /**
@@ -3482,6 +3497,7 @@ function replaceNode(current, next, context){
   if (el.parentNode) el.parentNode.removeChild(el);
   var newEl = context.renderer.createElement(next, context.nextTree, context.entity);
   container.insertBefore(newEl, container.childNodes[current.index]);
+  if (context.isRoot) context.rootEl = newEl;
 }
 
 /**
