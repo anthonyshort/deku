@@ -4,6 +4,24 @@ var raf = require('component/raf');
 
 describe('Events', function(){
 
+  var Delegate = component({
+    render: function (props, state) {
+      var active = state.active || 0;
+      var self = this;
+      var items = [1,2,3].map(function(i){
+        return dom('li', {
+          onClick: function(){
+            self.setState({ active: i })
+          },
+          class: { active: active === i }
+        }, [
+          dom('a', 'link')
+        ]);
+      });
+      return dom('ul', items);
+    }
+  });
+
   it('should add click event', function(){
     var count = 0;
     var Page = component({
@@ -82,4 +100,71 @@ describe('Events', function(){
       count -= 1;
     }
   });
+
+  it('should delegate events', function () {
+    var scene = Delegate.render(el);
+    scene.update();
+
+    // Click the first link
+    var first = el.querySelectorAll('a')[0];
+    trigger(first, 'click');
+    scene.update();
+    assert(first.parentNode.classList.contains('active'), 'it should add the active class on the first li');
+
+    var second = el.querySelectorAll('a')[1];
+    trigger(second, 'click');
+    scene.update();
+    assert(second.parentNode.classList.contains('active'), 'it should add the active class on the second li');
+    assert(first.parentNode.classList.contains('active') === false, 'it should remove the active class on the first li');
+
+    scene.remove();
+  });
+
+  it('should delegate events on the root', function () {
+    var DelegateRoot = component({
+      onClick: function(event){
+        this.setState({ active: true });
+      },
+      render: function (props, state) {
+        return dom('div', { class: { active: state.active }, onClick: this.onClick }, [
+          dom('a', 'link')
+        ]);
+      }
+    });
+
+    var scene = DelegateRoot.render(el);
+    scene.update();
+
+    // Click the link
+    var first = el.querySelectorAll('a')[0];
+    trigger(first, 'click');
+    scene.update();
+    assert(first.parentNode.classList.contains('active') === true);
+
+    scene.remove();
+  });
+
+  it('should set a delegateTarget', function (done) {
+    var DelegateRoot = component({
+      onClick: function(event){
+        assert(event.delegateTarget === el.querySelector('div'));
+        done();
+      },
+      render: function (props, state) {
+        return dom('div', { onClick: this.onClick }, [
+          dom('a', 'link')
+        ]);
+      }
+    });
+
+    var scene = DelegateRoot.render(el);
+    scene.update();
+
+    // Click the link
+    var first = el.querySelectorAll('a')[0];
+    trigger(first, 'click');
+    scene.update();
+    scene.remove();
+  });
+
 });
