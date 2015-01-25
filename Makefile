@@ -55,6 +55,9 @@ test-cloud: tests.js
 node_modules: package.json
 	@npm install
 
+perf: node_modules
+	@open perf/runner.html
+
 clean:
 	@-rm -rf build.js tests.js dist
 
@@ -78,5 +81,6 @@ release: clean dist/deku.js
 .PHONY: test-cloud
 .PHONY: test-phantom
 .PHONY: serve
+.PHONY: perf
 .PHONY: clean
 .PHONY: distclean
