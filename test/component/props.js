@@ -1,4 +1,4 @@
-var raf = require('component/raf');
+var raf = require('component-raf');
 
 describe('Updating Props', function () {
 

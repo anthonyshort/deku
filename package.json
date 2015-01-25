@@ -3,16 +3,31 @@
   "version": "0.0.18",
   "repository": "segmentio/deku",
   "description": "Create view components using a virtual DOM",
-  "main": "dist/deku.js",
+  "main": "index.js",
   "devDependencies": {
     "bfc": "~0.3.1",
-    "bump": "ianstormtaylor/bump",
+    "bump": "git://github.com/ianstormtaylor/bump.git#0.4.2",
     "duo": "^0.8.10",
-    "duo-serve": "~0.6.1",
     "duo-test": "^0.3.10",
     "jshint": "~2.5.11",
     "minify": "^1.4.8",
     "zuul": "~1.16.4",
-    "benchmark": "^1.0.0"
+    "benchmark": "^1.0.0",
+    "browserify": "^8.1.1",
+    "trigger-event": "^1.0.0",
+    "mochify": "^2.1.1",
+    "mocha-server": "^0.2.0"
+  },
+  "dependencies": {
+    "extend": "^2.0.0",
+    "to-camel-case": "^0.2.1",
+    "component-emitter": "^1.1.3",
+    "component-type": "^1.1.0",
+    "equals": "^1.0.0",
+    "component-each": "^0.2.5",
+    "per-frame": "^3.0.0",
+    "object-path": "^0.8.1",
+    "component-raf": "^1.2.0",
+    "tower-channels": "^1.0.0"
   }
 }

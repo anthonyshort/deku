@@ -2,9 +2,11 @@ mocha.setup({globals: ['hasCert']});
 
 // Make life easier.
 
-window.assert = require('component/assert@0.4.0');
-window.component = require('/lib/component');
-window.dom = require('/lib/virtual').node;
+window.assert = require('assert');
+window.component = require('../lib/component');
+window.vdom = require('../lib/virtual');
+window.dom = vdom.node;
+window.Tree = vdom.tree;
 
 // Create a container.
 
@@ -14,7 +16,7 @@ document.body.appendChild(window.el);
 afterEach(function () {
   if (this.scene) this.scene.remove();
   if (window.el.innerHTML !== "") {
-    console.warn("Warning: The test '" + this.currentTest.title + "' should remove the scene after the test.");
+    // console.warn("Warning: The test '" + this.currentTest.title + "' should remove the scene after the test.");
   }
   window.el.innerHTML = "";
 });

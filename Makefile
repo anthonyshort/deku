@@ -30,7 +30,7 @@ tests.js: node_modules $(js)
 
 dist/deku.js: node_modules $(js)
 	-@mkdir dist 2>/dev/null || true
-	@duo -s deku index.js | bfc > dist/deku.js
+	@browserify -s deku index.js | bfc > dist/deku.js
 	@minify dist/deku.js > dist/deku.min.js
 
 #
@@ -39,9 +39,6 @@ dist/deku.js: node_modules $(js)
 
 lint: $(lib)
 	@jshint lib
-
-serve: node_modules
-	@duo-serve index.js -g deku
 
 test: build.js
 	@duo-test browser -c 'make build.js'
@@ -57,6 +54,9 @@ node_modules: package.json
 
 perf: node_modules
 	@open perf/runner.html
+
+cover: node_modules
+	@mochify --cover
 
 clean:
 	@-rm -rf build.js tests.js dist

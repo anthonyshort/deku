@@ -1,6 +1,0 @@
-{
-  "name": "browserify-test",
-  "dependencies": {
-    "deku": "~0.0.4"
-  }
-}

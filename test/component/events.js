@@ -1,6 +1,6 @@
 
-var trigger = require('adamsanderson/trigger-event');
-var raf = require('component/raf');
+var trigger = require('trigger-event');
+var raf = require('component-raf');
 
 describe('Events', function(){
 

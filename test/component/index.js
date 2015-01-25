@@ -1,6 +1,6 @@
-var trigger = require('adamsanderson/trigger-event');
-var Emitter = require('component/emitter');
-var raf = require('component/raf');
+var trigger = require('trigger-event');
+var Emitter = require('component-emitter');
+var raf = require('component-raf');
 
 describe('API', function(){
 
