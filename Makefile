@@ -37,7 +37,7 @@ dist/deku.js: node_modules $(js)
 # Tests.
 #
 
-test: test-lint
+test:
 	@mochify
 .PHONY: test
 

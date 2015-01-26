@@ -3,4 +3,4 @@ machine:
     version: 0.11.13
 test:
   override:
-    - make test-phantom
+    - make test
