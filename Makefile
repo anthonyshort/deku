@@ -23,10 +23,10 @@ default: dist/deku.js
 #
 
 build.js: node_modules $(js)
-	@duo -r ./ test/index.js > build.js
+	@browserify test/index.js > build.js
 
 tests.js: node_modules $(js)
-	@duo -r ./ test/index.js | bfc > tests.js
+	@browserify test/index.js | bfc > tests.js
 
 dist/deku.js: node_modules $(js)
 	-@mkdir dist 2>/dev/null || true
@@ -34,35 +34,53 @@ dist/deku.js: node_modules $(js)
 	@minify dist/deku.js > dist/deku.min.js
 
 #
-# Tasks.
+# Tests.
 #
 
-lint: $(lib)
-	@jshint lib
+test: test-lint
+	@mochify
+.PHONY: test
 
-test: build.js
-	@duo-test browser -c 'make build.js'
-
-test-phantom: build.js
-	@duo-test phantomjs
+test-browser: build.js
+	@duo-test browser --commands 'make build.js'
 
 test-cloud: tests.js
 	@zuul -- tests.js
 
+test-lint: $(lib)
+	@jshint lib
+.PHONY: lint
+
+test-watch:
+	@mochify --watch
+.PHONY: watch
+
+test-coverage:
+	@mochify --cover
+.PHONY: coverage
+
+test-perf: node_modules
+	@open perf/runner.html
+.PHONY: perf
+
+#
+# Tasks.
+#
+
 node_modules: package.json
 	@npm install
 
-perf: node_modules
-	@open perf/runner.html
-
-cover: node_modules
-	@mochify --cover
-
 clean:
 	@-rm -rf build.js tests.js dist
+.PHONY: clean
 
 distclean: clean
 	@-rm -rf components node_modules
+.PHONY: distclean
+
+#
+# Releases.
+#
 
 release: clean dist/deku.js
 	bump $$VERSION && \
@@ -71,16 +89,8 @@ release: clean dist/deku.js
 	git tag $$VERSION && \
 	git push origin master --tags && \
 	npm publish
+.PHONY: release
 
-#
-# Phonies.
-#
 
-.PHONY: lint
-.PHONY: test
-.PHONY: test-cloud
-.PHONY: test-phantom
-.PHONY: serve
-.PHONY: perf
-.PHONY: clean
-.PHONY: distclean
+
+
