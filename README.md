@@ -1,6 +1,7 @@
 # Deku
 
-[![npm version](https://badge.fury.io/js/deku.svg)](http://badge.fury.io/js/deku)
+[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
+[![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
 
 <img  width="200" align="right" src="https://i.cloudup.com/fDqKHg1ude.png" />
 
@@ -38,7 +39,7 @@ Button.render(document.body, {
 
 * [Quick Start](https://github.com/segmentio/deku/tree/master/docs/quick-start.md)
 * [Documentation](https://github.com/segmentio/deku/tree/master/docs)
-* [What is components?](https://github.com/segmentio/deku/blob/master/docs/components.md)
+* [What are components?](https://github.com/segmentio/deku/blob/master/docs/components.md)
 * [What is virtual DOM?](https://github.com/segmentio/deku/blob/master/docs/virtual-dom.md)
 * [How it works](https://github.com/segmentio/deku/blob/master/docs/how-it-works.md)
 * [Deku vs. React](https://github.com/segmentio/deku/blob/master/docs/react.md)
