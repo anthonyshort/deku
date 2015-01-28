@@ -27,6 +27,7 @@
     "object-path": "^0.8.1",
     "component-raf": "^1.2.0",
     "tower-channels": "^1.0.0",
-    "get-uid": "^1.0.1"
+    "get-uid": "^1.0.1",
+    "raf-loop": "^1.0.1"
   }
 }
