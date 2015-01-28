@@ -6,21 +6,16 @@
 
 <img  width="200" align="right" src="https://i.cloudup.com/fDqKHg1ude.png" />
 
-A library for creating UI components using a [virtual DOM](https://github.com/segmentio/deku/blob/master/docs/virtual-dom.md).
+A library for creating UI components using virtual DOM.
 
-* It's small and modular. Roughly 8kb minified. 
-* Built using Browserify.
-* Supports npm, duo, and bower.
-* It has a simple, familiar for defining components.
-* Uses a virtual DOM to render templates.
+* It's small and modular and weighs 8kb. 
+* Supports npm, [duo](https://github.com/duojs/duo), and bower.
+* Easily add [plugins](https://github.com/segmentio/deku/wiki/plugins) to any component.
 * It only supports IE10+ and better browsers.
-* Components can be used without the library.
-* Server-side rendering on components.
-* Easily testable components.
-* Handles all event delegation for you.
-* No virtual events.
+* Server-side rendering.
+* Easily test components.
+* Handles all event delegation for you without virtual events.
 * Batched and optimized updates using `requestAnimationFrame`.
-* ES6-ready
 
 ```js
 var {component,dom} = require('deku');
@@ -34,35 +29,38 @@ var Button = component({
   }
 });
 
-Button.render(document.body, {
+var scene = Button.render(document.body, {
   text: 'Click Me!'
 });
 ```
 
 ## Getting Started
 
-* [Quick Start](https://github.com/segmentio/deku/tree/master/docs/quick-start.md)
-* [Documentation](https://github.com/segmentio/deku/tree/master/docs)
-* [What are components?](https://github.com/segmentio/deku/blob/master/docs/components.md)
-* [What is virtual DOM?](https://github.com/segmentio/deku/blob/master/docs/virtual-dom.md)
-* [How it works](https://github.com/segmentio/deku/blob/master/docs/how-it-works.md)
-* [Deku vs. React](https://github.com/segmentio/deku/blob/master/docs/react.md)
-* [Developing](https://github.com/segmentio/deku/tree/master/docs/dev.md)
-* [Examples](https://github.com/segmentio/deku/tree/master/examples)
+* [Quick Start](https://github.com/segmentio/deku/wiki/quickstart)
+* [Examples](https://github.com/segmentio/deku/wiki/examples)
+* [Documentation](https://github.com/segmentio/deku/wiki)
+* [Deku vs. React](https://github.com/segmentio/deku/wiki/deku-vs-react)
+* [How it works](https://github.com/segmentio/deku/wiki/how-it-works)
+* [Plugins](https://github.com/segmentio/deku/wiki/plugins)
 
 ## Download
+
+Browserify/Node:
 
 ```
 npm install deku
 ```
-```
-bower install deku
-```
 
-Using [Duo](https://github.com/duojs/duo): 
+Duo: 
 
 ```
 var deku = require('segmentio/deku');
+```
+
+Bower:
+
+```
+bower install deku
 ```
 
 Or download and use them manually:
@@ -70,6 +68,18 @@ Or download and use them manually:
 * [dist/deku.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.js)
 * [dist/deku.min.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.min.js)
 
-## Build Status
+## Browser Support
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+
+## Developing
+
+Deku is built using [Browserify](https://github.com/substack/node-browserify) and Make. You can build the project by running `make` in the directory.
+
+To run the tests you can call `make test` to run tests in Phantom or `make test-browser` to run the tests in a browser. See the Makefile for the rest of the tasks.
+
+## Authors
+
+* Anthony Short — anthony@segment.com
+* Lance Pollard — lance@segment.com
+
