@@ -61,4 +61,22 @@ describe('Patching Attributes', function(){
     assert(pass);
     page.remove();
   })
+
+  it('should update the value of input fields', function () {
+    var Input = component({
+      render: function(props, state){
+        return dom('input', { value: props.value })
+      }
+    });
+    var page = Input.render(el, { value: 'Bob' });
+    page.update();
+    assert(el.querySelector('input').value === 'Bob');
+    assert(el.querySelector('input').getAttribute('value') === 'Bob');
+    page.setProps({ value: 'Tom' });
+    page.update();
+    assert(el.querySelector('input').value === 'Tom');
+    assert(el.querySelector('input').getAttribute('value') === 'Bob');
+    page.remove();
+  })
+
 });
