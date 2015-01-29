@@ -1,4 +1,11 @@
 
+0.0.20 / 2015-01-29
+==================
+
+ * Value attribute gets a special case in the diff
+ * Using raf-loop instead of local module
+ * Using uid module
+
 0.0.19 / 2015-01-25
 ==================
 
