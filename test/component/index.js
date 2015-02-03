@@ -285,5 +285,18 @@ describe('API', function(){
     this.scene.remove();
   });
 
+  it('should render components at the root', function () {
+    var Dialog = component(function(){
+      return dom('.Dialog');
+    });
+    var App = component(function(){
+      return dom('.App', [
+        Dialog({ isRoot: true })
+      ]);
+    });
+    this.scene = App.render(el);
+    this.scene.update();
+    assert.equal(el.innerHTML, '<div class="Dialog"></div><div class="App"></div>');
+  });
 
 });
