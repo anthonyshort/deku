@@ -21,11 +21,6 @@ afterEach(function () {
   window.el.innerHTML = "";
 });
 
-describe('Virtual DOM', function () {
-  require('./virtual/index');
-  require('./virtual/tree');
-});
-
 describe('Component', function () {
   require('./component/helpers');
   require('./component');
