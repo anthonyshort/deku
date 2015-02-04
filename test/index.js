@@ -4,7 +4,7 @@ mocha.setup({globals: ['hasCert']});
 
 window.assert = require('assert');
 window.component = require('../lib/component');
-window.vdom = require('../lib/virtual');
+window.vdom = require('virtualize');
 window.dom = vdom.node;
 window.Tree = vdom.tree;
 
