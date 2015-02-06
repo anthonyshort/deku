@@ -167,4 +167,43 @@ describe('Events', function(){
     scene.remove();
   });
 
+  it('bug #47', function () {
+    var log;
+
+    var Page = component(function(props, state){
+      var error = state.error;
+      var self = this;
+
+      function createError() {
+        self.setState({ error: 'foo' });
+      }
+
+      function logError() {
+        log = error;
+      }
+
+      return dom('div', [
+        dom('.foo', { onClick: createError }, 'Create error'),
+        dom('.log', { onClick: logError }, 'Log error')
+      ]);
+    });
+
+    var scene = Page.render(el);
+    scene.update();
+
+    var creator = el.querySelector('.foo');
+    var logger = el.querySelector('.log');
+
+    trigger(logger, 'click');
+    assert.equal(log, undefined);
+
+    trigger(creator, 'click');
+    scene.update();
+
+    trigger(logger, 'click');
+    scene.update();
+
+    assert.equal(log, 'foo');
+  });
+
 });
