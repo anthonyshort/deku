@@ -247,26 +247,19 @@
     var Draggable = component(function(props, state){
       var self = this;
       function start(event) {
+        event.dataTransfer.setData('text', 'asdasd');
         self.setState({ active: true });
       }
       function end(event) {
         self.setState({ active: false });
       }
-      function enter(event) {
-        console.log('draggable', 'enter', event.target);
-      }
-      function leave(event) {
-        console.log('draggable', 'leave', event.target);
-      }
       var attrs = {
-        class: {
+        classes: {
           'active': state.active
         },
         draggable: true,
         onDragStart: start,
-        onDragEnd: end,
-        onDragEnter: enter,
-        onDragLeave: leave
+        onDragEnd: end
       };
       return dom('div.box', attrs, [
         'Drag Me'
@@ -277,19 +270,32 @@
       var self = this;
       function over(event) {
         event.preventDefault();
-        console.log('droppable', 'over', event.target);
+        //console.log('droppable', 'over', event.target);
       }
       function drop(event) {
+        event.preventDefault()
         console.log('droppable', 'drop', event.target);
+        self.setState({ dropped: true, active: false });
+      }
+      function enter(event) {
+        event.preventDefault()
+        console.log('draggable', 'enter', event.target);
+        self.setState({ active: true });
+      }
+      function leave(event) {
+        console.log('draggable', 'leave', event.target);
+        self.setState({ active: false });
       }
       var attrs = {
         classes: {
           'active': state.active
         },
         onDragOver: over,
-        onDrop: drop
+        onDrop: drop,
+        onDragEnter: enter,
+        onDragLeave: leave
       };
-      return dom('div.box', null, [
+      return dom('div.box', attrs, [
         state.dropped ? 'Dropped' : 'Drop Here'
       ]);
     });
