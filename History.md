@@ -1,4 +1,11 @@
 
+0.0.23 / 2015-02-09
+==================
+
+ * Added innerHTML support
+ * Fixed drag and drop test event
+ * Added test for #47
+
 0.0.22 / 2015-02-03
 ==================
 

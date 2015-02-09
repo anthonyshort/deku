@@ -1,7 +1,7 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.deku=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
 exports.component = _require('./lib/component');
 exports.dom = _require('virtualize').node;
-},{"./lib/component":2,"virtualize":40}],2:[function(_require,module,exports){
+},{"./lib/component":2,"virtualize":35}],2:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -11,7 +11,7 @@ var assign = _require('extend');
 var Emitter = _require('component-emitter');
 var statics = _require('./statics');
 var protos = _require('./protos');
-var dom = _require('../virtual').node;
+var dom = _require('virtualize').node;
 
 /**
  * Expose `component`.
@@ -98,7 +98,7 @@ function bindAll(obj) {
   }
   return obj;
 }
-},{"../virtual":13,"./protos":3,"./statics":4,"component-emitter":22,"extend":26}],3:[function(_require,module,exports){
+},{"./protos":3,"./statics":4,"component-emitter":17,"extend":21,"virtualize":35}],3:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -253,7 +253,7 @@ exports.afterUnmount = function(el, state, props){
 exports.propsChanged = function(nextProps){
 
 };
-},{"extend":26}],4:[function(_require,module,exports){
+},{"extend":21}],4:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -347,7 +347,7 @@ exports.renderString = function(props){
 var Emitter = _require('component-emitter');
 var each = _require('component-each');
 var camel = _require('to-camel-case');
-var virtual = _require('../virtual');
+var virtual = _require('virtualize');
 var assign = _require('extend');
 var equals = _require('equals');
 var uid = _require('get-uid');
@@ -764,7 +764,7 @@ Entity.prototype.propsChanged = function(nextProps){
   this.component.propsChanged(nextProps, props, this.state);
   this.type.emit('propsChanged', this.component, nextProps, props, this.state);
 };
-},{"../virtual":13,"component-each":18,"component-emitter":22,"equals":24,"extend":26,"get-uid":27,"to-camel-case":36}],6:[function(_require,module,exports){
+},{"component-each":13,"component-emitter":17,"equals":19,"extend":21,"get-uid":22,"to-camel-case":31,"virtualize":35}],6:[function(_require,module,exports){
 
 var equals = _require('equals');
 
@@ -899,6 +899,8 @@ function diffAttributes(previous, current, context){
     if (!previousAttrs[name] || previousAttrs[name] !== value) {
       if (name === "value") {
         context.el.value = value;
+      } else if (name === "innerHTML") {
+        context.el.innerHTML = value;
       } else {
         context.el.setAttribute(name, value);
       }
@@ -1028,7 +1030,7 @@ function zip() {
   });
 }
 
-},{"equals":24}],7:[function(_require,module,exports){
+},{"equals":19}],7:[function(_require,module,exports){
 
 /**
  * Dependencies.
@@ -1322,7 +1324,11 @@ HTMLRenderer.prototype.createElement = function(node, tree, entity, optParentEl)
     var children = node.children;
 
     for (var name in node.attributes) {
-      el.setAttribute(name, node.attributes[name]);
+      if (name === 'innerHTML') {
+        el.innerHTML = node.attributes.innerHTML;
+      } else {
+        el.setAttribute(name, node.attributes[name]);
+      }
     }
 
     // store the path for event delegation.
@@ -1351,7 +1357,7 @@ HTMLRenderer.prototype.createElement = function(node, tree, entity, optParentEl)
   }
 };
 
-},{"./diff":6,"./interactions":8,"component-each":18}],8:[function(_require,module,exports){
+},{"./diff":6,"./interactions":8,"component-each":13}],8:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1490,8 +1496,8 @@ Interactions.prototype.handle = function(event){
   }
 };
 
-},{"object-path":28,"per-frame":29}],9:[function(_require,module,exports){
-var virtual = _require('../../virtual');
+},{"object-path":23,"per-frame":24}],9:[function(_require,module,exports){
+var virtual = _require('virtualize');
 var Entity = _require('../../entity');
 
 /**
@@ -1581,7 +1587,7 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":5,"../../virtual":13}],10:[function(_require,module,exports){
+},{"../../entity":5,"virtualize":35}],10:[function(_require,module,exports){
 
 /**
  * Module dependencies
@@ -1735,440 +1741,7 @@ Scene.prototype.pause = function(){
   this.emit('pause');
   return this;
 };
-},{"component-emitter":22,"raf-loop":31,"tower-channels":39}],11:[function(_require,module,exports){
-
-/**
- * Initialize a new `ComponentNode`.
- *
- * @param {Component} component
- * @param {Object} props
- * @param {String} key Used for sorting/replacing during diffing.
- * @param {Array} children Child virtual nodes
- * @api public
- */
-
-module.exports = function(component, props, key, children) {
-  var node = {};
-  node.key = key;
-  node.props = props;
-  node.type = 'component';
-  node.component = component;
-  node.props.children = children || [];
-  return node;
-};
-
-},{}],12:[function(_require,module,exports){
-var type = _require('component-type');
-
-/**
- * All of the events can bind to
- */
-
-var events = {
-  onBlur: 'blur',
-  onChange: 'change',
-  onClick: 'click',
-  onContextMenu: 'contextmenu',
-  onCopy: 'copy',
-  onCut: 'cut',
-  onDoubleClick: 'dblclick',
-  onDrag: 'drag',
-  onDragEnd: 'dragend',
-  onDragEnter: 'dragenter',
-  onDragExit: 'dragexit',
-  onDragLeave: 'dragleave',
-  onDragOver: 'dragover',
-  onDragStart: 'dragstart',
-  onDrop: 'drop',
-  onFocus: 'focus',
-  onInput: 'input',
-  onKeyDown: 'keydown',
-  onKeyUp: 'keyup',
-  onMouseDown: 'mousedown',
-  onMouseMove: 'mousemove',
-  onMouseOut: 'mouseout',
-  onMouseOver: 'mouseover',
-  onMouseUp: 'mouseup',
-  onPaste: 'paste',
-  onScroll: 'scroll',
-  onSubmit: 'submit',
-  onTouchCancel: 'touchcancel',
-  onTouchEnd: 'touchend',
-  onTouchMove: 'touchmove',
-  onTouchStart: 'touchstart'
-};
-
-/**
- * Initialize a new `ElementNode`.
- *
- * @param {String} tagName
- * @param {Object} attributes
- * @param {String} key Used for sorting/replacing during diffing.
- * @param {Array} children Child virtual dom nodes.
- * @api public
- */
-
-module.exports = function(tagName, attributes, key, children) {
-  var node = {};
-  node.type = 'element';
-  node.attributes = parseAttributes(attributes);
-  node.events = parseEvents(attributes);
-  node.tagName = parseTag(tagName, attributes);
-  node.children = children || [];
-  node.key = key;
-  return node;
-};
-
-/**
- * Parse attributes for some special cases.
- *
- * TODO: This could be more functional and allow hooks
- * into the processing of the attributes at a component-level
- *
- * @param {Object} attributes
- *
- * @return {Object}
- */
-
-function parseAttributes(attributes) {
-
-  // style: { 'text-align': 'left' }
-  if (attributes.style) {
-    attributes.style = parseStyle(attributes.style);
-  }
-
-  // data: { foo: 'bar' }
-  if (attributes.data) {
-    attributes = parseData(attributes);
-  }
-
-  // class: { foo: true, bar: false, baz: true }
-  // class: ['foo', 'bar', 'baz']
-  if (attributes.class) {
-    attributes.class = parseClass(attributes.class);
-  }
-
-  // Remove attributes with false values
-  for (var name in attributes) {
-    if (attributes[name] === false) {
-      delete attributes[name];
-    }
-  }
-
-  return attributes;
-}
-
-/**
- * Parse a block of styles into a string.
- *
- * TODO: this could do a lot more with vendor prefixing,
- * number values etc. Maybe there's a way to allow users
- * to hook into this?
- *
- * @param {Object} styles
- *
- * @return {String}
- */
-
-function parseStyle(styles) {
-  if (type(styles) !== 'object') {
-    return styles;
-  }
-  var str = '';
-  for (var name in styles) {
-    var value = styles[name];
-    str += name + ':' + value + ';';
-  }
-  return str;
-}
-
-/**
- * Parse the dataset
- *
- * @param {Object} attributes
- *
- * @return {Object}
- */
-
-function parseData(attributes) {
-  if (type(attributes.data) !== 'object') {
-    return attributes;
-  }
-
-  for (var name in attributes.data) {
-    attributes['data-' + name] = attributes.data[name];
-  }
-
-  delete attributes.data;
-  return attributes;
-}
-
-/**
- * Parse the class attribute so it's able to be
- * set in a more user-friendly way
- *
- * @param {String|Object|Array} value
- *
- * @return {String}
- */
-
-function parseClass(value) {
-
-  // { foo: true, bar: false, baz: true }
-  if (type(value) === 'object') {
-    var matched = [];
-    for (var key in value) {
-      if (value[key]) matched.push(key);
-    }
-    value = matched;
-  }
-
-  // ['foo', 'bar', 'baz']
-  if (type(value) === 'array') {
-    if (value.length === 0) {
-      return;
-    }
-    value = value.join(' ');
-  }
-
-  return value;
-}
-
-/**
- * Events are stored on the node and are creating using
- * special attributes
- *
- * @param {Object} attributes
- *
- * @return {Object}
- */
-
-function parseEvents(attributes) {
-  var ret = {};
-  for (var name in events) {
-    var type = events[name];
-    var callback = attributes[name];
-    if (callback) {
-      ret[type] = callback;
-      delete attributes[name];
-    }
-  }
-  return ret;
-}
-
-/**
- * Parse the tag to allow using classes and ids
- * within the tagname like in CSS.
- *
- * @param {String} name
- * @param {Object} attributes
- *
- * @return {String}
- */
-
-function parseTag(name, attributes) {
-  if (!name) return 'div';
-
-  var parts = name.split(/([\.#]?[a-zA-Z0-9_:-]+)/);
-  var tagName = 'div';
-
-  parts
-    .filter(Boolean)
-    .forEach(function(part, i){
-      var type = part.charAt(0);
-      if (type === '.') {
-        attributes.class = ((attributes.class || '') + ' ' + part.substring(1, part.length)).trim();
-      } else if (type === '#') {
-        attributes.id = part.substring(1, part.length);
-      } else {
-        tagName = part;
-      }
-    });
-
-  return tagName;
-}
-},{"component-type":23}],13:[function(_require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var ComponentNode = _require('./component');
-var ElementNode = _require('./element');
-var TextNode = _require('./text');
-var tree = _require('./tree');
-var uid = _require('get-uid');
-
-/**
- * Exports.
- */
-
-exports.node = dom;
-exports.tree = tree;
-
-/**
- * Create virtual DOM trees.
- *
- * This creates the nicer API for the user.
- * It translates that friendly API into an actual tree of nodes.
- *
- * @param {String|Function} type
- * @param {Object} props
- * @param {Array} children
- * @return {Node}
- * @api public
- */
-
-function dom(type, props, children) {
-
-  // Skipped adding attributes and we're passing
-  // in children instead.
-  if (arguments.length === 2 && (typeof props === 'string' || Array.isArray(props))) {
-    children = props;
-    props = {};
-  }
-
-  children = children || [];
-  props = props || {};
-
-  // passing in a single child, you can skip
-  // using the array
-  if (!Array.isArray(children)) {
-    children = [ children ];
-  }
-
-  children = children.map(normalize);
-
-  // pull the key out from the data.
-  var key = props.key;
-  delete props.key;
-
-  // if you pass in a function, it's a `Component` constructor.
-  // otherwise it's an element.
-  var node;
-  if ('function' == typeof type) {
-    node = ComponentNode(type, props, key, children);
-  } else {
-    node = ElementNode(type, props, key, children);
-  }
-
-  // set the unique ID
-  node.id = uid();
-
-  return node;
-}
-
-/**
- * Parse nodes into real `Node` objects.
- *
- * @param {Mixed} node
- * @param {Integer} index
- * @return {Node}
- * @api private
- */
-
-function normalize(node, index) {
-  if (typeof node === 'string' || typeof node === 'number') {
-    node = TextNode(String(node));
-  }
-  if (Array.isArray(node)) {
-    throw new Error('Child node cant be an array. This can happen if you try to use props.children like a node.');
-  }
-  node.index = index;
-  return node;
-}
-
-},{"./component":11,"./element":12,"./text":14,"./tree":15,"get-uid":27}],14:[function(_require,module,exports){
-
-/**
- * Initialize a new `TextNode`.
- *
- * This is just a virtual HTML text object.
- *
- * @param {String} text
- * @api public
- */
-
-module.exports = function(text) {
-  var node = {};
-  node.type = 'text';
-  node.data = String(text);
-  return node;
-};
-},{}],15:[function(_require,module,exports){
-
-/**
- * Export `Tree`.
- */
-
-module.exports = function(node) {
-  return new Tree(node);
-};
-
-/**
- * A tree is representation of Node that is easier
- * to parse and diff. The tree should be considered
- * immutable and won't change.
- *
- * @param {Node} node
- */
-
-function Tree(node) {
-  this.root = node;
-  this.paths = {};
-  this.nodes = {};
-  this.components = {};
-  this.parse(node);
-}
-
-/**
- * Get the path for a node.
- *
- * @param {Node} node
- * @return {String}
- */
-
-Tree.prototype.getPath = function(node){
-  return this.paths[node.id];
-};
-
-/**
- * Get the node at a path
- *
- * @param {String} path
- *
- * @return {Node}
- */
-
-Tree.prototype.getNode = function(path){
-  return this.nodes[path];
-};
-
-/**
- * Parse a Node into a hash table. This allows
- * us to quickly find the path for a node and to
- * find a node at any path.
- *
- * @param {Node} node
- * @param {String} path
- * @return {Object}
- */
-
-Tree.prototype.parse = function(node, path){
-  path = path || '0';
-  this.paths[node.id] = path;
-  this.nodes[path] = node;
-  if (node.type === 'component') {
-    this.components[path] = node;
-  }
-  if (node.children) {
-    node.children.forEach(function(node, index){
-      this.parse(node, path + '.' + (node.key || index));
-    }, this);
-  }
-};
-
-},{}],16:[function(_require,module,exports){
+},{"component-emitter":17,"raf-loop":26,"tower-channels":34}],11:[function(_require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2471,7 +2044,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],17:[function(_require,module,exports){
+},{}],12:[function(_require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2530,7 +2103,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],18:[function(_require,module,exports){
+},{}],13:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -2621,7 +2194,7 @@ function array(obj, fn, ctx) {
   }
 }
 
-},{"component-type":19,"to-function":20,"type":19}],19:[function(_require,module,exports){
+},{"component-type":14,"to-function":15,"type":14}],14:[function(_require,module,exports){
 
 /**
  * toString ref.
@@ -2655,7 +2228,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],20:[function(_require,module,exports){
+},{}],15:[function(_require,module,exports){
 var expr;
 try {
     expr = void 0;
@@ -2727,7 +2300,7 @@ function stripNested(prop, str, val) {
         return $1 ? $0 : val;
     });
 }
-},{"component-props":21}],21:[function(_require,module,exports){
+},{"component-props":16}],16:[function(_require,module,exports){
 /**
  * Global Names
  */
@@ -2814,7 +2387,7 @@ function prefixed(str) {
   };
 }
 
-},{}],22:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2980,7 +2553,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],23:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -3016,7 +2589,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],24:[function(_require,module,exports){
+},{}],19:[function(_require,module,exports){
 var type = _require('type')
 
 // (any, any, [array]) -> boolean
@@ -3138,7 +2711,7 @@ function getEnumerableProperties (object) {
 
 module.exports = equal
 
-},{"type":25}],25:[function(_require,module,exports){
+},{"type":20}],20:[function(_require,module,exports){
 
 var toString = {}.toString
 var DomNode = typeof window != 'undefined'
@@ -3190,7 +2763,7 @@ var types = exports.types = {
   '[object Blob]': 'blob'
 }
 
-},{}],26:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 var undefined;
@@ -3273,14 +2846,14 @@ module.exports = function extend() {
 };
 
 
-},{}],27:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],28:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3551,7 +3124,7 @@ module.exports = function getUid(){
   return objectPath;
 });
 
-},{}],29:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -3590,7 +3163,7 @@ function throttle(fn) {
   };
 }
 
-},{"raf":30}],30:[function(_require,module,exports){
+},{"raf":25}],25:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -3630,7 +3203,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],31:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 var inherits = _require('inherits')
 var EventEmitter = _require('events').EventEmitter
 var raf = _require('raf')
@@ -3675,7 +3248,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":16,"inherits":32,"raf":33,"right-now":35}],32:[function(_require,module,exports){
+},{"events":11,"inherits":27,"raf":28,"right-now":30}],27:[function(_require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -3700,7 +3273,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],33:[function(_require,module,exports){
+},{}],28:[function(_require,module,exports){
 var now = _require('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -3782,7 +3355,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":34}],34:[function(_require,module,exports){
+},{"performance-now":29}],29:[function(_require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -3822,7 +3395,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_require('_process'))
-},{"_process":17}],35:[function(_require,module,exports){
+},{"_process":12}],30:[function(_require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -3833,7 +3406,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],36:[function(_require,module,exports){
+},{}],31:[function(_require,module,exports){
 
 var toSpace = _require('to-space-case');
 
@@ -3858,7 +3431,7 @@ function toCamelCase (string) {
     return letter.toUpperCase();
   });
 }
-},{"to-space-case":37}],37:[function(_require,module,exports){
+},{"to-space-case":32}],32:[function(_require,module,exports){
 
 var clean = _require('to-no-case');
 
@@ -3883,7 +3456,7 @@ function toSpaceCase (string) {
     return match ? ' ' + match : '';
   });
 }
-},{"to-no-case":38}],38:[function(_require,module,exports){
+},{"to-no-case":33}],33:[function(_require,module,exports){
 
 /**
  * Expose `toNoCase`.
@@ -3958,7 +3531,7 @@ function uncamelize (string) {
     return previous + ' ' + uppers.toLowerCase().split('').join(' ');
   });
 }
-},{}],39:[function(_require,module,exports){
+},{}],34:[function(_require,module,exports){
 var Emitter = _require('component-emitter');
 
 module.exports = Tower;
@@ -4088,7 +3661,7 @@ function removeFromArray(item, array) {
   if (index === -1) return;
   array.splice(index, 1);
 }
-},{"component-emitter":22}],40:[function(_require,module,exports){
+},{"component-emitter":17}],35:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -4225,7 +3798,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":41,"./lib/element":42,"./lib/text":43,"./lib/tree":44,"get-uid":27}],41:[function(_require,module,exports){
+},{"./lib/component":36,"./lib/element":37,"./lib/text":38,"./lib/tree":39,"get-uid":22}],36:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -4247,7 +3820,7 @@ function ComponentNode(component, props, key, children) {
   this.props.children = children || [];
 }
 
-},{}],42:[function(_require,module,exports){
+},{}],37:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -4481,7 +4054,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":23}],43:[function(_require,module,exports){
+},{"component-type":18}],38:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -4497,7 +4070,78 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],44:[function(_require,module,exports){
-arguments[4][15][0].apply(exports,arguments)
-},{"dup":15}]},{},[1])(1)
+},{}],39:[function(_require,module,exports){
+
+/**
+ * Export `Tree`.
+ */
+
+module.exports = function(node) {
+  return new Tree(node);
+};
+
+/**
+ * A tree is representation of Node that is easier
+ * to parse and diff. The tree should be considered
+ * immutable and won't change.
+ *
+ * @param {Node} node
+ */
+
+function Tree(node) {
+  this.root = node;
+  this.paths = {};
+  this.nodes = {};
+  this.components = {};
+  this.parse(node);
+}
+
+/**
+ * Get the path for a node.
+ *
+ * @param {Node} node
+ * @return {String}
+ */
+
+Tree.prototype.getPath = function(node){
+  return this.paths[node.id];
+};
+
+/**
+ * Get the node at a path
+ *
+ * @param {String} path
+ *
+ * @return {Node}
+ */
+
+Tree.prototype.getNode = function(path){
+  return this.nodes[path];
+};
+
+/**
+ * Parse a Node into a hash table. This allows
+ * us to quickly find the path for a node and to
+ * find a node at any path.
+ *
+ * @param {Node} node
+ * @param {String} path
+ * @return {Object}
+ */
+
+Tree.prototype.parse = function(node, path){
+  path = path || '0';
+  this.paths[node.id] = path;
+  this.nodes[path] = node;
+  if (node.type === 'component') {
+    this.components[path] = node;
+  }
+  if (node.children) {
+    node.children.forEach(function(node, index){
+      this.parse(node, path + '.' + (node.key || index));
+    }, this);
+  }
+};
+
+},{}]},{},[1])(1)
 });
