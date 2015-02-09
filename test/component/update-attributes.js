@@ -79,4 +79,34 @@ describe('Patching Attributes', function(){
     page.remove();
   })
 
+  describe('innerHTML', function () {
+
+    beforeEach(function(){
+      el.innerHTML = "";
+    })
+
+    it('should render innerHTML', function () {
+      var Test = component(function(){
+        return dom('div', { innerHTML: 'Hello <strong>World</strong>' });
+      });
+      var page = Test.render(el);
+      page.update();
+      assert.equal(el.innerHTML,'<div>Hello <strong>World</strong></div>');
+      page.remove();
+    })
+
+    it('should update innerHTML', function () {
+      var Test = component(function(props){
+        return dom('div', { innerHTML: props.content });
+      });
+      var page = Test.render(el, { content: 'Hello <strong>World</strong>' });
+      page.update();
+      page.setProps({ content: 'Hello <strong>Pluto</strong>' });
+      page.update();
+      assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>');
+      page.remove();
+    })
+
+  });
+
 });

@@ -1,14 +1,15 @@
 # Deku
 
+> A simple library for creating UI components using virtual DOM.
+
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
+[![Dependency Status](https://david-dm.org/segmentio/deku.svg?style=flat-square)](https://david-dm.org/segmentio/deku)
 [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
 [![npm](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)]()
 
 <img  width="200" align="right" src="https://i.cloudup.com/fDqKHg1ude.png" />
 
-A library for creating UI components using virtual DOM.
-
-* It's small and modular and weighs 8kb. 
+* It's small at roughly 8kb. 
 * Supports npm, [duo](https://github.com/duojs/duo), and bower.
 * Easily add [plugins](https://github.com/segmentio/deku/wiki/plugins) to any component.
 * It only supports IE10+ and better browsers.
@@ -16,6 +17,8 @@ A library for creating UI components using virtual DOM.
 * Easily test components.
 * Handles all event delegation for you without virtual events.
 * Batched and optimized updates using `requestAnimationFrame`.
+
+## Example
 
 ```js
 var {component,dom} = require('deku');
