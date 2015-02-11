@@ -167,43 +167,54 @@ describe('Events', function(){
     scene.remove();
   });
 
-  it('bug #47', function () {
-    var log;
-
-    var Page = component(function(props, state){
-      var error = state.error;
-      var self = this;
-
-      function createError() {
-        self.setState({ error: 'foo' });
+  it('should update events when nested children are removed', function () {
+    var scene;
+    var items = [
+      { text: 'one' },
+      { text: 'two' },
+      { text: 'three' }
+    ];
+    var Button = component({
+      render: function(props, state){
+        return dom('a', { onClick: props.onClick })
       }
-
-      function logError() {
-        log = error;
-      }
-
-      return dom('div', [
-        dom('.foo', { onClick: createError }, 'Create error'),
-        dom('.log', { onClick: logError }, 'Log error')
-      ]);
     });
-
-    var scene = Page.render(el);
+    var ListItem = component({
+      render: function(props, state){
+        var invalidate = this.invalidate;
+        return dom('li', [
+          Button({
+            onClick: function(){
+              var changed = props.items.concat();
+              changed.splice(props.index, 1);
+              scene.setProps({ items: changed });
+              invalidate();
+              scene.update();
+            }
+          })
+        ]);
+      }
+    });
+    var List = component({
+      render: function (props, state) {
+        return dom('ul', [
+          props.items.map(function(item, i){
+            return ListItem({
+              data: item,
+              index: i,
+              items: props.items
+            });
+          })
+        ]);
+      }
+    });
+    scene = List.render(el, { items: items });
     scene.update();
-
-    var creator = el.querySelector('.foo');
-    var logger = el.querySelector('.log');
-
-    trigger(logger, 'click');
-    assert.equal(log, undefined);
-
-    trigger(creator, 'click');
-    scene.update();
-
-    trigger(logger, 'click');
-    scene.update();
-
-    assert.equal(log, 'foo');
+    trigger(el.querySelector('a'), 'click');
+    trigger(el.querySelector('a'), 'click');
+    trigger(el.querySelector('a'), 'click');
+    assert.equal(el.innerHTML, '<ul></ul>');
+    scene.remove();
   });
 
 });
