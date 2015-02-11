@@ -1,4 +1,7 @@
 
+var trigger = require('trigger-event');
+var raf = require('component-raf');
+
 describe('Patching Attributes', function(){
   var scene;
 
@@ -78,6 +81,37 @@ describe('Patching Attributes', function(){
     assert(el.querySelector('input').getAttribute('value') === 'Bob');
     page.remove();
   })
+
+  it('should update element if function context changes', function(done){
+    var values = [];
+    var Page = component(function(props){
+      function push() {
+        values.push(props.value);
+      }
+
+      return Button({
+        label: 'A static prop',
+        onClick: push
+      });
+    });
+
+    var Button = component(function(props){
+      return dom('div.Button', { onClick: props.onClick }, [ props.label ]);
+    });
+
+    var page = Page.render(el, { value: 'One' });
+    page.update();
+    trigger(el.querySelector('.Button'), 'click');
+    page.setProps({ value: 'Two' });
+    page.update();
+    raf(function(){
+      trigger(el.querySelector('.Button'), 'click');
+      assert.equal(2, values.length);
+      assert.equal('One', values[0]);
+      assert.equal('Two', values[1]);
+      done();
+    });
+  });
 
   describe('innerHTML', function () {
 
