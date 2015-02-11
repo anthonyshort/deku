@@ -1,4 +1,11 @@
 
+0.0.24 / 2015-02-11
+==================
+
+ * Added failing test for nested events
+ * added hasFunction to fix #47
+ * added failing test to demo function diffing
+
 0.0.23 / 2015-02-09
 ==================
 

@@ -560,10 +560,10 @@ Entity.prototype.removeChild = function(path){
  */
 
 Entity.prototype.shouldUpdate = function(nextState, nextProps){
-  if (nextProps && !equals(nextProps, this.props)) {
+  if (nextProps && (hasFunction(this.props) || !equals(nextProps, this.props))) {
     return true;
   }
-  if (nextState && !equals(nextState, this.state)) {
+  if (nextState && (hasFunction(this.state) || !equals(nextState, this.state))) {
     return true;
   }
   return false;
@@ -764,6 +764,27 @@ Entity.prototype.propsChanged = function(nextProps){
   this.component.propsChanged(nextProps, props, this.state);
   this.type.emit('propsChanged', this.component, nextProps, props, this.state);
 };
+
+/**
+ * Checks to see if object has a function on it.
+ *
+ * This is used because function comparison is tricky.
+ * The context of the function may change, but in node.js
+ * and some other places the function is the same (===).
+ * In chrome those two functions compared are different tho.
+ * This is a tmp fix, there's probably a better way.
+ *
+ * @param {Object} obj
+ * @return {Boolean}
+ */
+
+function hasFunction(obj) {
+  for (var key in obj) {
+    if (typeof obj[key] === 'function') return true;
+  }
+  return false;
+}
+
 },{"component-each":13,"component-emitter":17,"equals":19,"extend":21,"get-uid":22,"to-camel-case":31,"virtualize":35}],6:[function(_require,module,exports){
 
 var equals = _require('equals');
