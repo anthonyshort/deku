@@ -3692,6 +3692,7 @@ var ComponentNode = _require('./lib/component');
 var ElementNode = _require('./lib/element');
 var TextNode = _require('./lib/text');
 var tree = _require('./lib/tree');
+var slice = _require('sliced');
 var uid = _require('get-uid');
 
 /**
@@ -3721,6 +3722,12 @@ function dom(type, props, children) {
   if (arguments.length === 2 && (typeof props === 'string' || Array.isArray(props))) {
     children = props;
     props = {};
+  }
+
+  // Account for JSX putting the children as multiple arguments.
+  // This is essentially just the ES6 rest param
+  if (arguments.length > 2 && Array.isArray(arguments[2]) === false) {
+    children = slice(arguments, 2);
   }
 
   children = children || [];
@@ -3779,13 +3786,13 @@ function notEmpty(value) {
  * @return {Array}
  */
 
-function flatten(arr, node) {
+function flatten(result, node) {
   if (Array.isArray(node)) {
-    arr = arr.concat(node);
+    result = result.concat(node);
   } else {
-    arr.push(node);
+    result.push(node);
   }
-  return arr;
+  return result;
 }
 
 /**
@@ -3819,7 +3826,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":36,"./lib/element":37,"./lib/text":38,"./lib/tree":39,"get-uid":22}],36:[function(_require,module,exports){
+},{"./lib/component":36,"./lib/element":37,"./lib/text":38,"./lib/tree":39,"get-uid":22,"sliced":40}],36:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -4163,6 +4170,44 @@ Tree.prototype.parse = function(node, path){
     }, this);
   }
 };
+
+},{}],40:[function(_require,module,exports){
+module.exports = exports = _require('./lib/sliced');
+
+},{"./lib/sliced":41}],41:[function(_require,module,exports){
+
+/**
+ * An Array.prototype.slice.call(arguments) alternative
+ *
+ * @param {Object} args something with a length
+ * @param {Number} slice
+ * @param {Number} sliceEnd
+ * @api public
+ */
+
+module.exports = function (args, slice, sliceEnd) {
+  var ret = [];
+  var len = args.length;
+
+  if (0 === len) return ret;
+
+  var start = slice < 0
+    ? Math.max(0, slice + len)
+    : slice || 0;
+
+  if (sliceEnd !== undefined) {
+    len = sliceEnd < 0
+      ? sliceEnd + len
+      : sliceEnd
+  }
+
+  while (len-- > start) {
+    ret[len - start] = args[len];
+  }
+
+  return ret;
+}
+
 
 },{}]},{},[1])(1)
 });
