@@ -75,6 +75,25 @@ Or download and use them manually:
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
+## JSX Support
+
+There are a number of libraries around now that can transpile JSX into JS that aren't tied to React. The easiest way to use JSX with Deku is to use [Babel](https://github.com/babel/babel) (formerly known as 6to5). 
+
+Babel comes with a JSX transformer that can be used by adding a comment to the top of your file:
+
+```js
+/** @jsx dom */
+var {component,dom} = require('deku');
+
+var Button = component({
+  render(props, state) {
+    return <a class="button" onClick={this.onClick}>{props.text}</a>;
+  }
+});
+```
+
+You can also use [jsx-transform](https://github.com/alexmingoia/jsx-transform) if you're looking for something simple.
+
 ## Developing
 
 Deku is built using [Browserify](https://github.com/substack/node-browserify) and Make. You can build the project by running `make` in the directory.
