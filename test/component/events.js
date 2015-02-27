@@ -30,17 +30,17 @@ describe('Events', function(){
       }
     });
 
-    this.scene = Page.render(el, { x: 20 });
-    this.scene.update();
+    var scene = Page.render(el, { x: 20 });
+    scene.update();
     assert.equal(el.innerHTML, '<span>Hello World</span>');
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-
     function onclick(e, props, state) {
       assert(this instanceof Page);
       assert(props.x, 10);
       ++count;
     }
+    scene.remove();
   });
 
   it('should remove click event', function(done){
@@ -59,14 +59,17 @@ describe('Events', function(){
         done();
       }
     });
-    this.scene = Page.render(el, { click: true });
-    this.scene.update();
+    var scene = Page.render(el, { click: true });
+    scene.update();
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1);
-    this.scene.setProps({ click: false });
+    scene.setProps({ click: false });
+    scene.update();
+    assert.equal(count, 1);
     function onclick() {
       ++count;
     }
+    scene.remove();
   });
 
   it('should update click event', function(done){

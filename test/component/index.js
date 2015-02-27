@@ -285,18 +285,23 @@ describe('API', function(){
     this.scene.remove();
   });
 
-  it('should render components at the root', function () {
-    var Dialog = component(function(){
-      return dom('.Dialog');
+  it('should only update if shouldUpdate returns true', function () {
+    var i = 0;
+    var Component = component({
+      afterUpdate: function(){
+        i = i + 1;
+      },
+      shouldUpdate: function(){
+        return false;
+      }
     });
-    var App = component(function(){
-      return dom('.App', [
-        Dialog({ isRoot: true })
-      ]);
-    });
-    this.scene = App.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<div class="Dialog"></div><div class="App"></div>');
+    var scene = Component.render(el);
+    scene.setProps({ foo: 'bar' });
+    scene.update();
+    assert.equal(i, 0);
+    scene.setProps({ foo: 'baz' });
+    scene.update();
+    assert.equal(i, 0);
   });
 
 });

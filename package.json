@@ -14,20 +14,17 @@
     "benchmark": "^1.0.0",
     "browserify": "^8.1.1",
     "trigger-event": "^1.0.0",
-    "mochify": "^2.1.1"
+    "mochify": "^2.1.1",
+    "component-raf": "^1.2.0"
   },
   "dependencies": {
-    "extend": "^2.0.0",
-    "to-camel-case": "^0.2.1",
-    "component-emitter": "^1.1.3",
-    "component-type": "^1.1.0",
-    "equals": "^1.0.0",
+    "array-zip": "^1.0.0",
     "component-each": "^0.2.5",
-    "per-frame": "^3.0.0",
-    "object-path": "^0.8.1",
-    "component-raf": "^1.2.0",
-    "tower-channels": "^1.0.0",
+    "component-emitter": "^1.1.3",
+    "extend": "^2.0.0",
     "get-uid": "^1.0.1",
+    "object-path": "^0.8.1",
+    "per-frame": "^3.0.0",
     "raf-loop": "^1.0.1",
     "virtualize": "~0.0.1"
   }

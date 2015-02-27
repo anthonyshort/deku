@@ -24,6 +24,8 @@ describe('Render Hook', function () {
       scene.update();
     } catch(e) {
       return done();
+    } finally {
+      scene.remove();
     }
     throw new Error('Did not prevent set state during render');
   });

@@ -104,7 +104,7 @@ describe('Updating Props', function () {
     assert.equal(i, 1);
   });
 
-  it('shouldn\'t update child when the props haven\'t changed', function () {
+  it.skip('shouldn\'t update child when the props haven\'t changed', function () {
     var calls = 0;
     var ComponentA = component({
       render: function(props, state){

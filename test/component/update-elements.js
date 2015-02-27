@@ -241,7 +241,10 @@ describe('Patching Element Nodes', function(){
     assert.equal(el.innerHTML, '<div>A</div>');
     scene.setProps({ type: 'B' }, function(){
       assert.equal(el.innerHTML, '<div>B</div>');
-      assert(scene.entity.children['0'].component instanceof ComponentB);
+      var entityId = scene.entity.id;
+      var childId = scene.renderer.children[entityId]['0'];
+      var entity = scene.renderer.entities[childId];
+      assert(entity.component instanceof ComponentB);
       done();
       scene.remove();
     });
@@ -255,10 +258,11 @@ describe('Patching Element Nodes', function(){
   it('should remove references to child components when they are removed', function(){
     var scene = ComponentToggle.render(el, { showComponent: true });
     scene.update();
-    assert(scene.entity.children['0']);
+    var entityId = scene.entity.id;
+    assert(scene.renderer.children[entityId]);
     scene.setProps({ showComponent: false });
     scene.update();
-    assert(scene.entity.children['0'] == null);
+    assert.equal(scene.renderer.children[entityId]['0'], undefined);
   });
 
 });
