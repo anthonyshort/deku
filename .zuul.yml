@@ -7,11 +7,5 @@ browsers:
     version: 39..latest
   - name: firefox
     version: 34..latest
-  - name: iphone
-    version: 7.0..latest
-  - name: ipad
-    version: 7.0..latest
-  - name: android
-    version: 4.3..latest
   - name: safari
     version: 7..latest
