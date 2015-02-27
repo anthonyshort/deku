@@ -611,12 +611,15 @@ function diffChildren(previous, current, context){
     }
 
     diffNode(left, right, {
+      id: context.entity.id,
       el: el.childNodes[j],
       entity: context.entity,
+      currentTree: context.currentTree,
       nextTree: context.nextTree,
       renderer: context.renderer,
       isRoot: false,
-      path: childPath
+      path: childPath,
+      rootEl: context.rootEl
     });
   }
 }
