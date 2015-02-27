@@ -68,8 +68,7 @@ bower install deku
 
 Or download and use them manually:
 
-* [dist/deku.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.js)
-* [dist/deku.min.js](https://raw.githubusercontent.com/segmentio/deku/master/dist/deku.min.js)
+* [dist/deku.js](https://raw.githubusercontent.com/segmentio/deku/master/index.js)
 
 ## Browser Support
 

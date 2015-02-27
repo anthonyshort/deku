@@ -9,14 +9,14 @@ export PATH := ./node_modules/.bin:${PATH}
 # Wildcards.
 #
 
-lib = $(shell find index.js lib/*/*.js)
-js = $(shell find index.js lib/*/*.js test/*.js)
+lib = $(shell find lib/*/*.js)
+js = $(shell find lib/*/*.js test/*.js)
 
 #
 # Default.
 #
 
-default: dist/deku.js
+default: index.js
 
 #
 # Targets.
@@ -28,10 +28,8 @@ build.js: node_modules $(js)
 tests.js: node_modules $(js)
 	@browserify test/index.js | bfc > tests.js
 
-dist/deku.js: node_modules $(js)
-	-@mkdir dist 2>/dev/null || true
-	@browserify -s deku index.js | bfc > dist/deku.js
-	@minify dist/deku.js > dist/deku.min.js
+index.js: node_modules $(js)
+	@browserify -s deku lib/index.js | bfc > index.js
 
 #
 # Tests.
@@ -59,10 +57,6 @@ test-coverage:
 	@mochify --cover
 .PHONY: coverage
 
-test-perf: node_modules
-	@open perf/runner.html
-.PHONY: perf
-
 #
 # Tasks.
 #
@@ -71,7 +65,7 @@ node_modules: package.json
 	@npm install
 
 clean:
-	@-rm -rf build.js tests.js dist
+	@-rm -rf build.js index.js tests.js
 .PHONY: clean
 
 distclean: clean
@@ -82,7 +76,7 @@ distclean: clean
 # Releases.
 #
 
-release: clean dist/deku.js
+release: clean index.js
 	bump $$VERSION && \
 	git changelog --tag $$VERSION && \
 	git commit --all -m "Release $$VERSION" && \
