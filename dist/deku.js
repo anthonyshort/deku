@@ -1,7 +1,7 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.deku=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
 exports.component = _require('./lib/component');
 exports.dom = _require('virtualize').node;
-},{"./lib/component":2,"virtualize":35}],2:[function(_require,module,exports){
+},{"./lib/component":2,"virtualize":29}],2:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -52,7 +52,6 @@ function component(spec) {
   // statics.
 
   Component.props = {};
-  Component.channels = [];
   assign(Component, statics, Emitter.prototype);
 
   // protos.
@@ -75,15 +74,6 @@ function component(spec) {
     delete spec.props;
   }
 
-  // extract channels
-
-  if (spec.channels) {
-    spec.channels.forEach(function(name){
-      Component.channel(name);
-    });
-    delete spec.channels;
-  }
-
   return Component;
 }
 
@@ -98,14 +88,7 @@ function bindAll(obj) {
   }
   return obj;
 }
-},{"./protos":3,"./statics":4,"component-emitter":17,"extend":21,"virtualize":35}],3:[function(_require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var assign = _require('extend');
-
+},{"./protos":3,"./statics":4,"component-emitter":18,"extend":19,"virtualize":29}],3:[function(_require,module,exports){
 /**
  * Set properties on `this.state`.
  *
@@ -129,7 +112,7 @@ exports.setState = function(state, done){
  */
 
 exports.invalidate = function(){
-  this.emit('change', { __force__: true });
+  this.emit('invalidate');
 };
 
 /**
@@ -141,7 +124,7 @@ exports.invalidate = function(){
  */
 
 exports.render = function(){
-  return null;
+
 };
 
 /**
@@ -156,104 +139,20 @@ exports.initialState = function(){
 };
 
 /**
- * Called before the component is mounted in the DOM. This is
- * also called when rendering the component to a string
+ * Check if this component should be re-rendered given new props
  *
- * @param {HTMLElement} el The root element for the component
- * @param {Object} state
  * @param {Object} props
- *
- * @return {void}
- */
-
-exports.beforeMount = function(el, state, props){
-
-};
-
-/**
- * Called after the component is mounted in the DOM. This is use
- * for any setup that needs to happen, like starting timers.
- *
- * @param {HTMLElement} el The root element for the component
  * @param {Object} state
- * @param {Object} props
- *
- * @return {void}
- */
-
-exports.afterMount = function(el, state, props){
-
-};
-
-/**
- * Called before the component is re-rendered
- *
- * @param {Object} state
- * @param {Object} props
+ * @param {Object} nextProps
  * @param {Object} nextState
- * @param {Object} nextProps
  *
- * @return {void}
+ * @return {Boolean}
  */
 
-exports.beforeUpdate = function(state, props, nextState, nextProps){
-
+exports.shouldUpdate = function(props, state, nextProps, nextState){
+  return true;
 };
-
-/**
- * Called after the component is mounted in the DOM. This is use
- * for any setup that needs to happen, like starting timers.
- *
- * @param {Object} state
- * @param {Object} props
- * @param {Object} prevState
- * @param {Object} prevProps
- *
- * @return {void}
- */
-
-exports.afterUpdate = function(state, props, prevState, prevProps){
-
-};
-
-/**
- * Called before the component is unmounted from the DOM
- *
- * @param {HTMLElement} el The root element for the component
- * @param {Object} state
- * @param {Object} props
- *
- * @return {void}
- */
-
-exports.beforeUnmount = function(el, state, props){
-
-};
-
-/**
- * Called after the component is unmounted in the DOM
- *
- * @param {HTMLElement} el The root element for the component
- * @param {Object} state
- * @param {Object} props
- *
- * @return {void}
- */
-
-exports.afterUnmount = function(el, state, props){
-
-};
-
-/**
- * Called after the props have been updated.
- *
- * @param {Object} nextProps
- */
-
-exports.propsChanged = function(nextProps){
-
-};
-},{"extend":21}],4:[function(_require,module,exports){
+},{}],4:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -345,12 +244,20 @@ exports.renderString = function(props){
  */
 
 var Emitter = _require('component-emitter');
-var each = _require('component-each');
-var camel = _require('to-camel-case');
 var virtual = _require('virtualize');
 var assign = _require('extend');
-var equals = _require('equals');
 var uid = _require('get-uid');
+
+/**
+ * Prevent calling setState in these lifecycle states
+ *
+ * @type {Object}
+ */
+
+var preventSetState = {
+  beforeUpdate: "You can't call setState in the beforeUpdate hook. Use the propsChanged hook instead.",
+  render: "You can't call setState in the render hook. This method must remain pure."
+};
 
 /**
  * Expose `Entity`.
@@ -371,20 +278,15 @@ function Entity(Component, props) {
   this.id = uid();
   this.type = Component;
   this.props = props || {};
-  this.component = this.createComponent(Component);
+  this.component = this.instance(Component);
   this.state = this.component.initialState(this.props);
-  this.children = {};
-  this.current = null;
-  this.previous = null;
-  this.dirty = false;
   this.lifecycle = null;
-  this._pendingProps = null;
-  this._pendingState = null;
-  this._propsReplaced = false;
+  this._pendingProps = assign({}, this.props);
+  this._pendingState = assign({}, this.state);
 }
 
 /**
- * Entity is an emitter.
+ * Mixins.
  */
 
 Emitter(Entity.prototype);
@@ -397,9 +299,10 @@ Emitter(Entity.prototype);
  * @return {Object}
  */
 
-Entity.prototype.createComponent = function(Component) {
+Entity.prototype.instance = function(Component) {
   var component = new Component();
   component.on('change', this.setState.bind(this));
+  component.on('invalidate', this.invalidate.bind(this));
   return component;
 };
 
@@ -410,27 +313,25 @@ Entity.prototype.createComponent = function(Component) {
  */
 
 Entity.prototype.render = function(){
-  this.lifecycle = 'rendering';
-  var props = this.getProps();
-  var node = this.component.render(props, this.state);
+  this.lifecycle = 'render';
+  var node = this.component.render(this.props, this.state);
   this.lifecycle = null;
-  if (!node) {
-    node = virtual.node('noscript');
-  }
+  // if (!node) throw new Error('The `render` method must return a virtual node.');
+  if (!node) node = virtual.node('noscript');
   return virtual.tree(node);
 };
 
 /**
- * Set the props.
+ * Merge in new props.
  *
  * @param {Object} nextProps
  * @param {Function} done
  */
 
 Entity.prototype.setProps = function(nextProps, done){
-  if (done) this.once('update', done);
-  this._pendingProps = assign(this._pendingProps || {}, nextProps);
-  this.propsChanged(nextProps);
+  if (done) this.once('afterUpdate', done);
+  this._pendingProps = assign(this._pendingProps, nextProps);
+  this.propsChanged(this._pendingProps);
   this.invalidate();
 };
 
@@ -442,19 +343,10 @@ Entity.prototype.setProps = function(nextProps, done){
  */
 
 Entity.prototype.replaceProps = function(nextProps, done){
-  if (done) this.once('update', done);
-  this._propsReplaced = true;
+  if (done) this.once('afterUpdate', done);
   this._pendingProps = nextProps;
-  this.propsChanged(nextProps);
+  this.propsChanged(this._pendingProps);
   this.invalidate();
-};
-
-
-Entity.prototype.validateProps = function(){
-  var props = this.type.props;
-  // if they've added a prop not in the definitions
-  // if they've missed a prop in the definition
-  // if they've sent the wrong type for a prop
 };
 
 /**
@@ -466,14 +358,9 @@ Entity.prototype.validateProps = function(){
  */
 
 Entity.prototype.setState = function(nextState, done){
-  if (this.lifecycle === 'beforeUpdate') {
-    throw new Error('You can\'t call setState in the beforeUpdate hook. Use the propsChanged hook instead.');
-  }
-  if (this.lifecycle === 'rendering') {
-    throw new Error('You can\'t call setState in the render hook. This method must remain pure.');
-  }
-  if (done) this.once('update', done);
-  this._pendingState = assign(this._pendingState || {}, nextState);
+  checkSetState(this.lifecycle);
+  if (done) this.once('afterUpdate', done);
+  this._pendingState = assign(this._pendingState, nextState);
   this.invalidate();
 };
 
@@ -482,72 +369,28 @@ Entity.prototype.setState = function(nextState, done){
  */
 
 Entity.prototype.invalidate = function(){
-  this.dirty = true;
-  if (this.scene) this.scene.dirty = true;
+  this.emit('change');
 };
 
 /**
- * Add an entity as a child of this entity
+ * Commit the changes.
  *
- * @param {String} path
- * @param {Entity} entity
+ * @return {Node}
  */
 
-Entity.prototype.addChild = function(path, Component, props){
-  var child = new Entity(Component, props);
-  this.children[path] = child;
-  child.addToScene(this.scene);
-  return child;
+Entity.prototype.commit = function(){
+  this.state = this._pendingState;
+  this.props = this._pendingProps;
+  this._pendingState = assign({}, this.state);
+  this._pendingProps = assign({}, this.props);
 };
 
 /**
- * Get the child entity at a path
- *
- * @param {String} path
- *
- * @return {Entity}
+ * Release this entity for GC
  */
 
-Entity.prototype.getChild = function(path) {
-  return this.children[path];
-};
-
-/**
- * Get the path of a node in it's current tree
- *
- * @param {Node} node
- *
- * @return {String}
- */
-
-Entity.prototype.getPath = function(node) {
-  return this.current.getPath(node);
-};
-
-/**
- * Add this entity to a Scene. Whenever this entity
- * is changed, it will mark the scene as dirty.
- *
- * @param {Scene} scene
- */
-
-Entity.prototype.addToScene = function(scene){
-  this.scene = scene;
-};
-
-/**
- * Remove an entity from this component and return it.
- *
- * @param {String} path
- *
- * @return {Entity}
- */
-
-Entity.prototype.removeChild = function(path){
-  var entity = this.children[path];
-  entity.scene = null;
-  delete this.children[path];
-  return entity;
+Entity.prototype.release = function(){
+  this.off();
 };
 
 /**
@@ -559,123 +402,8 @@ Entity.prototype.removeChild = function(path){
  * @return {Boolean}
  */
 
-Entity.prototype.shouldUpdate = function(nextState, nextProps){
-  if (nextProps && (hasFunction(this.props) || !equals(nextProps, this.props))) {
-    return true;
-  }
-  if (nextState && (hasFunction(this.state) || !equals(nextState, this.state))) {
-    return true;
-  }
-  return false;
-};
-
-/**
- * Update the props on the component.
- *
- * @return {Node}
- */
-
-Entity.prototype.update = function(){
-  var nextProps;
-
-  // If we've flagged that we want all of the props replaced, we
-  // won't merge it in, we'll replace it entirely.
-  if (this._propsReplaced) {
-    nextProps = this._pendingProps;
-    this._propsReplaced = false;
-  } else {
-    nextProps = assign({}, this.props, this._pendingProps);
-  }
-
-  var nextState = assign({}, this.state, this._pendingState);
-
-  // Compare the state and props to see if we really need to render
-  if (!this.shouldUpdate(nextState, nextProps)) return false;
-
-  // pre-update. This callback could mutate the
-  // state or props just before the render occurs
-  this.beforeUpdate(nextState, nextProps);
-
-  // commit the changes.
-  var previousState = this.state;
-  var previousProps = this.props;
-  this.state = nextState;
-  this.props = nextProps || this.props;
-
-  // reset.
-  this._pendingState = null;
-  this._pendingProps = null;
-
-  // remove the force flag.
-  delete this.state.__force__;
-
-  // Signal that something changed
-  return true;
-};
-
-/**
- * Set the current version of the tree and mark this
- * entity as not dirty. This is called once the entity
- * has been rendered/updated on the scene.
- *
- * @param {Tree} tree
- */
-
-Entity.prototype.setCurrent = function(tree){
-  this.previous = this.current;
-  this.current = tree;
-  this.dirty = false;
-};
-
-/**
- * Remove the component from the DOM.
- */
-
-Entity.prototype.remove = function(){
-  this.off();
-  each(this.children, function(path, child){
-    child.remove();
-  });
-  this.children = {};
-};
-
-/**
- * Connect to all off the channels on the scene
- */
-
-Entity.prototype.connect = function(){
-  var channels = this.channels = {};
-  var scene = this.scene;
-  this.type.channels.forEach(function(name){
-    var socket = scene.channel(name).connect();
-    channels[camel(name)] = socket;
-  });
-};
-
-/**
- * Disconnect from all of the channels
- */
-
-Entity.prototype.disconnect = function(){
-  for (var name in this.channels) {
-    var socket = this.channels[name];
-    socket.disconnect();
-  }
-  delete this.channels;
-};
-
-/**
- * Get the props object that is passed into the hook functions.
- * This includes extra props that are sent to the user but
- * don't necessarily update the view.
- *
- * @return {Object}
- */
-
-Entity.prototype.getProps = function(){
-  var props = Object.create(this.props);
-  props.channels = this.channels;
-  return props;
+Entity.prototype.shouldUpdate = function(nextProps, nextState){
+  return this.component.shouldUpdate(this.props, this.state, nextProps, nextState);
 };
 
 /**
@@ -685,12 +413,8 @@ Entity.prototype.getProps = function(){
  * @param {Object} nextProps
  */
 
-Entity.prototype.beforeUpdate = function(nextState, nextProps){
-  var props = this.getProps();
-  this.lifecycle = 'beforeUpdate';
-  this.component.beforeUpdate(props, this.state, nextProps, nextState);
-  this.type.emit('beforeUpdate', this.component, props, this.state, nextProps, nextState);
-  this.lifecycle = null;
+Entity.prototype.beforeUpdate = function(nextProps, nextState){
+  this.trigger('beforeUpdate', [this.props, this.state, nextProps, nextState]);
 };
 
 /**
@@ -701,10 +425,7 @@ Entity.prototype.beforeUpdate = function(nextState, nextProps){
  */
 
 Entity.prototype.afterUpdate = function(previousState, previousProps){
-  var props = this.getProps();
-  this.emit('update');
-  this.component.afterUpdate(props, this.state, previousProps, previousState);
-  this.type.emit('afterUpdate', this.component, props, this.state, previousProps, previousState);
+  this.trigger('afterUpdate', [this.props, this.state, previousProps, previousState]);
 };
 
 /**
@@ -714,9 +435,7 @@ Entity.prototype.afterUpdate = function(previousState, previousProps){
  */
 
 Entity.prototype.beforeUnmount = function(el){
-  var props = this.getProps();
-  this.component.beforeUnmount(el, props, this.state);
-  this.type.emit('beforeUnmount', this.component, el, props, this.state);
+  this.trigger('beforeUnmount', [el, this.props, this.state]);
 };
 
 /**
@@ -724,10 +443,7 @@ Entity.prototype.beforeUnmount = function(el){
  */
 
 Entity.prototype.afterUnmount = function(){
-  this.disconnect();
-  var props = this.getProps();
-  this.component.afterUnmount(props, this.state);
-  this.type.emit('afterUnmount', this.component, props, this.state);
+  this.trigger('afterUnmount', [this.props, this.state]);
 };
 
 /**
@@ -735,10 +451,7 @@ Entity.prototype.afterUnmount = function(){
  */
 
 Entity.prototype.beforeMount = function(){
-  this.connect();
-  var props = this.getProps();
-  this.component.beforeMount(props, this.state);
-  this.type.emit('beforeMount', this.component, props, this.state);
+  this.trigger('beforeMount', [this.props, this.state]);
 };
 
 /**
@@ -748,67 +461,72 @@ Entity.prototype.beforeMount = function(){
  */
 
 Entity.prototype.afterMount = function(el){
-  var props = this.getProps();
-  this.component.afterMount(el, props, this.state);
-  this.type.emit('afterMount', this.component, el, props, this.state);
+  this.trigger('afterMount', [el, this.props, this.state]);
 };
 
 /**
  * Trigger `propsChanged` lifecycle hook.
- *
- * @param {Object} nextProps
  */
 
 Entity.prototype.propsChanged = function(nextProps){
-  var props = this.getProps();
-  this.component.propsChanged(nextProps, props, this.state);
-  this.type.emit('propsChanged', this.component, nextProps, props, this.state);
+  this.trigger('propsChanged', [nextProps, this.props, this.state]);
 };
 
 /**
- * Checks to see if object has a function on it.
+ * Trigger a method on the component instance and call a matching
+ * event on the Component constructor. This event can be used by
+ * plugins to hook into lifecycle methods.
  *
- * This is used because function comparison is tricky.
- * The context of the function may change, but in node.js
- * and some other places the function is the same (===).
- * In chrome those two functions compared are different tho.
- * This is a tmp fix, there's probably a better way.
- *
- * @param {Object} obj
- * @return {Boolean}
+ * @param {String} name
+ * @param {Array} args
+ * @private
  */
 
-function hasFunction(obj) {
-  for (var key in obj) {
-    if (typeof obj[key] === 'function') return true;
+Entity.prototype.trigger = function(name, args){
+  this.lifecycle = name;
+  if (typeof this.component[name] === 'function') {
+    this.component[name].apply(this.component, args);
   }
-  return false;
+  this.type.emit.apply(this.type, [name, this.component].concat(args));
+  this.lifecycle = null;
+  this.emit(name);
+};
+
+/**
+ * Determine whether it is possible to set state during a
+ * lifecycle method.
+ *
+ * @param {String} lifecycle
+ */
+
+function checkSetState(lifecycle) {
+  var message = preventSetState[lifecycle];
+  if (message) throw new Error(message);
 }
-
-},{"component-each":13,"component-emitter":17,"equals":19,"extend":21,"get-uid":22,"to-camel-case":31,"virtualize":35}],6:[function(_require,module,exports){
-
-var equals = _require('equals');
+},{"component-emitter":18,"extend":19,"get-uid":20,"virtualize":29}],6:[function(_require,module,exports){
+var zip = _require('array-zip');
 
 module.exports = patch;
 
 /**
- * Create a patch function from a diff.
+ * Patch an element with the diff from two trees
  *
- * @param {ComponentRenderer} this The this component
+ * @param {object} options
  */
 
-function patch(entity, nextTree, el, renderer){
+function patch(options){
   var context = {
-    entity: entity,
-    nextTree: nextTree,
-    renderer: renderer,
-    rootEl: el,
-    el: el,
+    entity: options.entity,
+    currentTree: options.currentTree,
+    nextTree: options.nextTree,
+    renderer: options.renderer,
+    rootEl: options.el,
+    el: options.el,
     path: '0',
-    id: entity.id,
+    id: options.entity.id,
     isRoot: true
   };
-  diffNode(entity.current.root, nextTree.root, context);
+  diffNode(options.currentTree.root, options.nextTree.root, context);
   return context.rootEl;
 }
 
@@ -873,10 +591,12 @@ function diffChildren(previous, current, context){
     var item = children[i];
     var left = item[0];
     var right = item[1];
+    var childPath = context.path + '.' + j;
 
     // this is a new node.
     if (left == null) {
-      context.renderer.createElement(right, context.nextTree, context.entity, el);
+      var childEl = context.renderer.createElement(right, childPath, context.entity.id);
+      el.appendChild(childEl);
       continue;
     }
 
@@ -896,7 +616,7 @@ function diffChildren(previous, current, context){
       nextTree: context.nextTree,
       renderer: context.renderer,
       isRoot: false,
-      path: context.path + '.' + j
+      path: childPath
     });
   }
 }
@@ -951,13 +671,13 @@ function diffComponent(previous, current, context){
     return replaceNode(previous, current, context);
   }
 
-  var entity = context.entity.getChild(context.path);
+  var parentEntityId = context.entity.id;
+  var entityId = context.renderer.children[parentEntityId][context.path];
+  var entity = context.renderer.entities[entityId];
 
-  // The props are different, replace them
-  // if (!equals(current.props, entity.props)) {
-  //   entity.replaceProps(current.props);
-  // }
-
+  // We always replace the props on the component when composing
+  // them. This will trigger a re-render on all children below this
+  // point becasue they're always going to have their props replaced.
   entity.replaceProps(current.props);
 }
 
@@ -1006,7 +726,7 @@ function replaceNode(current, next, context){
   removeComponents(current, context);
   // Check for parent node in case child root node is a component
   if (el.parentNode) el.parentNode.removeChild(el);
-  var newEl = context.renderer.createElement(next, context.nextTree, context.entity);
+  var newEl = context.renderer.createElement(next, context.path, context.entity.id);
   container.insertBefore(newEl, container.childNodes[current.index]);
   if (context.isRoot) context.rootEl = newEl;
 }
@@ -1021,9 +741,12 @@ function replaceNode(current, next, context){
 function removeComponents(node, context){
   // remove a child component
   if (node.type === 'component') {
-    var path = context.entity.current.getPath(node);
-    var child = context.entity.removeChild(path);
-    context.renderer.unmountEntity(child);
+    var parentEntityId = context.entity.id;
+    var nodePath = context.currentTree.getPath(node);
+    var entityId = context.renderer.children[parentEntityId][nodePath];
+    var entity = context.renderer.entities[entityId];
+    context.renderer.unmountEntity(entity);
+    delete context.renderer.children[parentEntityId][nodePath];
     return;
   }
   // recursively remove components
@@ -1034,30 +757,14 @@ function removeComponents(node, context){
   }
 }
 
-/**
- * Zip multiple arrays together into one array.
- *
- * @return {Array}
- */
-
-function zip() {
-  var args = Array.prototype.slice.call(arguments, 0);
-  return args.reduce(function(a, b){
-    return a.length > b.length ? a : b;
-  }, []).map(function(_, i){
-    return args.map(function(arr){
-      return arr[i];
-    });
-  });
-}
-
-},{"equals":19}],7:[function(_require,module,exports){
+},{"array-zip":11}],7:[function(_require,module,exports){
 
 /**
  * Dependencies.
  */
 
 var Interactions = _require('./interactions');
+var Entity = _require('../../entity');
 var each = _require('component-each');
 var patch = _require('./diff');
 
@@ -1082,8 +789,12 @@ module.exports = HTMLRenderer;
 function HTMLRenderer(container) {
   this.container = container;
   this.events = new Interactions(container);
+  this.entities = {};
   this.elements = {};
+  this.renders = {};
+  this.children = {};
   this.rendered = null;
+  this.dirty = [];
 }
 
 /**
@@ -1097,12 +808,16 @@ function HTMLRenderer(container) {
 
 HTMLRenderer.prototype.render = function(entity) {
 
-  if (entity.current) {
-   this.update(entity);
-   return;
+  // The entity we're trying to render is already rendered
+  // into the container, so let's just update it.
+  if (this.rendered === entity) {
+    if (this.dirty.length > 0) {
+      this.update(entity);
+    }
+    return;
   }
 
-  // This entity has never been rendered before
+  // Otherwise we're rendering a new entity onto the scene
   this.clear();
   this.mountEntity(entity, this.container);
   this.rendered = entity;
@@ -1118,39 +833,92 @@ HTMLRenderer.prototype.render = function(entity) {
  */
 
 HTMLRenderer.prototype.update = function(entity) {
-
-  // Does this entity even need updating?
-  if (!entity.dirty) {
-    return this.updateChildren(entity);
-  }
-
+  var self = this;
+  var nextProps = entity._pendingProps;
+  var nextState = entity._pendingState;
   var previousState = entity.state;
   var previousProps = entity.props;
-  var updated = entity.update();
+  var currentTree = this.renders[entity.id];
+  var currentEl = this.elements[entity.id];
 
-  // TODO: Use an event to call all of this.
-  // This will allow us to call of the lifecycle
-  // events from within the entity.
-
-  // The props/state were the same
-  if (!updated) {
-    return this.updateChildren(entity);
+  // Recursive update
+  function next(){
+    self.updateChildren(entity);
   }
 
+  // If the component never called setState or setProps
+  // it won't need updating at all. This allows us to
+  // skip further complex checks.
+  if (!this.hasChanged(entity)) {
+    return next();
+  }
+
+  // If setState or setProps have been called we can
+  // allow a user-defined check to see if we should update the
+  // component. This returns true by default. This allows the user
+  // improve the overall performance of their app and avoids hard
+  // to track down bugs. We essentially are trading a bit of
+  // performance here for user-experience.
+  if (!entity.shouldUpdate(nextProps, nextState)) {
+    return next();
+  }
+
+  // pre-update. This callback could mutate the
+  // state or props just before the render occurs
+  entity.beforeUpdate(nextProps, nextState);
+
+  // Now we can commit the state of the entity. All of the
+  // pending props and state will now be committed and reflect
+  // the actual state of the component.
+  entity.commit();
+
+  // Re-render the tree to get an up-to-date representation
+  // of the component with the new props/state
   var nextTree = entity.render();
 
   // Run the diff and patch the element.
-  var rootEl = patch(entity, nextTree, this.getElement(entity.id), this);
+  var updatedEl = patch({
+    entity: entity,
+    currentTree: currentTree,
+    nextTree: nextTree,
+    el: currentEl,
+    renderer: this
+  });
 
   // Update the element for this component in case
   // the root node has changed.
-  this.elements[entity.id] = rootEl;
-
-  // Commit the changes.
-  entity.setCurrent(nextTree);
+  this.elements[entity.id] = updatedEl;
+  this.renders[entity.id] = nextTree;
   this.updateEvents(entity);
-  this.updateChildren(entity);
+  this.resolveEntity(entity);
+  next();
   entity.afterUpdate(previousState, previousProps);
+};
+
+/**
+ * Check to see if an entity has changed since the last rendering.
+ *
+ * @param {Entity} entity
+ *
+ * @return {Boolean}
+ */
+
+HTMLRenderer.prototype.hasChanged = function(entity) {
+  return this.dirty.indexOf(entity.id) > -1;
+};
+
+/**
+ * Resolve an entity's dirty state.
+ *
+ * @param {Entity} entity
+ *
+ * @return {Boolean}
+ */
+
+HTMLRenderer.prototype.resolveEntity = function(entity) {
+  this.dirty = this.dirty.filter(function(id){
+    return id !== entity.id;
+  });
 };
 
 /**
@@ -1160,29 +928,23 @@ HTMLRenderer.prototype.update = function(entity) {
  */
 
 HTMLRenderer.prototype.updateChildren = function(entity) {
-  for (var key in entity.children) {
-    this.update(entity.children[key]);
+  var entities = this.entities;
+  var children = this.children[entity.id];
+  for (var path in children) {
+    var childId = children[path];
+    this.update(entities[childId]);
   }
 };
 
 /**
  * Clear the scene
- *
- * @return {void}
  */
 
-HTMLRenderer.prototype.clear = function(){
+HTMLRenderer.prototype.clear =
+HTMLRenderer.prototype.remove = function(){
   if (!this.rendered) return;
   this.unmountEntity(this.rendered);
   this.rendered = null;
-};
-
-/**
- * Clear the scene
- */
-
-HTMLRenderer.prototype.remove = function(){
-  this.clear();
   this.events.remove();
 };
 
@@ -1196,13 +958,31 @@ HTMLRenderer.prototype.remove = function(){
  */
 
 HTMLRenderer.prototype.mountEntity = function(entity, container) {
+  var self = this;
+
   entity.beforeMount();
-  var el = this.addEntity(entity);
-  if (entity.props.isRoot) {
-    this.container.appendChild(el);
-  } else {
-    container.appendChild(el);
-  }
+
+  // This will store all the entities that are children
+  // of this entity after it is rendered and mounted.
+  this.children[entity.id] = {};
+
+  // Render the entity and create the initial element for it
+  var current = entity.render();
+  var el = this.createElement(current.root, '0', entity.id);
+
+  // We store the DOM state of the entity within the renderer
+  this.elements[entity.id] = el;
+  this.renders[entity.id] = current;
+  this.entities[entity.id] = entity;
+
+  // Whenever setState or setProps is called, we mark the entity
+  // as dirty in the renderer. This lets us optimize the re-rendering
+  // and skip components that definitely haven't changed.
+  entity.on('change', function(){
+    self.dirty.push(entity.id);
+  });
+
+  container.appendChild(el);
   this.updateEvents(entity);
   entity.afterMount(el);
   return el;
@@ -1215,12 +995,16 @@ HTMLRenderer.prototype.mountEntity = function(entity, container) {
  */
 
 HTMLRenderer.prototype.unmountEntity = function(entity){
-  var el = this.getElement(entity.id);
+  var el = this.elements[entity.id];
 
   // This entity is already unmounted
   if (!el) return;
 
   entity.beforeUnmount(el);
+
+  // In case the entity is currently marked as dirty. We remove
+  // it so it doesn't sit around in the array
+  this.resolveEntity(entity);
 
   // If sub-components are on the root node, the entities will share
   // the same element. In this case, the element will only need to be
@@ -1229,8 +1013,11 @@ HTMLRenderer.prototype.unmountEntity = function(entity){
   this.unmountChildren(entity);
   this.removeEvents(entity);
   entity.afterUnmount();
-  entity.remove();
+  entity.release();
   delete this.elements[entity.id];
+  delete this.renders[entity.id];
+  delete this.entities[entity.id];
+  delete this.children[entity.id];
 };
 
 /**
@@ -1241,22 +1028,11 @@ HTMLRenderer.prototype.unmountEntity = function(entity){
 
 HTMLRenderer.prototype.unmountChildren = function(entity) {
   var self = this;
-  each(entity.children, function(path, child){
-    entity.removeChild(path);
-    self.unmountEntity(child);
+  var entities = this.entities;
+  var children = this.children[entity.id];
+  each(children, function(path, childId){
+    self.unmountEntity(entities[childId]);
   });
-};
-
-/**
- * Get the element for an entity using the entity ID
- *
- * @param {String} id
- *
- * @return {HTMLElement}
- */
-
-HTMLRenderer.prototype.getElement = function(id) {
-  return this.elements[id];
 };
 
 /**
@@ -1270,11 +1046,12 @@ HTMLRenderer.prototype.getElement = function(id) {
 HTMLRenderer.prototype.updateEvents = function(entity) {
   var self = this;
   this.events.unbind(entity.id);
+  var currentTree = this.renders[entity.id];
 
   // TODO: Optimize this by storing the events in the Tree
   // object on the initial pass instead of looping again.
   // eg. entity.current.events -> '0.0.1:click': fn
-  each(entity.current.nodes, function(path, node){
+  each(currentTree.nodes, function(path, node){
     if (node.type !== 'element') return;
     each(node.events, function(eventType, fn){
       self.events.bind(entity.id, path, eventType, function(e){
@@ -1295,24 +1072,6 @@ HTMLRenderer.prototype.removeEvents = function(entity) {
 };
 
 /**
- * Render an entity as a HTML element
- *
- * @param {Entity} entity
- *
- * @return {HTMLElement}
- */
-
-HTMLRenderer.prototype.addEntity = function(entity, parentEl) {
-  var current = entity.render();
-  var el = this.createElement(current.root, current, entity, parentEl);
-  entity.setCurrent(current);
-  this.elements[entity.id] = el;
-  // entity.on('update', this.updateEntity);
-  // entity.on('remove', this.unmountEntity);
-  return el;
-};
-
-/**
  * Convert this node and all it's children into
  * real DOM elements and return it.
  *
@@ -1321,29 +1080,25 @@ HTMLRenderer.prototype.addEntity = function(entity, parentEl) {
  * a new branch is added during a diff.
  *
  * @param {Node} node
- * @param {Tree} tree
- * @param {Entity} entity
- * @param {HTMLElement} parentEl
+ * @param {String} path
+ * @param {String} entityId
  *
- * @return {HTMLElement}
+ * @return {HTMLDocumentFragment}
  */
 
-HTMLRenderer.prototype.createElement = function(node, tree, entity, optParentEl){
-  var path = tree.getPath(node);
-  var parentEl = optParentEl || document.createDocumentFragment();
-
-  // we can only render nodes that exist within the tree.
-  if (!path) throw new Error('Node does not exist in the entity');
+HTMLRenderer.prototype.createElement = function(node, path, entityId){
 
   if (node.type === 'text') {
-    parentEl.appendChild(document.createTextNode(node.data));
-    return parentEl;
+    return document.createTextNode(node.data);
   }
 
   if (node.type === 'element') {
     var el = document.createElement(node.tagName);
     var children = node.children;
 
+    // TODO: These is some duplication here between the diffing.
+    // This should be generalized and put into a module somewhere
+    // so that it's easier to define special attributes in one spot.
     for (var name in node.attributes) {
       if (name === 'innerHTML') {
         el.innerHTML = node.attributes.innerHTML;
@@ -1352,33 +1107,33 @@ HTMLRenderer.prototype.createElement = function(node, tree, entity, optParentEl)
       }
     }
 
-    // store the path for event delegation.
-    el.__path__ = path;
-    el.__entity__ = entity.id;
-
-    // add children.
-    for (var i = 0, n = children.length; i < n; i++) {
-      this.createElement(children[i], tree, entity, el);
-    }
-
     // TODO: Store nodes in a hash so we can easily find
     // elements later. This would allow us to separate out the
     // patching from the diffing will still being efficient. We could
     // also use the same object in the Interactions object to make
     // lookups cleaner instead of checking __ values.
     // this.nodesByPath[entity.id][path] = el;
+    el.__path__ = path;
+    el.__entity__ = entityId;
 
-    parentEl.appendChild(el);
+    // add children.
+    for (var i = 0, n = children.length; i < n; i++) {
+      var childEl = this.createElement(children[i], path + '.' + i, entityId);
+      el.appendChild(childEl);
+    }
+
     return el;
   }
 
   if (node.type === 'component') {
-    var child = entity.addChild(path, node.component, node.props);
-    return this.mountEntity(child, parentEl);
+    var fragment = document.createDocumentFragment();
+    var child = new Entity(node.component, node.props);
+    var el = this.mountEntity(child, fragment);
+    this.children[entityId][path] = child.id;
+    return el;
   }
 };
-
-},{"./diff":6,"./interactions":8,"component-each":13}],8:[function(_require,module,exports){
+},{"../../entity":5,"./diff":6,"./interactions":8,"component-each":14}],8:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1517,7 +1272,7 @@ Interactions.prototype.handle = function(event){
   }
 };
 
-},{"object-path":23,"per-frame":24}],9:[function(_require,module,exports){
+},{"object-path":21,"per-frame":22}],9:[function(_require,module,exports){
 var virtual = _require('virtualize');
 var Entity = _require('../../entity');
 
@@ -1608,14 +1363,13 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":5,"virtualize":35}],10:[function(_require,module,exports){
+},{"../../entity":5,"virtualize":29}],10:[function(_require,module,exports){
 
 /**
  * Module dependencies
  */
 
 var Emitter = _require('component-emitter');
-var Signals = _require('tower-channels');
 var loop = _require('raf-loop');
 
 /**
@@ -1636,11 +1390,8 @@ module.exports = Scene;
 
 function Scene(renderer, entity) {
   this.loop = loop(this.update.bind(this));
-  this.signals = new Signals();
   this.renderer = renderer;
-  this.dirty = true;
   this.entity = entity;
-  entity.addToScene(this);
   this.resume();
 }
 
@@ -1658,18 +1409,6 @@ Scene.prototype.use = function(plugin){
 };
 
 /**
- * Get a channel
- *
- * @param {String} name
- *
- * @return {Emitter}
- */
-
-Scene.prototype.channel = function(name){
-  return this.signals.channel(name);
-};
-
-/**
  * Schedule this component to be updated on the next frame.
  *
  * @param {Function} done
@@ -1677,10 +1416,12 @@ Scene.prototype.channel = function(name){
  */
 
 Scene.prototype.update = function(){
-  if (!this.dirty) return;
-  this.dirty = false;
-  this.renderer.render(this.entity);
-  this.emit('update');
+  try {
+    this.renderer.render(this.entity);
+  } catch(e) {
+    this.pause();
+    throw e;
+  }
   return this;
 };
 
@@ -1692,19 +1433,7 @@ Scene.prototype.update = function(){
  */
 
 Scene.prototype.setProps = function(newProps, done){
-  if (done) this.once('update', done);
-  this.entity.setProps(newProps);
-
-  // Return a promise if the environment
-  // supports the native version.
-  var self = this;
-  if (typeof Promise !== 'undefined') {
-    return new Promise(function(resolve){
-      self.once('update', function(){
-        resolve();
-      });
-    });
-  }
+  this.entity.setProps(newProps, done);
 };
 
 /**
@@ -1717,19 +1446,7 @@ Scene.prototype.setProps = function(newProps, done){
  */
 
 Scene.prototype.replaceProps = function(newProps, done){
-  if (done) this.once('update', done);
-  this.entity.replaceProps(newProps);
-
-  // Return a promise if the environment
-  // supports the native version.
-  var self = this;
-  if (typeof Promise !== 'undefined') {
-    return new Promise(function(resolve){
-      self.once('update', function(){
-        resolve();
-      });
-    });
-  }
+  this.entity.replaceProps(newProps, done);
 };
 
 /**
@@ -1738,7 +1455,6 @@ Scene.prototype.replaceProps = function(newProps, done){
 
 Scene.prototype.remove = function(){
   this.pause();
-  this.signals.closeAll();
   this.renderer.remove();
   this.off();
 };
@@ -1762,7 +1478,29 @@ Scene.prototype.pause = function(){
   this.emit('pause');
   return this;
 };
-},{"component-emitter":17,"raf-loop":26,"tower-channels":34}],11:[function(_require,module,exports){
+},{"component-emitter":18,"raf-loop":24}],11:[function(_require,module,exports){
+/*
+ * array-zip
+ * https://github.com/frozzare/array-zip
+ *
+ * Copyright (c) 2014 Fredrik Forsmo
+ * Licensed under the MIT license.
+ */
+
+'use strict';
+
+module.exports = function () {
+  var args = Array.prototype.slice.call(arguments, 0);
+  return args.reduce(function (a, b) {
+    return a.length > b.length ? a : b;
+  }, []).map(function (_, i) {
+    return args.map(function (arr) {
+      return arr[i];
+    });
+  });
+};
+
+},{}],12:[function(_require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2065,7 +1803,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],12:[function(_require,module,exports){
+},{}],13:[function(_require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2124,7 +1862,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],13:[function(_require,module,exports){
+},{}],14:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -2215,7 +1953,7 @@ function array(obj, fn, ctx) {
   }
 }
 
-},{"component-type":14,"to-function":15,"type":14}],14:[function(_require,module,exports){
+},{"component-type":15,"to-function":16,"type":15}],15:[function(_require,module,exports){
 
 /**
  * toString ref.
@@ -2249,7 +1987,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],15:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 var expr;
 try {
     expr = void 0;
@@ -2321,7 +2059,7 @@ function stripNested(prop, str, val) {
         return $1 ? $0 : val;
     });
 }
-},{"component-props":16}],16:[function(_require,module,exports){
+},{"component-props":17}],17:[function(_require,module,exports){
 /**
  * Global Names
  */
@@ -2408,7 +2146,7 @@ function prefixed(str) {
   };
 }
 
-},{}],17:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2453,7 +2191,7 @@ function mixin(obj) {
 Emitter.prototype.on =
 Emitter.prototype.addEventListener = function(event, fn){
   this._callbacks = this._callbacks || {};
-  (this._callbacks[event] = this._callbacks[event] || [])
+  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
     .push(fn);
   return this;
 };
@@ -2469,11 +2207,8 @@ Emitter.prototype.addEventListener = function(event, fn){
  */
 
 Emitter.prototype.once = function(event, fn){
-  var self = this;
-  this._callbacks = this._callbacks || {};
-
   function on() {
-    self.off(event, on);
+    this.off(event, on);
     fn.apply(this, arguments);
   }
 
@@ -2505,12 +2240,12 @@ Emitter.prototype.removeEventListener = function(event, fn){
   }
 
   // specific event
-  var callbacks = this._callbacks[event];
+  var callbacks = this._callbacks['$' + event];
   if (!callbacks) return this;
 
   // remove all handlers
   if (1 == arguments.length) {
-    delete this._callbacks[event];
+    delete this._callbacks['$' + event];
     return this;
   }
 
@@ -2537,7 +2272,7 @@ Emitter.prototype.removeEventListener = function(event, fn){
 Emitter.prototype.emit = function(event){
   this._callbacks = this._callbacks || {};
   var args = [].slice.call(arguments, 1)
-    , callbacks = this._callbacks[event];
+    , callbacks = this._callbacks['$' + event];
 
   if (callbacks) {
     callbacks = callbacks.slice(0);
@@ -2559,7 +2294,7 @@ Emitter.prototype.emit = function(event){
 
 Emitter.prototype.listeners = function(event){
   this._callbacks = this._callbacks || {};
-  return this._callbacks[event] || [];
+  return this._callbacks['$' + event] || [];
 };
 
 /**
@@ -2574,217 +2309,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],18:[function(_require,module,exports){
-/**
- * toString ref.
- */
-
-var toString = Object.prototype.toString;
-
-/**
- * Return the type of `val`.
- *
- * @param {Mixed} val
- * @return {String}
- * @api public
- */
-
-module.exports = function(val){
-  switch (toString.call(val)) {
-    case '[object Date]': return 'date';
-    case '[object RegExp]': return 'regexp';
-    case '[object Arguments]': return 'arguments';
-    case '[object Array]': return 'array';
-    case '[object Error]': return 'error';
-  }
-
-  if (val === null) return 'null';
-  if (val === undefined) return 'undefined';
-  if (val !== val) return 'nan';
-  if (val && val.nodeType === 1) return 'element';
-
-  val = val.valueOf
-    ? val.valueOf()
-    : Object.prototype.valueOf.apply(val)
-
-  return typeof val;
-};
-
 },{}],19:[function(_require,module,exports){
-var type = _require('type')
-
-// (any, any, [array]) -> boolean
-function equal(a, b, memos){
-  // All identical values are equivalent
-  if (a === b) return true
-  var fnA = types[type(a)]
-  var fnB = types[type(b)]
-  return fnA && fnA === fnB
-    ? fnA(a, b, memos)
-    : false
-}
-
-var types = {}
-
-// (Number) -> boolean
-types.number = function(a, b){
-  return a !== a && b !== b/*Nan check*/
-}
-
-// (function, function, array) -> boolean
-types['function'] = function(a, b, memos){
-  return a.toString() === b.toString()
-    // Functions can act as objects
-    && types.object(a, b, memos)
-    && equal(a.prototype, b.prototype)
-}
-
-// (date, date) -> boolean
-types.date = function(a, b){
-  return +a === +b
-}
-
-// (regexp, regexp) -> boolean
-types.regexp = function(a, b){
-  return a.toString() === b.toString()
-}
-
-// (DOMElement, DOMElement) -> boolean
-types.element = function(a, b){
-  return a.outerHTML === b.outerHTML
-}
-
-// (textnode, textnode) -> boolean
-types.textnode = function(a, b){
-  return a.textContent === b.textContent
-}
-
-// decorate `fn` to prevent it re-checking objects
-// (function) -> function
-function memoGaurd(fn){
-  return function(a, b, memos){
-    if (!memos) return fn(a, b, [])
-    var i = memos.length, memo
-    while (memo = memos[--i]) {
-      if (memo[0] === a && memo[1] === b) return true
-    }
-    return fn(a, b, memos)
-  }
-}
-
-types['arguments'] =
-types.array = memoGaurd(arrayEqual)
-
-// (array, array, array) -> boolean
-function arrayEqual(a, b, memos){
-  var i = a.length
-  if (i !== b.length) return false
-  memos.push([a, b])
-  while (i--) {
-    if (!equal(a[i], b[i], memos)) return false
-  }
-  return true
-}
-
-types.object = memoGaurd(objectEqual)
-
-// (object, object, array) -> boolean
-function objectEqual(a, b, memos) {
-  if (typeof a.equal == 'function') {
-    memos.push([a, b])
-    return a.equal(b, memos)
-  }
-  var ka = getEnumerableProperties(a)
-  var kb = getEnumerableProperties(b)
-  var i = ka.length
-
-  // same number of properties
-  if (i !== kb.length) return false
-
-  // although not necessarily the same order
-  ka.sort()
-  kb.sort()
-
-  // cheap key test
-  while (i--) if (ka[i] !== kb[i]) return false
-
-  // remember
-  memos.push([a, b])
-
-  // iterate again this time doing a thorough check
-  i = ka.length
-  while (i--) {
-    var key = ka[i]
-    if (!equal(a[key], b[key], memos)) return false
-  }
-
-  return true
-}
-
-// (object) -> array
-function getEnumerableProperties (object) {
-  var result = []
-  for (var k in object) if (k !== 'constructor') {
-    result.push(k)
-  }
-  return result
-}
-
-module.exports = equal
-
-},{"type":20}],20:[function(_require,module,exports){
-
-var toString = {}.toString
-var DomNode = typeof window != 'undefined'
-  ? window.Node
-  : Function
-
-/**
- * Return the type of `val`.
- *
- * @param {Mixed} val
- * @return {String}
- * @api public
- */
-
-module.exports = exports = function(x){
-  var type = typeof x
-  if (type != 'object') return type
-  type = types[toString.call(x)]
-  if (type) return type
-  if (x instanceof DomNode) switch (x.nodeType) {
-    case 1:  return 'element'
-    case 3:  return 'text-node'
-    case 9:  return 'document'
-    case 11: return 'document-fragment'
-    default: return 'dom-node'
-  }
-}
-
-var types = exports.types = {
-  '[object Function]': 'function',
-  '[object Date]': 'date',
-  '[object RegExp]': 'regexp',
-  '[object Arguments]': 'arguments',
-  '[object Array]': 'array',
-  '[object String]': 'string',
-  '[object Null]': 'null',
-  '[object Undefined]': 'undefined',
-  '[object Number]': 'number',
-  '[object Boolean]': 'boolean',
-  '[object Object]': 'object',
-  '[object Text]': 'text-node',
-  '[object Uint8Array]': 'bit-array',
-  '[object Uint16Array]': 'bit-array',
-  '[object Uint32Array]': 'bit-array',
-  '[object Uint8ClampedArray]': 'bit-array',
-  '[object Error]': 'error',
-  '[object FormData]': 'form-data',
-  '[object File]': 'file',
-  '[object Blob]': 'blob'
-}
-
-},{}],21:[function(_require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 var undefined;
@@ -2867,14 +2392,14 @@ module.exports = function extend() {
 };
 
 
-},{}],22:[function(_require,module,exports){
+},{}],20:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],23:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3145,7 +2670,7 @@ module.exports = function getUid(){
   return objectPath;
 });
 
-},{}],24:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -3184,7 +2709,7 @@ function throttle(fn) {
   };
 }
 
-},{"raf":25}],25:[function(_require,module,exports){
+},{"raf":23}],23:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -3224,7 +2749,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],26:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
 var inherits = _require('inherits')
 var EventEmitter = _require('events').EventEmitter
 var raf = _require('raf')
@@ -3269,7 +2794,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":11,"inherits":27,"raf":28,"right-now":30}],27:[function(_require,module,exports){
+},{"events":12,"inherits":25,"raf":26,"right-now":28}],25:[function(_require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -3294,7 +2819,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],28:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 var now = _require('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -3376,7 +2901,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":29}],29:[function(_require,module,exports){
+},{"performance-now":27}],27:[function(_require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -3416,7 +2941,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_require('_process'))
-},{"_process":12}],30:[function(_require,module,exports){
+},{"_process":13}],28:[function(_require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -3427,262 +2952,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],31:[function(_require,module,exports){
-
-var toSpace = _require('to-space-case');
-
-
-/**
- * Expose `toCamelCase`.
- */
-
-module.exports = toCamelCase;
-
-
-/**
- * Convert a `string` to camel case.
- *
- * @param {String} string
- * @return {String}
- */
-
-
-function toCamelCase (string) {
-  return toSpace(string).replace(/\s(\w)/g, function (matches, letter) {
-    return letter.toUpperCase();
-  });
-}
-},{"to-space-case":32}],32:[function(_require,module,exports){
-
-var clean = _require('to-no-case');
-
-
-/**
- * Expose `toSpaceCase`.
- */
-
-module.exports = toSpaceCase;
-
-
-/**
- * Convert a `string` to space case.
- *
- * @param {String} string
- * @return {String}
- */
-
-
-function toSpaceCase (string) {
-  return clean(string).replace(/[\W_]+(.|$)/g, function (matches, match) {
-    return match ? ' ' + match : '';
-  });
-}
-},{"to-no-case":33}],33:[function(_require,module,exports){
-
-/**
- * Expose `toNoCase`.
- */
-
-module.exports = toNoCase;
-
-
-/**
- * Test whether a string is camel-case.
- */
-
-var hasSpace = /\s/;
-var hasCamel = /[a-z][A-Z]/;
-var hasSeparator = /[\W_]/;
-
-
-/**
- * Remove any starting case from a `string`, like camel or snake, but keep
- * spaces and punctuation that may be important otherwise.
- *
- * @param {String} string
- * @return {String}
- */
-
-function toNoCase (string) {
-  if (hasSpace.test(string)) return string.toLowerCase();
-
-  if (hasSeparator.test(string)) string = unseparate(string);
-  if (hasCamel.test(string)) string = uncamelize(string);
-  return string.toLowerCase();
-}
-
-
-/**
- * Separator splitter.
- */
-
-var separatorSplitter = /[\W_]+(.|$)/g;
-
-
-/**
- * Un-separate a `string`.
- *
- * @param {String} string
- * @return {String}
- */
-
-function unseparate (string) {
-  return string.replace(separatorSplitter, function (m, next) {
-    return next ? ' ' + next : '';
-  });
-}
-
-
-/**
- * Camelcase splitter.
- */
-
-var camelSplitter = /(.)([A-Z]+)/g;
-
-
-/**
- * Un-camelcase a `string`.
- *
- * @param {String} string
- * @return {String}
- */
-
-function uncamelize (string) {
-  return string.replace(camelSplitter, function (m, previous, uppers) {
-    return previous + ' ' + uppers.toLowerCase().split('').join(' ');
-  });
-}
-},{}],34:[function(_require,module,exports){
-var Emitter = _require('component-emitter');
-
-module.exports = Tower;
-
-/**
- * Create a new set of channels
- *
- * @return {Function}
- */
-
-function Tower() {
-  this.channels = {};
-}
-
-/**
- * Close all channels
- */
-
-Tower.prototype.closeAll = function(){
-  for (var key in this.channels) {
-    var channel = this.channels[key];
-    channel.close();
-  }
-};
-
-/**
- * Get a channel
- *
- * @param {String} name
- *
- * @return {Channel}
- */
-
-Tower.prototype.channel = function(name) {
-  var channels = this.channels;
-  if (channels[name]) return channels[name];
-  var channel = new Channel();
-  channel.on('close', function(){
-    delete channels[name];
-  });
-  channels[name] = channel;
-  return channel;
-};
-
-/**
- * A channel is a group of sockets using a name. We can create
- * new connections to the channel and disconnect them.
- *
- *   new Channel()
- *     .connect([options]) => Socket
- *     .broadcast(name, data)
- *     .close()
- */
-
-function Channel() {
-  this.sockets = [];
-}
-
-/**
- * Mixin
- */
-
-Emitter(Channel.prototype);
-
-/**
- * Connect to this channel by creating a new socket
- *
- * @param {Object} options
- *
- * @return {Emitter}
- */
-
-Channel.prototype.connect = function(options){
-  var self = this;
-  var socket = new Emitter();
-  socket.disconnect = function(){
-    removeFromArray(socket, self.sockets);
-    self.emit('disconnect', socket, options);
-    socket.emit('disconnect', options);
-    socket.off();
-  };
-  this.sockets.push(socket);
-  this.emit('connection', socket, options);
-  return socket;
-};
-
-/**
- * Broadcast an event to all connected sockets
- *
- * @param {String} name
- * @param {*} data
- *
- * @return {void}
- */
-
-Channel.prototype.broadcast = function(name, data){
-  this.sockets.forEach(function(socket){
-    socket.emit(name, data);
-  });
-};
-
-/**
- * Close this channel and close all connections
- *
- * @return {void}
- */
-
-Channel.prototype.close = function(){
-  while(this.sockets.length) {
-    var socket = this.sockets.pop();
-    socket.disconnect();
-  }
-  this.emit('close');
-  this.off();
-};
-
-/**
- * Remove an item from an array
- *
- * @param {[type]} item
- * @param {[type]} array
- *
- * @return {[type]}
- */
-function removeFromArray(item, array) {
-  var index = array.indexOf(item);
-  if (index === -1) return;
-  array.splice(index, 1);
-}
-},{"component-emitter":17}],35:[function(_require,module,exports){
+},{}],29:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -3826,7 +3096,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":36,"./lib/element":37,"./lib/text":38,"./lib/tree":39,"get-uid":22,"sliced":40}],36:[function(_require,module,exports){
+},{"./lib/component":30,"./lib/element":31,"./lib/text":32,"./lib/tree":33,"get-uid":20,"sliced":35}],30:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -3848,7 +3118,7 @@ function ComponentNode(component, props, key, children) {
   this.props.children = children || [];
 }
 
-},{}],37:[function(_require,module,exports){
+},{}],31:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -4082,7 +3352,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":18}],38:[function(_require,module,exports){
+},{"component-type":34}],32:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -4098,7 +3368,7 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],39:[function(_require,module,exports){
+},{}],33:[function(_require,module,exports){
 
 /**
  * Export `Tree`.
@@ -4171,10 +3441,46 @@ Tree.prototype.parse = function(node, path){
   }
 };
 
-},{}],40:[function(_require,module,exports){
+},{}],34:[function(_require,module,exports){
+/**
+ * toString ref.
+ */
+
+var toString = Object.prototype.toString;
+
+/**
+ * Return the type of `val`.
+ *
+ * @param {Mixed} val
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(val){
+  switch (toString.call(val)) {
+    case '[object Date]': return 'date';
+    case '[object RegExp]': return 'regexp';
+    case '[object Arguments]': return 'arguments';
+    case '[object Array]': return 'array';
+    case '[object Error]': return 'error';
+  }
+
+  if (val === null) return 'null';
+  if (val === undefined) return 'undefined';
+  if (val !== val) return 'nan';
+  if (val && val.nodeType === 1) return 'element';
+
+  val = val.valueOf
+    ? val.valueOf()
+    : Object.prototype.valueOf.apply(val)
+
+  return typeof val;
+};
+
+},{}],35:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":41}],41:[function(_require,module,exports){
+},{"./lib/sliced":36}],36:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
