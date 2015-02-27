@@ -1,6 +1,7 @@
 
 var trigger = require('trigger-event');
 var raf = require('component-raf');
+var classes = require('component-classes');
 
 describe('Events', function(){
 
@@ -112,14 +113,14 @@ describe('Events', function(){
     var first = el.querySelectorAll('a')[0];
     trigger(first, 'click');
     scene.update();
-    assert(first.parentNode.classList.contains('active'), 'it should add the active class on the first li');
+
+    assert(classes(first.parentNode).has('active'), 'it should add the active class on the first li');
 
     var second = el.querySelectorAll('a')[1];
     trigger(second, 'click');
     scene.update();
-    assert(second.parentNode.classList.contains('active'), 'it should add the active class on the second li');
-    assert(first.parentNode.classList.contains('active') === false, 'it should remove the active class on the first li');
-
+    assert(classes(second.parentNode).has('active'), 'it should add the active class on the second li');
+    assert(classes(first.parentNode).has('active') === false, 'it should remove the active class on the first li');
     scene.remove();
   });
 
@@ -142,7 +143,7 @@ describe('Events', function(){
     var first = el.querySelectorAll('a')[0];
     trigger(first, 'click');
     scene.update();
-    assert(first.parentNode.classList.contains('active') === true);
+    assert(classes(first.parentNode).has('active') === true);
 
     scene.remove();
   });
