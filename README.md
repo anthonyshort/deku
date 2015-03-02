@@ -1,6 +1,6 @@
 # Deku
 
-[![Join the chat at https://gitter.im/segmentio/deku](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/segmentio/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/segmentio/deku](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/segmentio/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
 
 > A simple library for creating UI components using virtual DOM.
 
@@ -8,9 +8,7 @@
 npm install deku
 ``` 
 
-[Read the wiki](https://github.com/segmentio/deku/wiki/Installing) for other download methods.
-
-[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
+[Read the wiki](https://github.com/segmentio/deku/wiki) for information.
 
 ## Features
 
