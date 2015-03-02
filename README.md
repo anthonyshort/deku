@@ -1,15 +1,21 @@
 # Deku
 
+[![Join the chat at https://gitter.im/segmentio/deku](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/segmentio/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > A simple library for creating UI components using virtual DOM.
+
+```
+npm install deku
+``` 
+
+[Read the wiki](https://github.com/segmentio/deku/wiki/Installing) for other download methods.
 
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
 
 ## Features
 
-<img  width="200" align="right" src="https://i.cloudup.com/fDqKHg1ude.png" />
-
 * It's small at roughly 8kb. 
-* Supports npm, [duo](https://github.com/duojs/duo), and bower.
+* Supports [npm](https://www.npmjs.com/package/deku), [Duo](https://github.com/duojs/duo), and Bower.
 * It only supports IE10+ and better browsers.
 * Server-side rendering.
 * Easily test components.
@@ -35,14 +41,6 @@ var scene = Button.render(document.body, {
 });
 ```
 
-## Download
-
-```
-npm install deku
-```
-
-Or [see the wiki](https://github.com/segmentio/deku/wiki/Installing) for other methods.
-
 ## Browser Support
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
@@ -50,7 +48,7 @@ Or [see the wiki](https://github.com/segmentio/deku/wiki/Installing) for other m
 ## Learn More
 
 * [Documentation](https://github.com/segmentio/deku/wiki)
-* [[Installing]]
-* [[Quick Start]]
-* [[Using JSX]]
-* [[Deku vs React]]
+* [Installing](https://github.com/segmentio/deku/wiki/Installing)
+* [Quick Start](https://github.com/segmentio/deku/wiki/Quick-Start)
+* [Using JSX](https://github.com/segmentio/deku/wiki/Using-JSX)
+* [Deku vs React](https://github.com/segmentio/deku/wiki/Deku-vs-React)
