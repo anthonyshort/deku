@@ -38,7 +38,3 @@ var scene = Button.render(document.body, {
   text: 'Click Me!'
 });
 ```
-
-## Browser Support
-
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
