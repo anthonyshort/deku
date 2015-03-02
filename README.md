@@ -13,8 +13,8 @@ npm install deku
 ## Features
 
 * It's small at roughly 8kb. 
-* Supports [npm](https://www.npmjs.com/package/deku), [Duo](https://github.com/duojs/duo), and Bower.
-* It only supports IE10+ and better browsers.
+* Supports npm, Duo, and Bower. [Learn More &rarr;](https://github.com/segmentio/deku/wiki/Installing)
+* It only supports IE10+ and better browsers. [Learn More &rarr;](https://github.com/segmentio/deku/wiki#browser-support)
 * Server-side rendering.
 * Easily test components.
 * Handles all event delegation for you without virtual events.
@@ -36,5 +36,9 @@ var Button = component({
 
 var scene = Button.render(document.body, {
   text: 'Click Me!'
+});
+
+scene.setProps({
+  text: 'Seriously, click me.'
 });
 ```
