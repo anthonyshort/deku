@@ -1,5 +1,7 @@
 # Deku
 
+[![Join the chat at https://gitter.im/segmentio/deku](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/segmentio/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > A simple library for creating UI components using virtual DOM.
 
 ```
