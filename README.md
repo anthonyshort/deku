@@ -50,7 +50,7 @@ Or [see the wiki](https://github.com/segmentio/deku/wiki/Installing) for other m
 ## Learn More
 
 * [Documentation](https://github.com/segmentio/deku/wiki)
-* [[Installing]]
-* [[Quick Start]]
-* [[Using JSX]]
-* [[Deku vs React]]
+* [Installing](https://github.com/segmentio/deku/wiki/Installing)
+* [Quick Start](https://github.com/segmentio/deku/wiki/Quick-Start)
+* [Using JSX](https://github.com/segmentio/deku/wiki/Using-JSX)
+* [Deku vs React](https://github.com/segmentio/deku/wiki/Deku-vs-React)
