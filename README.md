@@ -8,7 +8,7 @@
 npm install deku
 ``` 
 
-Read the [documentation](https://github.com/segmentio/deku/wiki) on the wiki.
+[Read the documentation](https://github.com/segmentio/deku/wiki) on the wiki &rarr;
 
 ## Features
 
@@ -42,11 +42,3 @@ var scene = Button.render(document.body, {
 ## Browser Support
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
-
-## Learn More
-
-* [Documentation](https://github.com/segmentio/deku/wiki)
-* [Installing](https://github.com/segmentio/deku/wiki/Installing)
-* [Quick Start](https://github.com/segmentio/deku/wiki/Quick-Start)
-* [Using JSX](https://github.com/segmentio/deku/wiki/Using-JSX)
-* [Deku vs React](https://github.com/segmentio/deku/wiki/Deku-vs-React)
