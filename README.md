@@ -8,7 +8,7 @@
 npm install deku
 ``` 
 
-[Read the wiki](https://github.com/segmentio/deku/wiki) for information.
+Read the [documentation](https://github.com/segmentio/deku/wiki) on the wiki.
 
 ## Features
 
