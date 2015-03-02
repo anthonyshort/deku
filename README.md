@@ -2,10 +2,6 @@
 
 > A simple library for creating UI components using virtual DOM.
 
-```
-npm install deku
-```
-
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
 
 ## Features
@@ -38,6 +34,14 @@ var scene = Button.render(document.body, {
   text: 'Click Me!'
 });
 ```
+
+## Download
+
+```
+npm install deku
+```
+
+Or [see the wiki](https://github.com/segmentio/deku/wiki/Installing) for other methods.
 
 ## Browser Support
 
