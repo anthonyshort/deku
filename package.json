@@ -23,6 +23,7 @@
     "component-emitter": "^1.1.3",
     "extend": "^2.0.0",
     "get-uid": "^1.0.1",
+    "is-dom": "^1.0.5",
     "object-path": "^0.8.1",
     "per-frame": "^3.0.0",
     "raf-loop": "^1.0.1",
