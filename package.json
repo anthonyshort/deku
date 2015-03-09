@@ -21,6 +21,7 @@
     "array-zip": "^1.0.0",
     "component-each": "^0.2.5",
     "component-emitter": "^1.1.3",
+    "es6-promise": "^2.0.1",
     "extend": "^2.0.0",
     "get-uid": "^1.0.1",
     "is-dom": "^1.0.5",

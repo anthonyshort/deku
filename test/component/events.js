@@ -221,4 +221,22 @@ describe('Events', function(){
     scene.remove();
   });
 
+  it('should return a Promise from setState', function(done){
+    var Button = component({
+      render: function(props, state){
+        return dom('a');
+      },
+      afterMount: function(){
+        this.setState({foo: 'bar'})
+          .then(function(){
+            scene.remove();
+            done();
+          });
+      }
+    });
+
+    scene = Button.render(el, {});
+    scene.update();
+  })
+
 });
