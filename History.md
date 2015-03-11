@@ -1,4 +1,12 @@
 
+0.0.28 / 2015-03-11
+==================
+
+ * Interactions bind to the body
+ * Update component#render() to throw if container is empty
+ * Fixed tests in IE9. Fixed SauceLab tests.
+ * Removed all the crap from the repo
+
 0.0.27 / 2015-02-26
 ==================
 

@@ -85,7 +85,7 @@ function bindAll(obj) {
   }
   return obj;
 }
-},{"./protos":2,"./statics":3,"component-emitter":18,"extend":19,"virtualize":29}],2:[function(_require,module,exports){
+},{"./protos":2,"./statics":3,"component-emitter":18,"extend":19,"virtualize":30}],2:[function(_require,module,exports){
 /**
  * Set properties on `this.state`.
  *
@@ -158,6 +158,7 @@ exports.shouldUpdate = function(props, state, nextProps, nextState){
 var renderString = _require('../renderer/string');
 var Entity = _require('../entity');
 var Scene = _require('../scene');
+var isDom = _require('is-dom');
 
 /**
  * Browser dependencies.
@@ -217,6 +218,7 @@ exports.channel = function(name){
 
 exports.render = function(container, props){
   if (!HTMLRenderer) throw new Error('You can only render a DOM tree in the browser. Use renderString instead.');
+  if (!isDom(container)) throw new Error(container + ' is not a valid render target.');
   var renderer = new HTMLRenderer(container);
   var entity = new Entity(this, props);
   var scene = new Scene(renderer, entity);
@@ -234,7 +236,7 @@ exports.renderString = function(props){
   return renderString(entity);
 };
 
-},{"../entity":4,"../renderer/html":7,"../renderer/string":9,"../scene":10}],4:[function(_require,module,exports){
+},{"../entity":4,"../renderer/html":7,"../renderer/string":9,"../scene":10,"is-dom":21}],4:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -500,10 +502,10 @@ function checkSetState(lifecycle) {
   var message = preventSetState[lifecycle];
   if (message) throw new Error(message);
 }
-},{"component-emitter":18,"extend":19,"get-uid":20,"virtualize":29}],5:[function(_require,module,exports){
+},{"component-emitter":18,"extend":19,"get-uid":20,"virtualize":30}],5:[function(_require,module,exports){
 exports.component = _require('./component');
 exports.dom = _require('virtualize').node;
-},{"./component":1,"virtualize":29}],6:[function(_require,module,exports){
+},{"./component":1,"virtualize":30}],6:[function(_require,module,exports){
 var zip = _require('array-zip');
 
 module.exports = patch;
@@ -730,7 +732,12 @@ function replaceNode(current, next, context){
   // Check for parent node in case child root node is a component
   if (el.parentNode) el.parentNode.removeChild(el);
   var newEl = context.renderer.createElement(next, context.path, context.entity.id);
-  container.insertBefore(newEl, container.childNodes[current.index]);
+  var targetEl = container.childNodes[current.index];
+  if (targetEl) {
+    container.insertBefore(newEl, targetEl);
+  } else {
+    container.appendChild(newEl);
+  }
   if (context.isRoot) context.rootEl = newEl;
 }
 
@@ -791,7 +798,7 @@ module.exports = HTMLRenderer;
 
 function HTMLRenderer(container) {
   this.container = container;
-  this.events = new Interactions(container);
+  this.events = new Interactions(document.body);
   this.entities = {};
   this.elements = {};
   this.renders = {};
@@ -1275,7 +1282,7 @@ Interactions.prototype.handle = function(event){
   }
 };
 
-},{"object-path":21,"per-frame":22}],9:[function(_require,module,exports){
+},{"object-path":22,"per-frame":23}],9:[function(_require,module,exports){
 var virtual = _require('virtualize');
 var Entity = _require('../../entity');
 
@@ -1366,7 +1373,7 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":4,"virtualize":29}],10:[function(_require,module,exports){
+},{"../../entity":4,"virtualize":30}],10:[function(_require,module,exports){
 
 /**
  * Module dependencies
@@ -1481,7 +1488,7 @@ Scene.prototype.pause = function(){
   this.emit('pause');
   return this;
 };
-},{"component-emitter":18,"raf-loop":24}],11:[function(_require,module,exports){
+},{"component-emitter":18,"raf-loop":25}],11:[function(_require,module,exports){
 /*
  * array-zip
  * https://github.com/frozzare/array-zip
@@ -2403,6 +2410,23 @@ module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
 },{}],21:[function(_require,module,exports){
+/*global window*/
+
+/**
+ * Check if object is dom node.
+ *
+ * @param {Object} val
+ * @return {Boolean}
+ * @api public
+ */
+
+module.exports = function isNode(val){
+  if (!val || typeof val !== 'object') return false;
+  if (window && 'object' == typeof window.Node) return val instanceof window.Node;
+  return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
+}
+
+},{}],22:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2673,7 +2697,7 @@ module.exports = function getUid(){
   return objectPath;
 });
 
-},{}],22:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -2712,7 +2736,7 @@ function throttle(fn) {
   };
 }
 
-},{"raf":23}],23:[function(_require,module,exports){
+},{"raf":24}],24:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2752,7 +2776,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],24:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 var inherits = _require('inherits')
 var EventEmitter = _require('events').EventEmitter
 var raf = _require('raf')
@@ -2797,7 +2821,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":12,"inherits":25,"raf":26,"right-now":28}],25:[function(_require,module,exports){
+},{"events":12,"inherits":26,"raf":27,"right-now":29}],26:[function(_require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2822,7 +2846,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],26:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 var now = _require('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -2904,7 +2928,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":27}],27:[function(_require,module,exports){
+},{"performance-now":28}],28:[function(_require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -2944,7 +2968,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_require('_process'))
-},{"_process":13}],28:[function(_require,module,exports){
+},{"_process":13}],29:[function(_require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -2955,7 +2979,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],29:[function(_require,module,exports){
+},{}],30:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -3099,7 +3123,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":30,"./lib/element":31,"./lib/text":32,"./lib/tree":33,"get-uid":20,"sliced":35}],30:[function(_require,module,exports){
+},{"./lib/component":31,"./lib/element":32,"./lib/text":33,"./lib/tree":34,"get-uid":20,"sliced":36}],31:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -3121,7 +3145,7 @@ function ComponentNode(component, props, key, children) {
   this.props.children = children || [];
 }
 
-},{}],31:[function(_require,module,exports){
+},{}],32:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -3355,7 +3379,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":34}],32:[function(_require,module,exports){
+},{"component-type":35}],33:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -3371,7 +3395,7 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],33:[function(_require,module,exports){
+},{}],34:[function(_require,module,exports){
 
 /**
  * Export `Tree`.
@@ -3444,7 +3468,7 @@ Tree.prototype.parse = function(node, path){
   }
 };
 
-},{}],34:[function(_require,module,exports){
+},{}],35:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -3480,10 +3504,10 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],35:[function(_require,module,exports){
+},{}],36:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":36}],36:[function(_require,module,exports){
+},{"./lib/sliced":37}],37:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative

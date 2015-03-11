@@ -1,6 +1,6 @@
 {
   "name": "deku",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "repository": "segmentio/deku",
   "description": "Create view components using a virtual DOM",
   "main": "lib/index.js",
