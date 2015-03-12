@@ -85,12 +85,10 @@ describe('Sting Rendering', function(){
     assert(result === '<div>foo</div>');
   });
 
-  it('should render with initial state', function () {
+  it('should render with  state', function () {
     var Component = component({
-      initialState: function(){
-        return { text: 'foo' }
-      },
       render: function(props, state){
+        state.text = state.text || 'foo';
         return dom('div', null, [state.text]);
       }
     });

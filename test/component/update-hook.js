@@ -2,10 +2,8 @@
 describe('Update Hooks', function () {
 
   var updateMixin = {
-    initialState: function(){
-      return { count: 1 };
-    },
     render: function(props, state){
+      state.count = state.count || 1;
       return dom('span', null, props.count);
     },
     afterMount: function(){

@@ -2,13 +2,11 @@
 describe('Updating State', function () {
 
   var StateChangeOnMount = component({
-    initialState: function(){
-      return { text: 'foo' };
-    },
     afterMount: function(){
       this.setState({ text: 'bar' });
     },
     render: function(props, state){
+      state.text = state.text || 'foo';
       var Test = component(Span);
       return Test({ text: state.text });
     }
@@ -38,22 +36,6 @@ describe('Updating State', function () {
     assert.equal(el.innerHTML, '<div><span>foo</span></div>');
     this.scene.update();
     assert.equal(el.innerHTML, '<div><span>bar</span></div>');
-  });
-
-  it('should have initial state', function(){
-    var DefaultState = component({
-      initialState: function(){
-        return {
-          text: 'Hello World'
-        };
-      },
-      render: function(props, state){
-        return dom('span', null, state.text);
-      }
-    });
-    this.scene = DefaultState.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<span>Hello World</span>');
   });
 
 });
