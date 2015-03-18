@@ -1,34 +1,42 @@
+
 var trigger = require('trigger-event');
 var Emitter = require('component-emitter');
 var raf = require('component-raf');
+var assert = require('assert');
+
+var deku = require('../../');
+var component = deku.component;
+var scene = deku.scene;
+var dom = deku.dom;
+
+var helpers = require('../helpers');
+var mount = helpers.mount;
+var HelloWorld = helpers.HelloWorld;
 
 describe('API', function(){
 
-  afterEach(function () {
-    if (this.scene) this.scene.remove();
-  });
-
-  it('should render a component', function(){
+  it.only('should render a component', function(){
     var Test = component(HelloWorld);
-    this.scene = Test.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<span>Hello World</span>');
+    var app = scene(Test);
+    mount(app, function(el){
+      assert.equal(el.innerHTML, '<span>Hello World</span>');
+    });
   });
 
   it('should create a component with just a render function', function () {
     var Simple = component(function(){
       return dom('span', null, 'Hello World');
     });
-    this.scene = Simple.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<span>Hello World</span>');
+    mount(scene(Simple), function(el){
+      assert.equal(el.innerHTML, '<span>Hello World</span>');
+    })
   });
 
   it('should render nothing visible on the page by default', function(){
     var Blank = component();
-    this.scene = Blank.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<noscript></noscript>');
+    mount(scene(Blank), function(el){
+      assert.equal(el.innerHTML, '<noscript></noscript>');
+    })
   });
 
   it('should allow extending the prototype', function(){
@@ -36,9 +44,9 @@ describe('API', function(){
     Page.prototype.render = function(props, state){
       return dom('span', null, ['Hello World']);
     };
-    this.scene = Page.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<span>Hello World</span>');
+    mount(scene(Page), function(el){
+      assert.equal(el.innerHTML, '<span>Hello World</span>');
+    })
   });
 
   it('should mixin plugins when they are objects', function () {
@@ -49,9 +57,9 @@ describe('API', function(){
     };
     var Test = component();
     Test.use(plugin);
-    this.scene = Test.render(el);
-    this.scene.update();
-    assert.equal(el.innerHTML, '<span>Plugin</span>');
+    mount(scene(Page), function(el){
+      assert.equal(el.innerHTML, '<span>Plugin</span>');
+    })
   });
 
   it('should call plugins when they are functions', function (done) {
