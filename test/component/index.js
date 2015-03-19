@@ -176,7 +176,7 @@ describe('API', function(){
     });
     var app = scene(ComponentB);
     mount(app, function(el){
-      assert.equal(el.innerHTML, '<div><span>Hello World</span></div>');
+      assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
     })
   });
 
@@ -194,11 +194,11 @@ describe('API', function(){
       }
     });
     var app = scene(ComponentB);
-    var mount = render(app, { text: 'Hello World!' })
-    app.setProps({ text: 'Hello Pluto!' })
-    mount.render()
-    assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>')
-    mount.remove();
+    mount(app, function(el, rendered){
+      app.setProps({ text: 'Hello Pluto!' })
+      rendered.render()
+      assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>')
+    })
   });
 
   it('should allow components to have other components as child nodes', function () {
@@ -227,13 +227,13 @@ describe('API', function(){
     var app = scene(ComponentB)
       .setProps({ text: 'Hello World!' })
 
-    mount(app, function(){
+    mount(app, function(el){
       assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>');
     })
   });
 
-  it('should only update components once when state and props change', function(){
-    var i = 0;
+  it('should only update ONCE when props/state is changed in different parts of the tree', function(){
+    var i;
     var emitter = new Emitter();
     var ComponentA = component({
       initialState: function(){
@@ -260,19 +260,21 @@ describe('API', function(){
         ]);
       }
     });
-    this.scene = ComponentB.render(el, { text: '2x' });
-    this.scene.update();
-    i = 0;
 
-    // Mark ComponentA as dirty from a state change
-    emitter.emit('data', 'Mirror Shield');
+    var app = scene(ComponentB)
+    app.setProps({ text: '2x' })
 
-    // Mark ComponentB as dirty
-    this.scene.setProps({ text: '3x' });
-    this.scene.update();
-    assert.equal(i, 2);
-    assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>");
-    this.scene.remove();
+    mount(app, function(el, rendered){
+      i = 0;
+        // Mark ComponentA as dirty from a state change
+      emitter.emit('data', 'Mirror Shield');
+      // Update the top-level props
+      app.setProps({ text: '3x' })
+      // Update the DOM
+      rendered.render()
+      assert.equal(i, 2)
+      assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>")
+    })
   });
 
   it('should invalidate itself so it is updated on the next frame anyway', function (done) {
@@ -287,30 +289,36 @@ describe('API', function(){
         done();
       }
     });
-    this.scene = Invalidate.render(el);
-    this.scene.update();
-    trigger(el.querySelector('span'), 'click');
-    this.scene.update();
-    this.scene.remove();
+    var app = scene(Invalidate)
+    mount(app, function(el, rendered){
+      trigger(el.querySelector('span'), 'click')
+      rendered.render()
+    })
   });
 
   it('should only update if shouldUpdate returns true', function () {
     var i = 0;
     var Component = component({
-      afterUpdate: function(){
+      afterUpdate(){
         i = i + 1;
       },
-      shouldUpdate: function(){
+      shouldUpdate(){
         return false;
+      },
+      render(){
+        return dom('div')
       }
     });
-    var scene = Component.render(el);
-    scene.setProps({ foo: 'bar' });
-    scene.update();
-    assert.equal(i, 0);
-    scene.setProps({ foo: 'baz' });
-    scene.update();
-    assert.equal(i, 0);
+
+    var app = scene(Component)
+    mount(app, function(el, rendered){
+      app.setProps({ foo: 'bar' });
+      rendered.render();
+      assert.equal(i, 0);
+      app.setProps({ foo: 'baz' });
+      rendered.render();
+      assert.equal(i, 0);
+    })
   });
 
 });
