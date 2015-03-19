@@ -13,12 +13,19 @@ var dom = deku.dom;
  */
 
 exports.mount = function(app, fn) {
-  var el = document.createElement('div');
-  document.body.appendChild(el);
+  var el = exports.div();
   var renderer = render(app, el);
-  fn(el, renderer);
-  renderer.remove();
-  document.body.removeChild(el);
+  try {
+    if (fn) fn(el, renderer);
+  }
+  catch(e) {
+    throw e;
+  }
+  finally {
+    renderer.remove();
+    document.body.removeChild(el);
+  }
+  return el;
 };
 
 /**
@@ -43,4 +50,14 @@ exports.Span = function(props, state){
 
 exports.TwoWords = function(props, state){
   return dom('span', null, [props.one + ' ' + props.two]);
+};
+
+/**
+ * Create a div
+ */
+
+exports.div = function(){
+  var el = document.createElement('div');
+  document.body.appendChild(el);
+  return el;
 };

@@ -5,6 +5,7 @@
   "description": "Create view components using a virtual DOM",
   "main": "lib/index.js",
   "devDependencies": {
+    "babelify": "^5.0.4",
     "benchmark": "^1.0.0",
     "bfc": "~0.3.1",
     "browserify": "^8.1.1",
