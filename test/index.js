@@ -1,6 +1,10 @@
 // require('./component/helpers');
 require('./component');
-// require('./component/mount-hook');
+
+describe('Mounting Lifecycle Hooks', function () {
+  require('./component/mount-hook')
+})
+
 // require('./component/render-hook');
 // require('./component/update-hook');
 // require('./component/hook-events');

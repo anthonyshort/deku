@@ -24,16 +24,6 @@ describe('API', function(){
     })
   });
 
-  it('should throw an error if the render function does not return a node', function(done){
-    var Blank = component();
-    try {
-      mount(scene(Blank), function(el){})
-    } catch(e) {
-      assert.equal(e.message, "Render function must return a virtual node.");
-      done();
-    }
-  });
-
   it('should allow extending the prototype', function(){
     var Page = component();
     Page.prototype.render = function(props, state){
