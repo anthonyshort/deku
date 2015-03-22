@@ -15,7 +15,7 @@ describe('DOM Renderer', function () {
   // require('./component/update-attributes');
   // require('./component/update-replace');
   // require('./component/events');
-  // require('./component/state');
+  require('./component/state');
 });
 
 describe('String Renderer', function () {
