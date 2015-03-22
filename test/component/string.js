@@ -116,3 +116,13 @@ it('should call beforeMount', function (done) {
   var app = scene(Component).setProps({ foo: 'bar' })
   renderString(app)
 })
+
+it('should render innerHTML', function () {
+  var Component = component({
+    render: function(props, state){
+      return dom('div', { innerHTML: '<span>foo</span>' });
+    }
+  });
+  var app = scene(Component)
+  assert.equal(renderString(app),'<div><span>foo</span></div>')
+})
