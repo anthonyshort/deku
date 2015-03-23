@@ -65,18 +65,6 @@ it('should not update props if the scene is removed', function (done) {
   })
 });
 
-it.skip('should setProps and call the callback', function(done){
-  // Deprecated
-});
-
-it.skip('should return a promise when changing the props', function(done){
-  // Deprecated
-});
-
-it.skip('should still call all callbacks even if it doesn\'t change', function(){
-  // Deprecated
-});
-
 it('should not update twice when setting props', function(){
   var i = 0;
   var IncrementAfterUpdate = component({
@@ -164,50 +152,5 @@ it('should call propsChanged on child components', function (done) {
 });
 
 it.skip('should not call propsChanged on child components when they props don\'t change', function () {
-  var Child = component({
-    propsChanged: function(nextProps){
-      throw new Error('Child should not be called');
-    }
-  });
-  var Parent = component({
-    render: function(props){
-      return dom(Child);
-    }
-  });
-  var scene = Parent.render(el, { count: 0 });
-  scene.update();
-  scene.setProps({ count: 1 });
-  scene.update();
-  scene.remove();
+  // TODO
 });
-
-it('should define properties using the functional API', function () {
-  var Test = component()
-    .prop('test', { foo: 'bar' });
-  assert(Test.props.test);
-  assert(Test.props.test.foo === 'bar');
-});
-
-it('should define properties using the classic API', function () {
-  var Test = component({
-    props: {
-      test: { foo: 'bar' }
-    }
-  });
-  assert(Test.props.test);
-  assert(Test.props.test.foo === 'bar');
-});
-
-it.skip('should remove the .props property', function () {
-  var Test = component({
-    props: {
-      test: { foo: 'bar' }
-    },
-    beforeMount: function(){
-      assert(this.props == null);
-    }
-  });
-  var app = scene(Test)
-  mount(app)
-});
-

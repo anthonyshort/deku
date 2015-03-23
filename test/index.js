@@ -5,20 +5,22 @@ describe('component', function(){
 })
 
 describe('DOM Renderer', function () {
-  require('./component/render-hook');
-  require('./component/mount-hook')
-  require('./component/update-hook')
-  require('./component/props');
-  // require('./component/hook-events');
-  // require('./component/update-elements');
-  require('./component/update-text');
-  // require('./component/update-attributes');
-  require('./component/update-replace');
-  require('./component/events');
-  require('./component/state');
+  require('./dom')
+  require('./dom/render-hook');
+  require('./dom/mount-hook')
+  require('./dom/update-hook')
+  require('./dom/props');
+  require('./dom/props');
+  // require('./dom/hook-events');
+  // require('./dom/update-elements');
+  require('./dom/update-text');
+  // require('./dom/update-attributes');
+  require('./dom/update-replace');
+  require('./dom/events');
+  require('./dom/state');
 });
 
 describe('String Renderer', function () {
-  require('./component/string')
+  require('./string')
 });
 
