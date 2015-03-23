@@ -42,20 +42,3 @@ it('should update composed components when state changes', function(){
     assert.equal(el.innerHTML, '<div><span>bar</span></div>')
   })
 });
-
-it('should have initial state', function(){
-  var DefaultState = component({
-    initialState: function(){
-      return {
-        text: 'Hello World'
-      };
-    },
-    render: function(props, state){
-      return dom('span', null, state.text);
-    }
-  });
-  var app = scene(DefaultState)
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span>Hello World</span>')
-  })
-});

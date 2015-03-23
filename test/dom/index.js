@@ -13,6 +13,23 @@ it('should render a component', function(){
   })
 })
 
+it('should have initial state', function(){
+  var DefaultState = component({
+    initialState: function(){
+      return {
+        text: 'Hello World'
+      };
+    },
+    render: function(props, state){
+      return dom('span', null, state.text);
+    }
+  });
+  var app = scene(DefaultState)
+  mount(app, function(el, renderer){
+    assert.equal(el.innerHTML, '<span>Hello World</span>')
+  })
+})
+
 it('should create a component with properties', function(){
   var Test = component({
     render(props) {

@@ -1,4 +1,3 @@
-// require('./component/helpers');
 
 describe('component', function(){
   require('./component')
@@ -14,7 +13,7 @@ describe('DOM Renderer', function () {
   // require('./dom/hook-events');
   // require('./dom/update-elements');
   require('./dom/update-text');
-  // require('./dom/update-attributes');
+  require('./dom/update-attributes');
   require('./dom/update-replace');
   require('./dom/events');
   require('./dom/state');
