@@ -1,8 +1,4 @@
-
-var deku = require('../');
-var render = deku.render;
-var scene = deku.scene;
-var dom = deku.dom;
+import {render,scene,dom} from '../'
 
 /**
  * Mount a scene, execute a function and then
