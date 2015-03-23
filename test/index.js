@@ -11,7 +11,7 @@ describe('DOM Renderer', function () {
   require('./dom/props');
   require('./dom/props');
   // require('./dom/hook-events');
-  // require('./dom/update-elements');
+  require('./dom/update-elements');
   require('./dom/update-text');
   require('./dom/update-attributes');
   require('./dom/update-replace');
