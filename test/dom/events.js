@@ -195,7 +195,7 @@ it('should update events when nested children are removed', function () {
       return dom('li', [
         Button({
           onClick: function(){
-            props.items.splice(props.index, 1);
+            items.splice(props.index, 1);
           }
         })
       ]);
