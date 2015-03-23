@@ -40,7 +40,7 @@ it('should not touch the DOM if attributes have not changed', function(){
   })
 })
 
-it('should update the value of input fields', function () {
+it('should update the real value of input fields', function () {
   var Input = component({
     render: function(props, state){
       return dom('input', { value: props.value })
@@ -52,11 +52,9 @@ it('should update the value of input fields', function () {
 
   mount(app, function(el, renderer){
     assert(el.querySelector('input').value === 'Bob');
-    assert(el.querySelector('input').getAttribute('value') === 'Bob');
     app.setProps({ value: 'Tom' });
     renderer.render();
     assert(el.querySelector('input').value === 'Tom');
-    assert(el.querySelector('input').getAttribute('value') === 'Bob');
   })
 })
 

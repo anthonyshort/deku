@@ -126,3 +126,13 @@ it('should render innerHTML', function () {
   var app = scene(Component)
   assert.equal(renderString(app),'<div><span>foo</span></div>')
 })
+
+it('should render the value of inputs', function () {
+  var Component = component({
+    render: function(props, state){
+      return dom('input', { value: 'foo' });
+    }
+  });
+  var app = scene(Component)
+  assert.equal(renderString(app),'<input value="foo"></input>')
+})
