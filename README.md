@@ -46,7 +46,7 @@ var app = scene(Button)
 app.setProps({ text: 'Click Me!' })
 
 // Render the scene to the page
-render(scene, document.body);
+render(app, document.body);
 
 // Update the scene
 app.setProps({

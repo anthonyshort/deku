@@ -12,6 +12,7 @@
     "bump": "git://github.com/ianstormtaylor/bump.git#0.4.2",
     "component-classes": "^1.2.3",
     "component-raf": "^1.2.0",
+    "component-type": "^1.1.0",
     "duo-test": "^0.3.10",
     "jshint": "~2.5.11",
     "mochify": "^2.1.1",
