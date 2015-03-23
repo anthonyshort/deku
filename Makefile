@@ -23,10 +23,10 @@ default: index.js
 #
 
 build.js: node_modules $(js)
-	@browserify test/index.js > build.js
+	@browserify test/index.js -t babelify > build.js
 
 tests.js: node_modules $(js)
-	@browserify test/index.js | bfc > tests.js
+	@browserify test/index.js -t babelify | bfc > tests.js
 
 index.js: node_modules $(js)
 	@browserify -s deku lib/index.js | bfc > index.js

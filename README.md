@@ -23,9 +23,9 @@ npm install deku
 ## Example
 
 ```js
-var {component,dom} = require('deku');
+import {component,dom} from 'deku';
 
-var Button = component({
+let Button = component({
   onClick() {
     this.setState({ clicked: true });
   },
@@ -34,11 +34,22 @@ var Button = component({
   }
 });
 
-var scene = Button.render(document.body, {
-  text: 'Click Me!'
-});
+export {Button}
+```
 
-scene.setProps({
+```js
+import {Button} from './button';
+import {render,scene} from 'deku';
+
+// Create a scene
+var app = scene(Button)
+app.setProps({ text: 'Click Me!' })
+
+// Render the scene to the page
+render(app, document.body);
+
+// Update the scene
+app.setProps({
   text: 'Seriously, click me.'
 });
 ```

@@ -1,39 +1,22 @@
-mocha.setup({globals: ['hasCert']});
 
-// Make life easier.
+describe('component', function(){
+  require('./component')
+})
 
-window.assert = require('assert');
-window.component = require('../lib/component');
-window.vdom = require('virtualize');
-window.dom = vdom.node;
-window.Tree = vdom.tree;
+describe('render', function () {
+  require('./dom')
+  require('./dom/mount-hook')
+  require('./dom/update-hook')
+  require('./dom/props')
+  require('./dom/elements')
+  require('./dom/text')
+  require('./dom/attributes')
+  require('./dom/replace')
+  require('./dom/events')
+  require('./dom/state')
+})
 
-// Create a container.
+describe('renderString', function () {
+  require('./string')
+})
 
-window.el = document.createElement('div');
-document.body.appendChild(window.el);
-
-afterEach(function () {
-  if (this.scene) this.scene.remove();
-  if (window.el.innerHTML !== "") {
-    // console.warn("Warning: The test '" + this.currentTest.title + "' should remove the scene after the test.");
-  }
-  window.el.innerHTML = "";
-});
-
-describe('Component', function () {
-  require('./component/helpers');
-  require('./component');
-  require('./component/mount-hook');
-  require('./component/render-hook');
-  require('./component/update-hook');
-  require('./component/hook-events');
-  require('./component/props');
-  require('./component/state');
-  require('./component/update-elements');
-  require('./component/update-text');
-  require('./component/update-attributes');
-  require('./component/update-replace');
-  require('./component/events');
-  require('./component/string');
-});
