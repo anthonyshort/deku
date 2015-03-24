@@ -1,4 +1,12 @@
 
+0.0.29 / 2015-03-24
+==================
+
+ * Breaking change: Updated the scene/renderer API to allow for more powerful plugins. The Component API is now decoupled from the renderer. 
+ * Tests now using ES6
+ * Fixed beforeMount not firing with renderString
+ * Fixed innerHTML rendering with renderString
+
 0.0.28 / 2015-03-11
 ==================
 

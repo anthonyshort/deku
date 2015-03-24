@@ -152,23 +152,6 @@ exports.shouldUpdate = function(props, state, nextProps, nextState){
 },{}],3:[function(_require,module,exports){
 
 /**
- * Module dependencies.
- */
-
-var renderString = _require('../renderer/string');
-var Entity = _require('../entity');
-var Scene = _require('../scene');
-var isDom = _require('is-dom');
-
-/**
- * Browser dependencies.
- */
-
-if (typeof window !== 'undefined') {
-  var HTMLRenderer = _require('../renderer/html');
-}
-
-/**
  * Use plugin.
  *
  * @param {Function|Object} plugin Passing an object will extend the prototype.
@@ -197,53 +180,13 @@ exports.prop = function(name, options){
   return this;
 };
 
-/**
- * Connect to channels
- *
- * @param {String} name
- */
-
-exports.channel = function(name){
-  this.channels.push(name);
-  return this;
-};
-
-/**
- * Mount this component to a node. Only available
- * in the browser as it requires the DOM.
- *
- * @param {HTMLElement} container
- * @param {Object} props
- */
-
-exports.render = function(container, props){
-  if (!HTMLRenderer) throw new Error('You can only render a DOM tree in the browser. Use renderString instead.');
-  if (!isDom(container)) throw new Error(container + ' is not a valid render target.');
-  var renderer = new HTMLRenderer(container);
-  var entity = new Entity(this, props);
-  var scene = new Scene(renderer, entity);
-  return scene;
-};
-
-/**
- * Render this component to a string.
- *
- * @param {Object} props
- */
-
-exports.renderString = function(props){
-  var entity = new Entity(this, props);
-  return renderString(entity);
-};
-
-},{"../entity":4,"../renderer/html":7,"../renderer/string":9,"../scene":10,"is-dom":21}],4:[function(_require,module,exports){
+},{}],4:[function(_require,module,exports){
 
 /**
  * Module dependencies.
  */
 
 var Emitter = _require('component-emitter');
-var virtual = _require('virtualize');
 var assign = _require('extend');
 var uid = _require('get-uid');
 
@@ -275,13 +218,13 @@ module.exports = Entity;
 
 function Entity(Component, props) {
   this.id = uid();
-  this.type = Component;
   this.props = props || {};
   this.component = this.instance(Component);
   this.state = this.component.initialState(this.props);
   this.lifecycle = null;
   this._pendingProps = assign({}, this.props);
   this._pendingState = assign({}, this.state);
+  this.dirty = false;
 }
 
 /**
@@ -313,11 +256,9 @@ Entity.prototype.instance = function(Component) {
 
 Entity.prototype.render = function(){
   this.lifecycle = 'render';
-  var node = this.component.render(this.props, this.state);
+  var result = this.component.render(this.props, this.state);
   this.lifecycle = null;
-  // if (!node) throw new Error('The `render` method must return a virtual node.');
-  if (!node) node = virtual.node('noscript');
-  return virtual.tree(node);
+  return result;
 };
 
 /**
@@ -368,6 +309,7 @@ Entity.prototype.setState = function(nextState, done){
  */
 
 Entity.prototype.invalidate = function(){
+  this.dirty = true;
   this.emit('change');
 };
 
@@ -382,6 +324,7 @@ Entity.prototype.commit = function(){
   this.props = this._pendingProps;
   this._pendingState = assign({}, this.state);
   this._pendingProps = assign({}, this.props);
+  this.dirty = false;
 };
 
 /**
@@ -401,7 +344,10 @@ Entity.prototype.release = function(){
  * @return {Boolean}
  */
 
-Entity.prototype.shouldUpdate = function(nextProps, nextState){
+Entity.prototype.shouldUpdate = function(){
+  if (!this.dirty) return false;
+  var nextState = this._pendingState;
+  var nextProps = this._pendingProps;
   return this.component.shouldUpdate(this.props, this.state, nextProps, nextState);
 };
 
@@ -486,7 +432,6 @@ Entity.prototype.trigger = function(name, args){
   if (typeof this.component[name] === 'function') {
     this.component[name].apply(this.component, args);
   }
-  this.type.emit.apply(this.type, [name, this.component].concat(args));
   this.lifecycle = null;
   this.emit(name);
 };
@@ -502,10 +447,17 @@ function checkSetState(lifecycle) {
   var message = preventSetState[lifecycle];
   if (message) throw new Error(message);
 }
-},{"component-emitter":18,"extend":19,"get-uid":20,"virtualize":30}],5:[function(_require,module,exports){
+},{"component-emitter":18,"extend":19,"get-uid":20}],5:[function(_require,module,exports){
 exports.component = _require('./component');
 exports.dom = _require('virtualize').node;
-},{"./component":1,"virtualize":30}],6:[function(_require,module,exports){
+exports.scene = _require('./scene');
+exports.renderString = _require('./renderer/string');
+
+if (typeof window !== 'undefined') {
+  exports.render = _require('./renderer/dom');
+}
+
+},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":30}],6:[function(_require,module,exports){
 var zip = _require('array-zip');
 
 module.exports = patch;
@@ -517,19 +469,12 @@ module.exports = patch;
  */
 
 function patch(options){
-  var context = {
-    entity: options.entity,
-    currentTree: options.currentTree,
-    nextTree: options.nextTree,
-    renderer: options.renderer,
-    rootEl: options.el,
+  diffNode(options.current, options.next, {
     el: options.el,
+    entity: options.entity,
     path: '0',
-    id: options.entity.id,
-    isRoot: true
-  };
-  diffNode(options.currentTree.root, options.nextTree.root, context);
-  return context.rootEl;
+    renderer: options.renderer
+  });
 }
 
 /**
@@ -541,7 +486,7 @@ function patch(options){
   // ComponentA->ComponentB etc. But NOT div->span. These are the same type
   // (ElementNode) but different tag name.
   if (current.type !== next.type) {
-    return replaceNode(current, next, context);
+    return context.renderer.replaceElement(context.entity.id, context.path, context.el, next);
   }
 
   // update the text content.
@@ -597,31 +542,23 @@ function diffChildren(previous, current, context){
 
     // this is a new node.
     if (left == null) {
-      var childEl = context.renderer.createElement(right, childPath, context.entity.id);
+      var childEl = context.renderer.createElement(context.entity.id, childPath, right) ;
       el.appendChild(childEl);
       continue;
     }
 
     // the node has been removed.
     if (right == null) {
-      removeComponents(left, context);
-      if ('component' != left.type) {
-        el.removeChild(el.childNodes[j]);
-      }
+      context.renderer.removeElement(context.entity.id, childPath, el.childNodes[j])
       j = j - 1;
       continue;
     }
 
     diffNode(left, right, {
-      id: context.entity.id,
       el: el.childNodes[j],
       entity: context.entity,
-      currentTree: context.currentTree,
-      nextTree: context.nextTree,
-      renderer: context.renderer,
-      isRoot: false,
       path: childPath,
-      rootEl: context.rootEl
+      renderer: context.renderer
     });
   }
 }
@@ -643,13 +580,7 @@ function diffAttributes(previous, current, context){
   for (var name in currentAttrs) {
     var value = currentAttrs[name];
     if (!previousAttrs[name] || previousAttrs[name] !== value) {
-      if (name === "value") {
-        context.el.value = value;
-      } else if (name === "innerHTML") {
-        context.el.innerHTML = value;
-      } else {
-        context.el.setAttribute(name, value);
-      }
+      context.renderer.setAttribute(context.el, name, value);
     }
   }
 
@@ -662,7 +593,9 @@ function diffAttributes(previous, current, context){
 }
 
 /**
- * Update a component with the props from the current node.
+ * Update a component with the props from the current node. If
+ * the component type has changed, we'll just remove the old one
+ * and replace it with the new component.
  *
  * @param {Node} previous
  * @param {Node} current
@@ -670,20 +603,11 @@ function diffAttributes(previous, current, context){
  */
 
 function diffComponent(previous, current, context){
-  // if the component type has changed, remove the
-  // component and create the new one.
   if (current.component !== previous.component) {
-    return replaceNode(previous, current, context);
+    context.renderer.replaceElement(context.entity.id, context.path, context.el, current);
+  } else {
+    context.renderer.updateEntity(context.entity.id, context.path, current);
   }
-
-  var parentEntityId = context.entity.id;
-  var entityId = context.renderer.children[parentEntityId][context.path];
-  var entity = context.renderer.entities[entityId];
-
-  // We always replace the props on the component when composing
-  // them. This will trigger a re-render on all children below this
-  // point becasue they're always going to have their props replaced.
-  entity.replaceProps(current.props);
 }
 
 /**
@@ -699,7 +623,7 @@ function diffElement(previous, current, context){
   // different node, so swap them. If the root node of the component has changed it's
   // type we need to update this to point to this new element
   if (current.tagName !== previous.tagName) {
-    return replaceNode(previous, current, context);
+    return context.renderer.replaceElement(context.entity.id, context.path, context.el, current);
   }
 
   // TODO:
@@ -714,59 +638,6 @@ function diffElement(previous, current, context){
   // Recursive
   diffChildren(previous, current, context);
 }
-
-/**
- * Replace a node in the previous tree with the node
- * in another tree. It will remove all the components
- * beneath that node and create all new components within
- * the current node and assign them to this this.
- *
- * @param {Node} previous
- * @param {Node} current
- */
-
-function replaceNode(current, next, context){
-  var el = context.el;
-  var container = el.parentNode;
-  removeComponents(current, context);
-  // Check for parent node in case child root node is a component
-  if (el.parentNode) el.parentNode.removeChild(el);
-  var newEl = context.renderer.createElement(next, context.path, context.entity.id);
-  var targetEl = container.childNodes[current.index];
-  if (targetEl) {
-    container.insertBefore(newEl, targetEl);
-  } else {
-    container.appendChild(newEl);
-  }
-  if (context.isRoot) context.rootEl = newEl;
-}
-
-/**
- * Remove all components within a node.
- *
- * @param {ComponentRenderer} this
- * @param {Node} node
- */
-
-function removeComponents(node, context){
-  // remove a child component
-  if (node.type === 'component') {
-    var parentEntityId = context.entity.id;
-    var nodePath = context.currentTree.getPath(node);
-    var entityId = context.renderer.children[parentEntityId][nodePath];
-    var entity = context.renderer.entities[entityId];
-    context.renderer.unmountEntity(entity);
-    delete context.renderer.children[parentEntityId][nodePath];
-    return;
-  }
-  // recursively remove components
-  if (node.children) {
-    node.children.forEach(function(childNode){
-      removeComponents(childNode, context);
-    }, this);
-  }
-}
-
 },{"array-zip":11}],7:[function(_require,module,exports){
 
 /**
@@ -774,63 +645,73 @@ function removeComponents(node, context){
  */
 
 var Interactions = _require('./interactions');
+var Emitter = _require('component-emitter');
+var virtualize = _require('virtualize');
 var Entity = _require('../../entity');
 var each = _require('component-each');
 var patch = _require('./diff');
-
+var loop = _require('raf-loop');
+var isDom = _require('is-dom');
+var tree = virtualize.tree;
+var dom = virtualize.node;
 /**
- * Export.
+ * Render a component to a DOM element
+ *
+ * @param {Component} Component
+ * @param {HTMLElement} container
+ * @param {Object} props
+ *
+ * @return {Scene}
  */
 
-module.exports = HTMLRenderer;
+module.exports = function(scene, container){
+  if (!isDom(container)) throw new Error(container + ' is not a valid render target.');
+  return new Renderer(scene, container);
+};
 
 /**
  * Handles the rendering of a scene graph by running
  * diffs on the current virtual tree of the entities with
  * the previous version. It then applies this diff to the
  * acutal DOM tree.
- *
- * Instead of using SceneNodes or some other object type, we're
- * just using the entities themselves, since each SceneNode can only
- * have a single entity anyway. In the future we could split these up, but
- * it seems simpler to do it this way for now.
  */
 
-function HTMLRenderer(container) {
-  this.container = container;
+function Renderer(scene, container) {
+  this.scene = scene;
   this.events = new Interactions(document.body);
+  this.loop = loop(this.render.bind(this));
   this.entities = {};
   this.elements = {};
   this.renders = {};
   this.children = {};
-  this.rendered = null;
-  this.dirty = [];
+  this.dirty = false;
+  container.appendChild(this.mount(scene.root));
+  this.loop.start();
 }
 
+Emitter(Renderer.prototype);
+
 /**
- * Render an entity tree. This should be called on the top
- * level entity that is mounted to the container.
- *
- * @param {Entity} entity
+ * Update the DOM. If the update fails we stop the loop
+ * so we don't get errors on every frame.
  *
  * @api public
  */
 
-HTMLRenderer.prototype.render = function(entity) {
+Renderer.prototype.render = function() {
+  // TODO: Remove the dirty flag. We should just be able to compared
+  // the current scene graph to our current scene graph to tell whether
+  // it has been updated.
+  if (!this.dirty) return;
 
-  // The entity we're trying to render is already rendered
-  // into the container, so let's just update it.
-  if (this.rendered === entity) {
-    if (this.dirty.length > 0) {
-      this.update(entity);
-    }
-    return;
+  try {
+    this.dirty = false;
+    this.update(this.scene.root);
+    this.emit('update');
+  } catch(e) {
+    this.loop.stop();
+    throw e;
   }
-
-  // Otherwise we're rendering a new entity onto the scene
-  this.clear();
-  this.mountEntity(entity, this.container);
-  this.rendered = entity;
 };
 
 /**
@@ -842,25 +723,12 @@ HTMLRenderer.prototype.render = function(entity) {
  * @return {void}
  */
 
-HTMLRenderer.prototype.update = function(entity) {
+Renderer.prototype.update = function(entity) {
   var self = this;
-  var nextProps = entity._pendingProps;
-  var nextState = entity._pendingState;
-  var previousState = entity.state;
-  var previousProps = entity.props;
-  var currentTree = this.renders[entity.id];
-  var currentEl = this.elements[entity.id];
 
   // Recursive update
   function next(){
     self.updateChildren(entity);
-  }
-
-  // If the component never called setState or setProps
-  // it won't need updating at all. This allows us to
-  // skip further complex checks.
-  if (!this.hasChanged(entity)) {
-    return next();
   }
 
   // If setState or setProps have been called we can
@@ -869,9 +737,19 @@ HTMLRenderer.prototype.update = function(entity) {
   // improve the overall performance of their app and avoids hard
   // to track down bugs. We essentially are trading a bit of
   // performance here for user-experience.
-  if (!entity.shouldUpdate(nextProps, nextState)) {
+  if (!entity.shouldUpdate()) {
     return next();
   }
+
+  // TODO: We really want to just use a different object here
+  // whenever the props/state changes so we can just do an equality
+  // check to know if we've changed.
+  var nextProps = entity._pendingProps;
+  var nextState = entity._pendingState;
+  var previousState = entity.state;
+  var previousProps = entity.props;
+  var currentTree = this.renders[entity.id];
+  var currentEl = this.elements[entity.id];
 
   // pre-update. This callback could mutate the
   // state or props just before the render occurs
@@ -884,51 +762,23 @@ HTMLRenderer.prototype.update = function(entity) {
 
   // Re-render the tree to get an up-to-date representation
   // of the component with the new props/state
-  var nextTree = entity.render();
+  var nextTree = renderEntity(entity);
 
   // Run the diff and patch the element.
-  var updatedEl = patch({
+  patch({
     entity: entity,
-    currentTree: currentTree,
-    nextTree: nextTree,
+    current: currentTree.root,
+    next: nextTree.root,
     el: currentEl,
     renderer: this
   });
 
   // Update the element for this component in case
   // the root node has changed.
-  this.elements[entity.id] = updatedEl;
   this.renders[entity.id] = nextTree;
   this.updateEvents(entity);
-  this.resolveEntity(entity);
   next();
   entity.afterUpdate(previousState, previousProps);
-};
-
-/**
- * Check to see if an entity has changed since the last rendering.
- *
- * @param {Entity} entity
- *
- * @return {Boolean}
- */
-
-HTMLRenderer.prototype.hasChanged = function(entity) {
-  return this.dirty.indexOf(entity.id) > -1;
-};
-
-/**
- * Resolve an entity's dirty state.
- *
- * @param {Entity} entity
- *
- * @return {Boolean}
- */
-
-HTMLRenderer.prototype.resolveEntity = function(entity) {
-  this.dirty = this.dirty.filter(function(id){
-    return id !== entity.id;
-  });
 };
 
 /**
@@ -937,7 +787,7 @@ HTMLRenderer.prototype.resolveEntity = function(entity) {
  * @param {Entity} entity
  */
 
-HTMLRenderer.prototype.updateChildren = function(entity) {
+Renderer.prototype.updateChildren = function(entity) {
   var entities = this.entities;
   var children = this.children[entity.id];
   for (var path in children) {
@@ -950,26 +800,24 @@ HTMLRenderer.prototype.updateChildren = function(entity) {
  * Clear the scene
  */
 
-HTMLRenderer.prototype.clear =
-HTMLRenderer.prototype.remove = function(){
-  if (!this.rendered) return;
-  this.unmountEntity(this.rendered);
-  this.rendered = null;
+Renderer.prototype.remove = function(){
+  this.unmount(this.scene.root);
   this.events.remove();
+  this.loop.stop();
 };
 
 /**
  * Append an entity to an element
  *
  * @param {Entity} entity
- * @param {HTMLElement} container
  *
  * @return {HTMLElement}
  */
 
-HTMLRenderer.prototype.mountEntity = function(entity, container) {
+Renderer.prototype.mount = function(entity) {
   var self = this;
 
+  entity.commit();
   entity.beforeMount();
 
   // This will store all the entities that are children
@@ -977,8 +825,8 @@ HTMLRenderer.prototype.mountEntity = function(entity, container) {
   this.children[entity.id] = {};
 
   // Render the entity and create the initial element for it
-  var current = entity.render();
-  var el = this.createElement(current.root, '0', entity.id);
+  var current = renderEntity(entity);
+  var el = this.createElement(entity.id, '0', current.root);
 
   // We store the DOM state of the entity within the renderer
   this.elements[entity.id] = el;
@@ -989,10 +837,9 @@ HTMLRenderer.prototype.mountEntity = function(entity, container) {
   // as dirty in the renderer. This lets us optimize the re-rendering
   // and skip components that definitely haven't changed.
   entity.on('change', function(){
-    self.dirty.push(entity.id);
+    self.dirty = true;
   });
 
-  container.appendChild(el);
   this.updateEvents(entity);
   entity.afterMount(el);
   return el;
@@ -1004,17 +851,13 @@ HTMLRenderer.prototype.mountEntity = function(entity, container) {
  * @param {Entity} entity
  */
 
-HTMLRenderer.prototype.unmountEntity = function(entity){
+Renderer.prototype.unmount = function(entity){
   var el = this.elements[entity.id];
 
   // This entity is already unmounted
   if (!el) return;
 
   entity.beforeUnmount(el);
-
-  // In case the entity is currently marked as dirty. We remove
-  // it so it doesn't sit around in the array
-  this.resolveEntity(entity);
 
   // If sub-components are on the root node, the entities will share
   // the same element. In this case, the element will only need to be
@@ -1036,12 +879,12 @@ HTMLRenderer.prototype.unmountEntity = function(entity){
  * @param {Entity} entity
  */
 
-HTMLRenderer.prototype.unmountChildren = function(entity) {
+Renderer.prototype.unmountChildren = function(entity) {
   var self = this;
   var entities = this.entities;
   var children = this.children[entity.id];
   each(children, function(path, childId){
-    self.unmountEntity(entities[childId]);
+    self.unmount(entities[childId]);
   });
 };
 
@@ -1053,7 +896,7 @@ HTMLRenderer.prototype.unmountChildren = function(entity) {
  * @return {void}
  */
 
-HTMLRenderer.prototype.updateEvents = function(entity) {
+Renderer.prototype.updateEvents = function(entity) {
   var self = this;
   this.events.unbind(entity.id);
   var currentTree = this.renders[entity.id];
@@ -1077,7 +920,7 @@ HTMLRenderer.prototype.updateEvents = function(entity) {
  * @param {Entity} entity
  */
 
-HTMLRenderer.prototype.removeEvents = function(entity) {
+Renderer.prototype.removeEvents = function(entity) {
   this.events.unbind(entity.id);
 };
 
@@ -1096,25 +939,21 @@ HTMLRenderer.prototype.removeEvents = function(entity) {
  * @return {HTMLDocumentFragment}
  */
 
-HTMLRenderer.prototype.createElement = function(node, path, entityId){
+Renderer.prototype.createElement = function(entityId, path, vnode){
 
-  if (node.type === 'text') {
-    return document.createTextNode(node.data);
+  if (vnode.type === 'text') {
+    return document.createTextNode(vnode.data);
   }
 
-  if (node.type === 'element') {
-    var el = document.createElement(node.tagName);
-    var children = node.children;
+  if (vnode.type === 'element') {
+    var el = document.createElement(vnode.tagName);
+    var children = vnode.children;
 
     // TODO: These is some duplication here between the diffing.
     // This should be generalized and put into a module somewhere
     // so that it's easier to define special attributes in one spot.
-    for (var name in node.attributes) {
-      if (name === 'innerHTML') {
-        el.innerHTML = node.attributes.innerHTML;
-      } else {
-        el.setAttribute(name, node.attributes[name]);
-      }
+    for (var name in vnode.attributes) {
+      this.setAttribute(el, name, vnode.attributes[name]);
     }
 
     // TODO: Store nodes in a hash so we can easily find
@@ -1122,28 +961,188 @@ HTMLRenderer.prototype.createElement = function(node, path, entityId){
     // patching from the diffing will still being efficient. We could
     // also use the same object in the Interactions object to make
     // lookups cleaner instead of checking __ values.
-    // this.nodesByPath[entity.id][path] = el;
+    // this.elementsByPath[entity.id][path] = el;
     el.__path__ = path;
     el.__entity__ = entityId;
 
     // add children.
     for (var i = 0, n = children.length; i < n; i++) {
-      var childEl = this.createElement(children[i], path + '.' + i, entityId);
+      var childEl = this.createElement(entityId, path + '.' + i, children[i]);
       el.appendChild(childEl);
     }
 
     return el;
   }
 
-  if (node.type === 'component') {
-    var fragment = document.createDocumentFragment();
-    var child = new Entity(node.component, node.props);
-    var el = this.mountEntity(child, fragment);
+  if (vnode.type === 'component') {
+    var child = new Entity(vnode.component, vnode.props);
     this.children[entityId][path] = child.id;
-    return el;
+    return this.mount(child);
   }
 };
-},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14}],8:[function(_require,module,exports){
+
+/**
+ * Removes an element from the DOM and unmounts and components
+ * that are within that branch
+ *
+ * side effects:
+ *   - removes element from the DOM
+ *   - removes internal references
+ *
+ * @param {String} entityId
+ * @param {String} path
+ * @param {HTMLElement} el
+ */
+
+Renderer.prototype.removeElement = function(entityId, path, el) {
+  var self = this;
+  var children = this.children[entityId];
+  var entities = this.entities;
+  var matched = children[path];
+
+  // This node is a component so we can just unmount it
+  // and all of the child components will come with it.
+  if (matched) {
+    this.unmount(entities[matched]);
+    delete children[path];
+    return;
+  }
+
+  // Otherwise we need to find any components within this
+  // branch and unmount them specifically.
+  Object.keys(children).forEach(function(childPath){
+    if (isWithinPath(path, childPath)) {
+      self.unmount(entities[children[childPath]]);
+      delete children[childPath];
+    }
+  });
+
+  el.parentNode.removeChild(el);
+};
+
+/**
+ * Replace an element in the DOM. Removing all components
+ * within that element and re-rendering the new virtual node.
+ *
+ * @param {String} entityId
+ * @param {String} path
+ * @param {HTMLElement} el
+ * @param {Object} vnode
+ *
+ * @return {void}
+ */
+
+Renderer.prototype.replaceElement = function(entityId, path, el, vnode) {
+  var parent = el.parentNode;
+  var index = Array.prototype.indexOf.call(parent.childNodes, el);
+
+  // remove the previous element and all nested components. This
+  // needs to happen before we create the new element so we don't
+  // get clashes on the component paths.
+
+  this.removeElement(entityId, path, el);
+
+  // then add the new element in there
+
+  var newEl = this.createElement(entityId, path, vnode);
+  var target = parent.childNodes[index];
+
+  if (target) {
+    parent.insertBefore(newEl, target);
+  } else {
+    parent.appendChild(newEl);
+  }
+
+  // update the root reference.
+
+  if (this.elements[entityId] === el) {
+    this.elements[entityId] = newEl;
+  }
+};
+
+/**
+ * Update an entity to match the latest rendered vode. We always
+ * replace the props on the component when composing them. This
+ * will trigger a re-render on all children below this point.
+ *
+ * @param {String} entityId
+ * @param {String} path
+ * @param {Object} vnode
+ *
+ * @return {void}
+ */
+
+Renderer.prototype.updateEntity = function(entityId, path, vnode) {
+  var childId = this.children[entityId][path];
+  var entity = this.entities[childId];
+  entity.replaceProps(vnode.props);
+};
+
+/**
+ * Set the attribute of an element, performing additional transformations
+ * dependning on the attribute name
+ *
+ * @param {HTMLElement} el
+ * @param {String} name
+ * @param {String} value
+ */
+
+Renderer.prototype.setAttribute = function(el, name, value) {
+  if (name === "value") {
+    el.value = value;
+  } else if (name === "innerHTML") {
+    el.innerHTML = value;
+  } else {
+    el.setAttribute(name, value);
+  }
+};
+
+/**
+ * Render the entity and make sure it returns a node
+ *
+ * @param {Entity} entity
+ *
+ * @return {VirtualTree}
+ */
+
+function renderEntity(entity) {
+  var result = entity.render();
+  if (!result) {
+    result = dom('noscript');
+  }
+  return tree(result);
+}
+
+/**
+ * Replace a DOM element with another DOM element
+ *
+ * @param {HTMLElement} oldEl
+ * @param {HTMLElement} newEl
+ */
+
+function replaceElement(oldEl, newEl) {
+  var parent = oldEl.parentNode;
+  parent.insertBefore(newEl, oldEl);
+  parent.removeChild(oldEl);
+}
+
+/**
+ * Checks to see if one tree path is within
+ * another tree path. Example:
+ *
+ * 0.1 vs 0.1.1 = true
+ * 0.2 vs 0.3.5 = false
+ *
+ * @param {String} target
+ * @param {String} path
+ *
+ * @return {Boolean}
+ */
+
+function isWithinPath(target, path) {
+  return path.indexOf(target) === 0;
+}
+},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"is-dom":21,"raf-loop":25,"virtualize":30}],8:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1290,7 +1289,9 @@ var Entity = _require('../../entity');
  * Export
  */
 
-module.exports = render;
+module.exports = function(scene){
+  return render(scene.root);
+};
 
 /**
  * Render a component to a string
@@ -1301,8 +1302,10 @@ module.exports = render;
  */
 
 function render(entity) {
-  var tree = entity.render();
-  return nodeToString(tree.root, tree);
+  entity.commit();
+  entity.beforeMount();
+  var node = entity.render();
+  return nodeToString(node, '0');
 }
 
 /**
@@ -1314,8 +1317,7 @@ function render(entity) {
  * @return {String}
  */
 
-function nodeToString(node, tree) {
-  var path = tree.getPath(node);
+function nodeToString(node, path) {
 
   // text
   if (node.type === 'text') {
@@ -1327,11 +1329,17 @@ function nodeToString(node, tree) {
     var children = node.children;
     var attributes = node.attributes;
     var tagName = node.tagName;
+    var innerHTML = attributes.innerHTML;
     var str = '<' + tagName + attrs(attributes) + '>';
 
-    for (var i = 0, n = children.length; i < n; i++) {
-      str += nodeToString(children[i], tree);
+    if (innerHTML) {
+      str += innerHTML;
+    } else {
+      for (var i = 0, n = children.length; i < n; i++) {
+        str += nodeToString(children[i], path + '.' + i);
+      }
     }
+
     str += '</' + tagName + '>';
     return str;
   }
@@ -1355,6 +1363,7 @@ function nodeToString(node, tree) {
 function attrs(attributes) {
   var str = '';
   for (var key in attributes) {
+    if (key === 'innerHTML') continue;
     str += attr(key, attributes[key]);
   }
   return str;
@@ -1374,43 +1383,33 @@ function attr(key, val) {
 }
 
 },{"../../entity":4,"virtualize":30}],10:[function(_require,module,exports){
+var Entity = _require('../entity');
 
 /**
- * Module dependencies
+ * Expose the factory function to create
+ * scene objects that can be rendered.
  */
 
-var Emitter = _require('component-emitter');
-var loop = _require('raf-loop');
-
-/**
- * Expose `Scene`
- *
- * @type {Function}
- */
-
-module.exports = Scene;
+module.exports = function(Component){
+  return new Scene(Component);
+};
 
 /**
  * A scene renders a component tree to an element
  * and manages the lifecycle and events each frame.
  *
- * @param {HTMLElement} container
- * @param {Entity} entity
+ * @param {Object} component
  */
 
-function Scene(renderer, entity) {
-  this.loop = loop(this.update.bind(this));
-  this.renderer = renderer;
-  this.entity = entity;
-  this.resume();
+function Scene(component) {
+  this.root = new Entity(component);
+  this.debug = false;
 }
-
-Emitter(Scene.prototype);
 
 /**
  * Add a plugin
  *
- * @api public
+ * @param {Function} plugin
  */
 
 Scene.prototype.use = function(plugin){
@@ -1419,76 +1418,27 @@ Scene.prototype.use = function(plugin){
 };
 
 /**
- * Schedule this component to be updated on the next frame.
- *
- * @param {Function} done
- * @return {void}
- */
-
-Scene.prototype.update = function(){
-  try {
-    this.renderer.render(this.entity);
-  } catch(e) {
-    this.pause();
-    throw e;
-  }
-  return this;
-};
-
-/**
  * Set new props on the component and trigger a re-render.
  *
  * @param {Object} newProps
- * @param {Function} [done]
  */
 
-Scene.prototype.setProps = function(newProps, done){
-  this.entity.setProps(newProps, done);
+Scene.prototype.setProps = function(newProps){
+  this.root.setProps(newProps);
+  return this;
 };
 
 /**
  * Replace all the props on the current entity
  *
  * @param {Objct} newProps
- * @param {Function} done
- *
- * @return {Promise}
  */
 
-Scene.prototype.replaceProps = function(newProps, done){
-  this.entity.replaceProps(newProps, done);
-};
-
-/**
- * Remove the scene from the DOM.
- */
-
-Scene.prototype.remove = function(){
-  this.pause();
-  this.renderer.remove();
-  this.off();
-};
-
-/**
- * Resume updating the scene
- */
-
-Scene.prototype.resume = function(){
-  this.loop.start();
-  this.emit('resume');
+Scene.prototype.replaceProps = function(newProps){
+  this.root.replaceProps(newProps);
   return this;
 };
-
-/**
- * Stop updating the scene
- */
-
-Scene.prototype.pause = function(){
-  this.loop.stop();
-  this.emit('pause');
-  return this;
-};
-},{"component-emitter":18,"raf-loop":25}],11:[function(_require,module,exports){
+},{"../entity":4}],11:[function(_require,module,exports){
 /*
  * array-zip
  * https://github.com/frozzare/array-zip
