@@ -49,6 +49,7 @@ function component(spec) {
   // statics.
 
   Component.props = {};
+  Component.options = {};
   assign(Component, statics, Emitter.prototype);
 
   // protos.
@@ -85,7 +86,7 @@ function bindAll(obj) {
   }
   return obj;
 }
-},{"./protos":2,"./statics":3,"component-emitter":18,"extend":19,"virtualize":30}],2:[function(_require,module,exports){
+},{"./protos":2,"./statics":3,"component-emitter":18,"extend":21,"virtualize":32}],2:[function(_require,module,exports){
 /**
  * Set properties on `this.state`.
  *
@@ -180,6 +181,18 @@ exports.prop = function(name, options){
   return this;
 };
 
+/**
+ * Set an option
+ *
+ * @param {String} name
+ * @param {*} value
+ */
+
+exports.set = function(name, value){
+  this.options[name] = value;
+  return this;
+};
+
 },{}],4:[function(_require,module,exports){
 
 /**
@@ -218,6 +231,7 @@ module.exports = Entity;
 
 function Entity(Component, props) {
   this.id = uid();
+  this.options = Component.options;
   this.props = props || {};
   this.component = this.instance(Component);
   this.state = this.component.initialState(this.props);
@@ -232,6 +246,19 @@ function Entity(Component, props) {
  */
 
 Emitter(Entity.prototype);
+
+/**
+ * Get an option
+ *
+ * @param {String} name
+ *
+ * @return {*}
+ */
+
+Entity.prototype.option = function(name) {
+  return this.options[name];
+};
+
 
 /**
  * Create the component instance
@@ -447,7 +474,7 @@ function checkSetState(lifecycle) {
   var message = preventSetState[lifecycle];
   if (message) throw new Error(message);
 }
-},{"component-emitter":18,"extend":19,"get-uid":20}],5:[function(_require,module,exports){
+},{"component-emitter":18,"extend":21,"get-uid":22}],5:[function(_require,module,exports){
 exports.component = _require('./component');
 exports.dom = _require('virtualize').node;
 exports.scene = _require('./scene');
@@ -457,7 +484,7 @@ if (typeof window !== 'undefined') {
   exports.render = _require('./renderer/dom');
 }
 
-},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":30}],6:[function(_require,module,exports){
+},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":32}],6:[function(_require,module,exports){
 var zip = _require('array-zip');
 
 module.exports = patch;
@@ -649,11 +676,14 @@ var Emitter = _require('component-emitter');
 var virtualize = _require('virtualize');
 var Entity = _require('../../entity');
 var each = _require('component-each');
+var Pool = _require('dom-pool');
+var walk = _require('dom-walk');
 var patch = _require('./diff');
 var loop = _require('raf-loop');
 var isDom = _require('is-dom');
 var tree = virtualize.tree;
 var dom = virtualize.node;
+
 /**
  * Render a component to a DOM element
  *
@@ -684,6 +714,7 @@ function Renderer(scene, container) {
   this.elements = {};
   this.renders = {};
   this.children = {};
+  this.pools = {};
   this.dirty = false;
   container.appendChild(this.mount(scene.root));
   this.loop.start();
@@ -767,8 +798,8 @@ Renderer.prototype.update = function(entity) {
   // Run the diff and patch the element.
   patch({
     entity: entity,
-    current: currentTree.root,
-    next: nextTree.root,
+    current: currentTree,
+    next: nextTree,
     el: currentEl,
     renderer: this
   });
@@ -804,6 +835,7 @@ Renderer.prototype.remove = function(){
   this.unmount(this.scene.root);
   this.events.remove();
   this.loop.stop();
+  this.pools = {};
 };
 
 /**
@@ -823,15 +855,15 @@ Renderer.prototype.mount = function(entity) {
   // This will store all the entities that are children
   // of this entity after it is rendered and mounted.
   this.children[entity.id] = {};
+  this.entities[entity.id] = entity;
 
   // Render the entity and create the initial element for it
   var current = renderEntity(entity);
-  var el = this.createElement(entity.id, '0', current.root);
+  var el = this.createElement(entity.id, '0', current);
 
   // We store the DOM state of the entity within the renderer
   this.elements[entity.id] = el;
   this.renders[entity.id] = current;
-  this.entities[entity.id] = entity;
 
   // Whenever setState or setProps is called, we mark the entity
   // as dirty in the renderer. This lets us optimize the re-rendering
@@ -899,12 +931,12 @@ Renderer.prototype.unmountChildren = function(entity) {
 Renderer.prototype.updateEvents = function(entity) {
   var self = this;
   this.events.unbind(entity.id);
-  var currentTree = this.renders[entity.id];
+  var nodes = tree(this.renders[entity.id]).nodes;
 
   // TODO: Optimize this by storing the events in the Tree
   // object on the initial pass instead of looping again.
   // eg. entity.current.events -> '0.0.1:click': fn
-  each(currentTree.nodes, function(path, node){
+  each(nodes, function(path, node){
     if (node.type !== 'element') return;
     each(node.events, function(eventType, fn){
       self.events.bind(entity.id, path, eventType, function(e){
@@ -922,6 +954,23 @@ Renderer.prototype.updateEvents = function(entity) {
 
 Renderer.prototype.removeEvents = function(entity) {
   this.events.unbind(entity.id);
+};
+
+/**
+ * Get the pool for a tagName, creating it if it
+ * doesn't exist.
+ *
+ * @param {String} tagName
+ *
+ * @return {Pool}
+ */
+
+Renderer.prototype.getPool = function(tagName) {
+  var pool = this.pools[tagName];
+  if (!pool) {
+    pool = this.pools[tagName] = new Pool({ tagName: tagName });
+  }
+  return pool;
 };
 
 /**
@@ -946,7 +995,7 @@ Renderer.prototype.createElement = function(entityId, path, vnode){
   }
 
   if (vnode.type === 'element') {
-    var el = document.createElement(vnode.tagName);
+    var el = this.createDOMElement(entityId, vnode.tagName);
     var children = vnode.children;
 
     // TODO: These is some duplication here between the diffing.
@@ -1017,7 +1066,7 @@ Renderer.prototype.removeElement = function(entityId, path, el) {
     }
   });
 
-  el.parentNode.removeChild(el);
+  this.removeDOMElement(entityId, el);
 };
 
 /**
@@ -1098,6 +1147,50 @@ Renderer.prototype.setAttribute = function(el, name, value) {
 };
 
 /**
+ * Remove a node from the document
+ *
+ * @param {String} entityId
+ * @param {HTMLElement} el
+ */
+
+Renderer.prototype.removeDOMElement = function(entityId, el) {
+  var self = this;
+  var entity = this.entities[entityId];
+  el.parentNode.removeChild(el);
+  if (entity.option('disablePooling') || !el.tagName) return;
+
+  // Return all of the elements in this node tree to the pool
+  // so that the elements can be re-used.
+  walk(el, function(node){
+    if (!node.tagName) return;
+    self.getPool(node.tagName.toLowerCase()).push(node);
+  });
+};
+
+/**
+ * Create a new HTMLElement.
+ *
+ * @param {String} entityId
+ * @param {String} tagName
+ */
+
+Renderer.prototype.createDOMElement = function(entityId, tagName) {
+  var entity = this.entities[entityId];
+  var el;
+
+  if (entity.option('disablePooling')) {
+    el = document.createElement(tagName);
+  } else {
+    var pool = this.getPool(tagName);
+    el = pool.pop();
+    removeAllChildren(el);
+    removeAllAttributes(el);
+  }
+
+  return el;
+};
+
+/**
  * Render the entity and make sure it returns a node
  *
  * @param {Entity} entity
@@ -1110,20 +1203,7 @@ function renderEntity(entity) {
   if (!result) {
     result = dom('noscript');
   }
-  return tree(result);
-}
-
-/**
- * Replace a DOM element with another DOM element
- *
- * @param {HTMLElement} oldEl
- * @param {HTMLElement} newEl
- */
-
-function replaceElement(oldEl, newEl) {
-  var parent = oldEl.parentNode;
-  parent.insertBefore(newEl, oldEl);
-  parent.removeChild(oldEl);
+  return result;
 }
 
 /**
@@ -1142,7 +1222,32 @@ function replaceElement(oldEl, newEl) {
 function isWithinPath(target, path) {
   return path.indexOf(target) === 0;
 }
-},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"is-dom":21,"raf-loop":25,"virtualize":30}],8:[function(_require,module,exports){
+
+/**
+ * Remove all the attributes from a node
+ *
+ * @param {HTMLElement} el
+ */
+
+function removeAllAttributes(el) {
+  for (var i = el.attributes.length - 1; i >= 0; i--) {
+    var name = el.attributes[i].name;
+    el.removeAttribute(name);
+  }
+}
+
+/**
+ * Remove all the child nodes from an element
+ *
+ * @param {HTMLElement} el
+ */
+
+function removeAllChildren(el) {
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+}
+},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"dom-pool":19,"dom-walk":20,"is-dom":23,"raf-loop":27,"virtualize":32}],8:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1281,7 +1386,7 @@ Interactions.prototype.handle = function(event){
   }
 };
 
-},{"object-path":22,"per-frame":23}],9:[function(_require,module,exports){
+},{"object-path":24,"per-frame":25}],9:[function(_require,module,exports){
 var virtual = _require('virtualize');
 var Entity = _require('../../entity');
 
@@ -1382,7 +1487,7 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":4,"virtualize":30}],10:[function(_require,module,exports){
+},{"../../entity":4,"virtualize":32}],10:[function(_require,module,exports){
 var Entity = _require('../entity');
 
 /**
@@ -2270,6 +2375,86 @@ Emitter.prototype.hasListeners = function(event){
 };
 
 },{}],19:[function(_require,module,exports){
+function Pool(params) {
+    if (typeof params !== 'object') {
+        throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
+    }
+
+    if (typeof params.tagName !== 'string') {
+        throw new Error("Please specify a tagName. Example -> new Pool({ tagName: \"div\" })");
+    }
+
+    this.storage = [];
+    this.tagName = params.tagName.toLowerCase();
+    this.namespace = params.namespace;
+}
+
+Pool.prototype.push = function(el) {
+    if (el.tagName.toLowerCase() !== this.tagName) {
+        return;
+    }
+    
+    this.storage.push(el);
+};
+
+Pool.prototype.pop = function(argument) {
+    if (this.storage.length === 0) {
+        return this.create();
+    } else {
+        return this.storage.pop();
+    }
+};
+
+Pool.prototype.create = function() {
+    if (this.namespace) {
+        return document.createElementNS(this.namespace, this.tagName);
+    } else {
+        return document.createElement(this.tagName);
+    }
+};
+
+Pool.prototype.allocate = function(size) {
+    if (this.storage.length >= size) {
+        return;
+    }
+
+    var difference = size - this.storage.length;
+    for (var poolAllocIter = 0; poolAllocIter < difference; poolAllocIter++) {
+        this.storage.push(this.create());
+    }
+};
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = Pool;
+}
+
+},{}],20:[function(_require,module,exports){
+var slice = Array.prototype.slice
+
+module.exports = iterativelyWalk
+
+function iterativelyWalk(nodes, cb) {
+    if (!('length' in nodes)) {
+        nodes = [nodes]
+    }
+    
+    nodes = slice.call(nodes)
+
+    while(nodes.length) {
+        var node = nodes.shift(),
+            ret = cb(node)
+
+        if (ret) {
+            return ret
+        }
+
+        if (node.childNodes && node.childNodes.length) {
+            nodes = slice.call(node.childNodes).concat(nodes)
+        }
+    }
+}
+
+},{}],21:[function(_require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 var undefined;
@@ -2352,14 +2537,14 @@ module.exports = function extend() {
 };
 
 
-},{}],20:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],21:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2376,7 +2561,7 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],22:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2647,7 +2832,7 @@ module.exports = function isNode(val){
   return objectPath;
 });
 
-},{}],23:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -2686,7 +2871,7 @@ function throttle(fn) {
   };
 }
 
-},{"raf":24}],24:[function(_require,module,exports){
+},{"raf":26}],26:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2726,7 +2911,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],25:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 var inherits = _require('inherits')
 var EventEmitter = _require('events').EventEmitter
 var raf = _require('raf')
@@ -2771,7 +2956,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":12,"inherits":26,"raf":27,"right-now":29}],26:[function(_require,module,exports){
+},{"events":12,"inherits":28,"raf":29,"right-now":31}],28:[function(_require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2796,7 +2981,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],27:[function(_require,module,exports){
+},{}],29:[function(_require,module,exports){
 var now = _require('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -2878,7 +3063,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":28}],28:[function(_require,module,exports){
+},{"performance-now":30}],30:[function(_require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -2918,7 +3103,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_require('_process'))
-},{"_process":13}],29:[function(_require,module,exports){
+},{"_process":13}],31:[function(_require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -2929,7 +3114,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],30:[function(_require,module,exports){
+},{}],32:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -3073,7 +3258,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":31,"./lib/element":32,"./lib/text":33,"./lib/tree":34,"get-uid":20,"sliced":36}],31:[function(_require,module,exports){
+},{"./lib/component":33,"./lib/element":34,"./lib/text":35,"./lib/tree":36,"get-uid":22,"sliced":38}],33:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -3095,7 +3280,7 @@ function ComponentNode(component, props, key, children) {
   this.props.children = children || [];
 }
 
-},{}],32:[function(_require,module,exports){
+},{}],34:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -3329,7 +3514,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":35}],33:[function(_require,module,exports){
+},{"component-type":37}],35:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -3345,7 +3530,7 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],34:[function(_require,module,exports){
+},{}],36:[function(_require,module,exports){
 
 /**
  * Export `Tree`.
@@ -3418,7 +3603,7 @@ Tree.prototype.parse = function(node, path){
   }
 };
 
-},{}],35:[function(_require,module,exports){
+},{}],37:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -3454,10 +3639,10 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],36:[function(_require,module,exports){
+},{}],38:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":37}],37:[function(_require,module,exports){
+},{"./lib/sliced":39}],39:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
