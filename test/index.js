@@ -14,6 +14,7 @@ describe('render', function () {
   require('./dom/replace')
   require('./dom/events')
   require('./dom/state')
+  require('./dom/pool')
 })
 
 describe('renderString', function () {
