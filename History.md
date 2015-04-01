@@ -1,4 +1,10 @@
 
+0.0.31 / 2015-04-01
+==================
+
+ * dom: Tests for scene removal
+ * dom: Cleaned up removing of elements
+
 0.0.30 / 2015-03-27
 ==================
 
