@@ -45,8 +45,13 @@ it('should create a component with properties', function(){
 
 it('should remove from the DOM', function () {
   var Test = component(HelloWorld);
-  var el = mount(scene(Test));
-  assert.equal(el.innerHTML, '');
+  var container = div();
+  var renderer = render(scene(Test), container);
+  renderer.remove();
+  assert.equal(container.innerHTML, '')
+  assert.deepEqual(renderer.entities, {})
+  assert.deepEqual(renderer.elements, {})
+  assert.deepEqual(renderer.children, {})
 })
 
 it('should compose components', function(){
