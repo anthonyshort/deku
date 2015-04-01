@@ -11,15 +11,6 @@ it('should fire the `afterMount` hook', function(done){
   mount(scene(Page))
 })
 
-it('should fire the `afterUnmount` hook', function(done){
-  var Page = component({
-    afterUnmount: function(){
-      done();
-    }
-  });
-  mount(scene(Page))
-})
-
 it('should fire the `beforeMount` hook before `mount`', function(){
   var pass;
   var Page = component({
@@ -27,20 +18,6 @@ it('should fire the `beforeMount` hook before `mount`', function(){
       pass = false;
     },
     afterMount: function(){
-      pass = true;
-    }
-  });
-  mount(scene(Page))
-  assert(pass);
-})
-
-it('should fire the `beforeUnmount` hook before `unmount`', function(){
-  var pass;
-  var Page = component({
-    beforeUnmount: function(){
-      pass = false;
-    },
-    afterUnmount: function(){
       pass = true;
     }
   });
@@ -87,22 +64,22 @@ it('should fire mount events on sub-components', function(){
   })
 });
 
-it('should fire unmount events on sub-components', function(){
-  var i = 0;
-
-  function inc() { i++ }
+it('should fire unmount events on sub-components from the bottom up', function(){
+  var arr = [];
 
   var ComponentA = component({
-    afterUnmount: inc,
-    beforeUnmount: inc,
+    beforeUnmount: function(){
+      arr.push('A')
+    },
     render: function(props, state){
       return dom('span', { name: props.name }, [props.text]);
     }
   });
 
   var ComponentB = component({
-    afterUnmount: inc,
-    beforeUnmount: inc,
+    beforeUnmount: function(){
+      arr.push('B')
+    },
     render: function(props, state){
       return dom(ComponentA, { text: 'foo', name: props.name });
     }
@@ -112,7 +89,9 @@ it('should fire unmount events on sub-components', function(){
   app.setProps({ name: 'Bob' })
 
   mount(app)
-  assert.equal(i, 4)
+  assert.equal(arr.length, 2)
+  assert.equal(arr[0], 'A')
+  assert.equal(arr[1], 'B')
 });
 
 it('should fire mount events on sub-components created later', function(){
@@ -149,7 +128,6 @@ it('should fire unmount events on sub-components created later', function(){
   function inc() { calls++ }
 
   var ComponentA = component({
-    afterUnmount: inc,
     beforeUnmount: inc
   });
 
@@ -169,7 +147,7 @@ it('should fire unmount events on sub-components created later', function(){
   mount(app, function(el, renderer){
     app.setProps({ showComponent: false })
     renderer.render()
-    assert.equal(calls, 2)
+    assert.equal(calls, 1)
   })
 
 })

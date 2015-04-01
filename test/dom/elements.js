@@ -144,7 +144,6 @@ it('should unmount components when removing an element node', function(){
   var i = 0;
   function inc() { i++ }
   var UnmountTest = component({
-    afterUnmount: inc,
     beforeUnmount: inc
   });
 
@@ -169,7 +168,7 @@ it('should unmount components when removing an element node', function(){
   mount(app, function(el, renderer){
     app.setProps({ showElements: false });
     renderer.render();
-    assert.equal(i, 2);
+    assert.equal(i, 1);
   })
 });
 
