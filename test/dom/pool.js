@@ -59,20 +59,47 @@ it('should pool dom nodes', function(){
   assert.deepEqual(mounted.pools, {})
 })
 
-it('should not pool components that have the option disabled', function () {
-  var Component = component(render)
-    .set('disablePooling', true)
+it('should not pool any components that have the option disabled', function () {
+  var Component = component(function(props){
+    return dom('a');
+  })
 
-  var app = scene(Component)
-    .setProps({ type: 'div' })
+  Component.set('disablePooling', true)
+
+  var Parent = component(function(props){
+    return dom('span', null, [
+      dom(Component)
+    ]);
+  })
+
+  var GrandParent = component(function(props){
+    if (props.show) {
+      return dom('div', null, [
+        dom(Parent)
+      ])
+    } else {
+      return dom('noscript')
+    }
+  })
+
+  GrandParent.set('disablePooling', true)
+
+  var app = scene(GrandParent)
+    .setProps({ show: true })
 
   mount(app, function(el, renderer){
-    var target = el.querySelector('#foo div')
-    app.replaceProps({ type: 'span' })
+    var div = el.querySelector('div')
+    var span = el.querySelector('span')
+    var a = el.querySelector('a')
+    app.setProps({ show: false })
     renderer.render()
-    app.replaceProps({ type: 'div' })
+    app.setProps({ show: true })
     renderer.render()
-    var next = el.querySelector('#foo div')
-    assert(target !== next)
+    var nextdiv = el.querySelector('div')
+    var nextspan = el.querySelector('span')
+    var nexta = el.querySelector('a')
+    assert(div !== nextdiv, 'div should not be pooled')
+    assert(span === nextspan, 'span should be pooled')
+    assert(a !== nexta, 'anchor should not be pooled')
   })
 });
