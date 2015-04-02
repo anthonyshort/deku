@@ -1,4 +1,9 @@
 
+0.0.32 / 2015-04-01
+==================
+
+ * dom: Fixed disablePooling flag for nested components
+
 0.0.31 / 2015-04-01
 ==================
 
