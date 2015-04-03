@@ -1,4 +1,10 @@
 
+0.0.33 / 2015-04-02
+==================
+
+ * Fixed bug with nested components not being unmounted
+ * Added test for nested components disabling pooling
+
 0.0.32 / 2015-04-01
 ==================
 

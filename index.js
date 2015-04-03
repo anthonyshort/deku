@@ -86,7 +86,7 @@ function bindAll(obj) {
   }
   return obj;
 }
-},{"./protos":2,"./statics":3,"component-emitter":18,"extend":21,"virtualize":32}],2:[function(_require,module,exports){
+},{"./protos":2,"./statics":3,"component-emitter":18,"extend":21,"virtualize":33}],2:[function(_require,module,exports){
 /**
  * Set properties on `this.state`.
  *
@@ -483,7 +483,7 @@ if (typeof window !== 'undefined') {
   exports.render = _require('./renderer/dom');
 }
 
-},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":32}],6:[function(_require,module,exports){
+},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":33}],6:[function(_require,module,exports){
 var zip = _require('array-zip');
 
 module.exports = patch;
@@ -672,6 +672,7 @@ function diffElement(previous, current, context){
 
 var Interactions = _require('./interactions');
 var Emitter = _require('component-emitter');
+var shallowCopy = _require('shallow-copy');
 var virtualize = _require('virtualize');
 var Entity = _require('../../entity');
 var each = _require('component-each');
@@ -889,6 +890,7 @@ Renderer.prototype.mount = function(entity) {
 Renderer.prototype.unmount = function(entity){
   var el = this.elements[entity.id];
   if (!el) return;
+  this.unmountChildren(entity);
   entity.beforeUnmount(el);
   this.removeEvents(entity);
   entity.release();
@@ -896,6 +898,21 @@ Renderer.prototype.unmount = function(entity){
   delete this.renders[entity.id];
   delete this.entities[entity.id];
   delete this.children[entity.id];
+};
+
+/**
+ * Remove all of the child entities of an entity
+ *
+ * @param {Entity} entity
+ */
+
+Renderer.prototype.unmountChildren = function(entity) {
+  var self = this;
+  var entities = this.entities;
+  var children = this.children[entity.id];
+  each(children, function(path, childId){
+    self.unmount(entities[childId]);
+  });
 };
 
 /**
@@ -986,6 +1003,7 @@ Renderer.prototype.createElement = function(entityId, path, vnode){
       el = pool.pop();
       removeAllChildren(el);
       removeAllAttributes(el);
+      if (el.parentNode) el.parentNode.removeChild(el);
     }
 
     // TODO: These is some duplication here between the diffing.
@@ -1007,7 +1025,7 @@ Renderer.prototype.createElement = function(entityId, path, vnode){
     // add children.
     for (var i = 0, n = children.length; i < n; i++) {
       var childEl = this.createElement(entityId, path + '.' + i, children[i]);
-      el.appendChild(childEl);
+      if (!childEl.parentNode) el.appendChild(childEl);
     }
 
     return el;
@@ -1036,11 +1054,29 @@ Renderer.prototype.createElement = function(entityId, path, vnode){
 Renderer.prototype.removeElement = function(entityId, path, el) {
   var self = this;
   var children = this.children[entityId];
-  var entities = this.entities;
+  var entities = shallowCopy(this.entities);
   var entity = entities[entityId];
 
-  // Just remove the text node
-  if (!isElement(el)) return el.parentNode.removeChild(el);
+  // If the path points to a component we should use that
+  // components element instead, because it might have moved it.
+  if (children[path]) {
+    var child = this.entities[children[path]];
+    el = this.elements[child.id];
+    this.unmount(child);
+    delete children[path];
+  } else {
+    // Just remove the text node
+    if (!isElement(el)) return el.parentNode.removeChild(el);
+
+    // Then we need to find any components within this
+    // branch and unmount them.
+    for (var childPath in children) {
+      if (childPath === path || isWithinPath(path, childPath)) {
+        this.unmount(entities[children[childPath]]);
+        delete children[childPath];
+      }
+    }
+  }
 
   // Return all of the elements in this node tree to the pool
   // so that the elements can be re-used.
@@ -1050,15 +1086,6 @@ Renderer.prototype.removeElement = function(entityId, path, el) {
     if (!parent || parent.option('disablePooling')) return;
     self.getPool(node.tagName.toLowerCase()).push(node);
   });
-
-  // Otherwise we need to find any components within this
-  // branch and unmount them.
-  for (var childPath in children) {
-    if (childPath === path || isWithinPath(path, childPath)) {
-      this.unmount(entities[children[childPath]]);
-      delete children[childPath];
-    }
-  }
 
   // Remove it from the DOM
   el.parentNode.removeChild(el);
@@ -1210,7 +1237,7 @@ function removeAllChildren(el) {
     el.removeChild(el.firstChild);
   }
 }
-},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"dom-pool":19,"dom-walk":20,"is-dom":23,"raf-loop":27,"virtualize":32}],8:[function(_require,module,exports){
+},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"dom-pool":19,"dom-walk":20,"is-dom":23,"raf-loop":27,"shallow-copy":32,"virtualize":33}],8:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1450,7 +1477,7 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":4,"virtualize":32}],10:[function(_require,module,exports){
+},{"../../entity":4,"virtualize":33}],10:[function(_require,module,exports){
 var Entity = _require('../entity');
 
 /**
@@ -3078,6 +3105,43 @@ module.exports =
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],32:[function(_require,module,exports){
+module.exports = function (obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    var copy;
+    
+    if (isArray(obj)) {
+        var len = obj.length;
+        copy = Array(len);
+        for (var i = 0; i < len; i++) {
+            copy[i] = obj[i];
+        }
+    }
+    else {
+        var keys = objectKeys(obj);
+        copy = {};
+        
+        for (var i = 0, l = keys.length; i < l; i++) {
+            var key = keys[i];
+            copy[key] = obj[key];
+        }
+    }
+    return copy;
+};
+
+var objectKeys = Object.keys || function (obj) {
+    var keys = [];
+    for (var key in obj) {
+        if ({}.hasOwnProperty.call(obj, key)) keys.push(key);
+    }
+    return keys;
+};
+
+var isArray = Array.isArray || function (xs) {
+    return {}.toString.call(xs) === '[object Array]';
+};
+
+},{}],33:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -3221,7 +3285,7 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":33,"./lib/element":34,"./lib/text":35,"./lib/tree":36,"get-uid":22,"sliced":38}],33:[function(_require,module,exports){
+},{"./lib/component":34,"./lib/element":35,"./lib/text":36,"./lib/tree":37,"get-uid":22,"sliced":39}],34:[function(_require,module,exports){
 
 module.exports = ComponentNode;
 
@@ -3243,7 +3307,7 @@ function ComponentNode(component, props, key, children) {
   this.props.children = children || [];
 }
 
-},{}],34:[function(_require,module,exports){
+},{}],35:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -3477,7 +3541,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":37}],35:[function(_require,module,exports){
+},{"component-type":38}],36:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -3493,7 +3557,7 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],36:[function(_require,module,exports){
+},{}],37:[function(_require,module,exports){
 
 /**
  * Export `Tree`.
@@ -3566,7 +3630,7 @@ Tree.prototype.parse = function(node, path){
   }
 };
 
-},{}],37:[function(_require,module,exports){
+},{}],38:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -3602,10 +3666,10 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],38:[function(_require,module,exports){
+},{}],39:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":39}],39:[function(_require,module,exports){
+},{"./lib/sliced":40}],40:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
