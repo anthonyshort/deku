@@ -85,13 +85,61 @@ it('should fire unmount events on sub-components from the bottom up', function()
     }
   });
 
-  var app = scene(ComponentB)
-  app.setProps({ name: 'Bob' })
+  var Parent = component(function(props){
+    if (props.show) {
+      return dom(ComponentB)
+    } else {
+      return dom('noscript')
+    }
+  })
 
-  mount(app)
-  assert.equal(arr.length, 2)
-  assert.equal(arr[0], 'A')
-  assert.equal(arr[1], 'B')
+  var app = scene(Parent)
+  app.setProps({ show: true })
+
+  mount(app, function(el, renderer){
+    app.setProps({ show: false })
+    renderer.render()
+    assert.equal(arr.length, 2)
+    assert.equal(arr[0], 'A')
+    assert.equal(arr[1], 'B')
+  })
+});
+
+it('should unmount sub-components that move themselves in the DOM', function () {
+  var arr = [];
+
+  var Overlay = component({
+    afterMount: function(el){
+      document.body.appendChild(el)
+    },
+    beforeUnmount: function(){
+      arr.push('A')
+    },
+    render: function(){
+      return dom('.Overlay');
+    }
+  });
+
+  var Parent = component(function(props){
+    if (props.show) {
+      return dom('div', [
+        dom(Overlay)
+      ])
+    } else {
+      return dom('div')
+    }
+  })
+
+  var app = scene(Parent)
+  app.setProps({ show: true })
+
+  mount(app, function(el, renderer){
+    var overlay = document.querySelector('.Overlay')
+    assert(overlay.parentElement === document.body, 'It should move element to the root')
+    app.setProps({ show: false })
+    renderer.render()
+    assert.equal(arr[0], 'A')
+  })
 });
 
 it('should fire mount events on sub-components created later', function(){
