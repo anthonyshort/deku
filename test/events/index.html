@@ -10,13 +10,12 @@
     var component = deku.component;
     var dom = deku.dom;
 
-    var MouseOver = component(function(props, state){
-      var self = this;
+    var MouseOver = component(function(props, state, send){
       function hover() {
-        self.setState({ hover: true });
+        send({ hover: true });
       }
       function blur() {
-        self.setState({ hover: false });
+        send({ hover: false });
       }
       var classes = {
         'active': state.hover === true
@@ -26,13 +25,12 @@
       ]);
     });
 
-    var MouseDown = component(function(props, state){
-      var self = this;
+    var MouseDown = component(function(props, state, send){
       function down() {
-        self.setState({ down: true });
+        send({ down: true });
       }
       function up() {
-        self.setState({ down: false });
+        send({ down: false });
       }
       var classes = {
         'active': state.down === true
@@ -42,15 +40,15 @@
       ]);
     });
 
-    var MouseMove = component(function(props, state){
+    var MouseMove = component(function(props, state, send){
       var self = this;
       function move() {
         if (self.timer) clearTimeout(self.timer);
         self.timer = setTimeout(function(){
-          self.setState({ moving: false });
+          send({ moving: false });
           self.timer = null;
         }, 50);
-        self.setState({
+        send({
           moving: true
         });
       }
@@ -62,13 +60,12 @@
       ]);
     });
 
-    var BlurFocus = component(function(props, state){
-      var self = this;
+    var BlurFocus = component(function(props, state, send){
       function focus(event) {
-        self.setState({ focused: true });
+        send({ focused: true });
       }
       function blur() {
-        self.setState({ focused: false });
+        send({ focused: false });
       }
       var classes = {
         'active': state.focused === true
@@ -88,11 +85,10 @@
           count: 0
         };
       },
-      render: function(props, state){
-        var self = this;
+      render: function(props, state, send){
         function click() {
           var count = state.count + 1;
-          self.setState({ count: count });
+          send({ count: count });
         }
         var classes = {
           'active': state.count % 2
@@ -110,11 +106,10 @@
           count: 0
         };
       },
-      render: function(props, state){
-        var self = this;
+      render: function(props, state, send){
         function click() {
           var count = state.count + 1;
-          self.setState({ count: count });
+          send({ count: count });
         }
         var classes = {
           'active': state.count % 2
@@ -126,11 +121,10 @@
     });
 
     var FormSubmit = component({
-      render: function(props, state){
-        var self = this;
+      render: function(props, state, send){
         function submit(e) {
           e.preventDefault();
-          self.setState({ submitted: !state.submitted });
+          send({ submitted: !state.submitted });
         }
         var classes = {
           'active': state.submitted
@@ -141,13 +135,13 @@
       }
     });
 
-    var KeyDown = component(function(props, state){
+    var KeyDown = component(function(props, state, send){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
-        self.setState({ active: true });
+        send({ active: true });
         self.timer = setTimeout(function(){
-          self.setState({ active: false });
+          send({ active: false });
         }, 100);
       }
       var classes = {
@@ -162,13 +156,13 @@
       ]);
     });
 
-    var KeyUp = component(function(props, state){
+    var KeyUp = component(function(props, state, send){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
-        self.setState({ active: true });
+        send({ active: true });
         self.timer = setTimeout(function(){
-          self.setState({ active: false });
+          send({ active: false });
         }, 100);
       }
       var classes = {
@@ -183,13 +177,13 @@
       ]);
     });
 
-    var Input = component(function(props, state){
+    var Input = component(function(props, state, send){
       var self = this;
       function down(event) {
         if (self.timer) clearTimeout(self.timer);
-        self.setState({ active: true });
+        send({ active: true });
         self.timer = setTimeout(function(){
-          self.setState({ active: false });
+          send({ active: false });
         }, 100);
       }
       var classes = {
@@ -204,11 +198,10 @@
       ]);
     });
 
-    var ContextMenu = component(function(props, state){
-      var self = this;
+    var ContextMenu = component(function(props, state, send){
       function down(event) {
         event.preventDefault();
-        self.setState({ active: !state.active });
+        send({ active: !state.active });
       }
       var classes = {
         'active': state.active
@@ -218,10 +211,9 @@
       ]);
     });
 
-    var Copy = component(function(props, state){
-      var self = this;
+    var Copy = component(function(props, state, send){
       function run(event) {
-        self.setState({ active: !state.active });
+        send({ active: !state.active });
       }
       var classes = {
         'active': state.active
@@ -231,10 +223,9 @@
       ]);
     });
 
-    var CutPaste = component(function(props, state){
-      var self = this;
+    var CutPaste = component(function(props, state, send){
       function run(event) {
-        self.setState({ active: !state.active });
+        send({ active: !state.active });
       }
       var classes = {
         'active': state.active
@@ -244,14 +235,13 @@
       ]);
     });
 
-    var Draggable = component(function(props, state){
-      var self = this;
+    var Draggable = component(function(props, state, send){
       function start(event) {
         event.dataTransfer.setData('text', 'asdasd');
-        self.setState({ active: true });
+        send({ active: true });
       }
       function end(event) {
-        self.setState({ active: false });
+        send({ active: false });
       }
       var attrs = {
         classes: {
@@ -266,8 +256,7 @@
       ]);
     });
 
-    var Droppable = component(function(props, state){
-      var self = this;
+    var Droppable = component(function(props, state, send){
       function over(event) {
         event.preventDefault();
         //console.log('droppable', 'over', event.target);
@@ -275,16 +264,16 @@
       function drop(event) {
         event.preventDefault()
         console.log('droppable', 'drop', event.target);
-        self.setState({ dropped: true, active: false });
+        send({ dropped: true, active: false });
       }
       function enter(event) {
         event.preventDefault()
         console.log('draggable', 'enter', event.target);
-        self.setState({ active: true });
+        send({ active: true });
       }
       function leave(event) {
         console.log('draggable', 'leave', event.target);
-        self.setState({ active: false });
+        send({ active: false });
       }
       var attrs = {
         classes: {
@@ -300,10 +289,9 @@
       ]);
     });
 
-    var Scroll = component(function(props, state){
-      var self = this;
+    var Scroll = component(function(props, state, send){
       function scroll(event) {
-        self.setState({ position: event.target.scrollTop });
+        send({ position: event.target.scrollTop });
       }
       var attrs = {
         onScroll: scroll,
