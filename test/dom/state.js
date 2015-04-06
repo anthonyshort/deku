@@ -6,8 +6,8 @@ var StateChangeOnMount = component({
   initialState: function(){
     return { text: 'foo' };
   },
-  afterMount: function(){
-    this.setState({ text: 'bar' });
+  afterMount: function(el, props, state, send){
+    send({ text: 'bar' });
   },
   render: function(props, state){
     var Test = component(Span);
