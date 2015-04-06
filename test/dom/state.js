@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount,Span} from '../helpers'
 
 var StateChangeOnMount = component({
@@ -16,7 +16,7 @@ var StateChangeOnMount = component({
 });
 
 it('should update components when state changes', function(){
-  var app = scene(StateChangeOnMount)
+  var app = world(StateChangeOnMount)
   mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<span>foo</span>');
     renderer.render()
@@ -35,7 +35,7 @@ it('should update composed components when state changes', function(){
       ]);
     }
   });
-  var app = scene(Composed)
+  var app = world(Composed)
   mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<div><span>foo</span></div>')
     renderer.render()

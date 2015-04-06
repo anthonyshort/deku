@@ -7,7 +7,7 @@
   <main></main>
   <script src="../../dist/deku.js"></script>
   <script>
-    var scene;
+    var world;
 
     var Box = component({
       onClick: function(state, e) {
@@ -46,7 +46,7 @@
 
         function swap() {
           console.log('clicked swap');
-          scene.setProps({ swapped: !props.swapped });
+          world.setProps({ swapped: !props.swapped });
         }
 
         var button = dom('button', { onClick: swap }, 'Swap');
@@ -60,7 +60,7 @@
       }
     });
 
-    var scene = App.render(document.querySelector('main'), {
+    var world = App.render(document.querySelector('main'), {
       swapped: false
     });
   </script>

@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount} from '../helpers'
 
 var Toggle = component({
@@ -11,7 +11,7 @@ var Toggle = component({
 });
 
 it('should replace elements with text elements', function(){
-  var app = scene(Toggle)
+  var app = world(Toggle)
     .setProps({ showElement: true })
 
   mount(app, function(el, renderer){
@@ -23,7 +23,7 @@ it('should replace elements with text elements', function(){
 });
 
 it('should replace text nodes with elements', function(){
-  var app = scene(Toggle)
+  var app = world(Toggle)
     .setProps({ showElement: false, showText: true })
 
   mount(app, function(el, renderer){

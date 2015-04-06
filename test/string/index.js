@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene,renderString} from '../../'
+import {component,dom,world,renderString} from '../../'
 
 it('should render an element', function () {
   var Component = component({
@@ -7,7 +7,7 @@ it('should render an element', function () {
       return dom('div');
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div></div>')
 });
 
@@ -17,7 +17,7 @@ it('should render an element with attributes', function () {
       return dom('div', { id: 'foo'});
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div id="foo"></div>')
 });
 
@@ -27,7 +27,7 @@ it('should render an element with text', function () {
       return dom('div', null, 'foo');
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div>foo</div>')
 });
 
@@ -39,7 +39,7 @@ it('should render an element with child elements', function () {
       ]);
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div><span>foo</span></div>')
 });
 
@@ -56,7 +56,7 @@ it('should render an element with child components', function () {
       ]);
     }
   });
-  var app = scene(Div)
+  var app = world(Div)
   assert.equal(renderString(app),'<div><span>foo</span></div>')
 });
 
@@ -71,7 +71,7 @@ it('should render an element with component root', function () {
       return dom(Span);
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<span>foo</span>')
 });
 
@@ -81,7 +81,7 @@ it('should render with props', function () {
       return dom('div', null, [props.text]);
     }
   });
-  var app = scene(Component).setProps({ text: 'foo' })
+  var app = world(Component).setProps({ text: 'foo' })
   assert.equal(renderString(app),'<div>foo</div>')
 });
 
@@ -94,7 +94,7 @@ it('should render with initial state', function () {
       return dom('div', null, [state.text]);
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div>foo</div>')
 });
 
@@ -113,7 +113,7 @@ it('should call beforeMount', function (done) {
       return dom('div');
     }
   });
-  var app = scene(Component).setProps({ foo: 'bar' })
+  var app = world(Component).setProps({ foo: 'bar' })
   renderString(app)
 })
 
@@ -123,7 +123,7 @@ it('should render innerHTML', function () {
       return dom('div', { innerHTML: '<span>foo</span>' });
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<div><span>foo</span></div>')
 })
 
@@ -133,6 +133,6 @@ it('should render the value of inputs', function () {
       return dom('input', { value: 'foo' });
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   assert.equal(renderString(app),'<input value="foo"></input>')
 })

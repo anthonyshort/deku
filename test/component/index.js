@@ -62,7 +62,7 @@ it.skip(`should remove the .props property so it can't be accessed`, function ()
       assert(this.props == null);
     }
   });
-  var app = scene(Test)
+  var app = world(Test)
   mount(app)
 });
 

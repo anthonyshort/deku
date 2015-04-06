@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount} from '../helpers'
 
 var Toggle = component({
@@ -10,7 +10,7 @@ var Toggle = component({
 });
 
 it('should add/update/remove text nodes', function(){
-  var app = scene(Toggle)
+  var app = world(Toggle)
     .setProps({ showText: false })
 
   mount(app, function(el, renderer){

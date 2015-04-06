@@ -1,12 +1,12 @@
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {TwoWords,mount,Span} from '../helpers'
 
 var Test = component(TwoWords);
 
-it('should replace props on the scene', function(){
-  var app = scene(Test)
+it('should replace props on the world', function(){
+  var app = world(Test)
     .setProps({ one: 'Hello', two: 'World' })
 
   mount(app, function(el, renderer){
@@ -16,8 +16,8 @@ it('should replace props on the scene', function(){
   })
 });
 
-it('should merge props on the scene', function(){
-  var app = scene(Test)
+it('should merge props on the world', function(){
+  var app = world(Test)
     .setProps({ one: 'Hello', two: 'World' })
 
   mount(app, function(el, renderer){
@@ -27,8 +27,8 @@ it('should merge props on the scene', function(){
   })
 });
 
-it('should replace then set props on the scene', function(){
-  var app = scene(Test)
+it('should replace then set props on the world', function(){
+  var app = world(Test)
     .setProps({ one: 'Hello', two: 'World' })
 
   mount(app, function(el, renderer){
@@ -40,7 +40,7 @@ it('should replace then set props on the scene', function(){
 });
 
 it('should update on the next frame', function(){
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ one: 'Hello', two: 'World' })
 
   mount(app, function(el, renderer){
@@ -49,8 +49,8 @@ it('should update on the next frame', function(){
   })
 });
 
-it('should not update props if the scene is removed', function (done) {
-  var app = scene(component(Span))
+it('should not update props if the world is removed', function (done) {
+  var app = world(component(Span))
     .setProps({ text: 'foo' })
 
   mount(app, function(el, renderer){
@@ -73,7 +73,7 @@ it('should not update twice when setting props', function(){
     }
   });
 
-  var app = scene(IncrementAfterUpdate)
+  var app = world(IncrementAfterUpdate)
     .setProps({ text: 'one' })
 
   mount(app, function(el, renderer){
@@ -102,7 +102,7 @@ it('should update child even when the props haven\'t changed', function () {
     }
   });
 
-  var app = scene(Parent)
+  var app = world(Parent)
     .setProps({ character: 'Link' })
 
   mount(app, function(el, renderer){
@@ -120,7 +120,7 @@ it.skip('should call propsChanged when props are changed', function (done) {
     }
   });
 
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ foo: false })
 
   mount(app, function(el, renderer){
@@ -142,7 +142,7 @@ it('should call propsChanged on child components', function (done) {
     }
   });
 
-  var app = scene(Parent)
+  var app = world(Parent)
     .setProps({ count: 0 })
 
   mount(app, function(el, renderer){

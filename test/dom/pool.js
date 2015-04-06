@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount} from '../helpers'
 
 // Helpers.
@@ -22,7 +22,7 @@ it('should pool dom nodes', function(){
   var mounted;
   var Component = component(render)
 
-  var app = scene(Component)
+  var app = world(Component)
     .setProps({ type: 'div', attr: 'foo', value: 'bar' })
 
   mount(app, function(el, renderer){
@@ -63,7 +63,7 @@ it('should not pool components that have the option disabled', function () {
   var Component = component(render)
     .set('disablePooling', true)
 
-  var app = scene(Component)
+  var app = world(Component)
     .setProps({ type: 'div' })
 
   mount(app, function(el, renderer){
