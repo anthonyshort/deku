@@ -11,7 +11,7 @@ var StateChangeOnMount = component({
   },
   render: function(props, state){
     var Test = component(Span);
-    return Test({ text: state.text });
+    return dom(Test, { text: state.text });
   }
 });
 

@@ -52,7 +52,7 @@ it('should render an element with child components', function () {
   var Div = component({
     render: function(props, state){
       return dom('div', null, [
-        Span()
+        dom(Span)
       ]);
     }
   });

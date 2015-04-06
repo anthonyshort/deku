@@ -254,7 +254,7 @@ it('should replace components', function(){
     assert.equal(el.innerHTML, '<div>B</div>')
     var childId = renderer.children[app.root.id]['0'];
     var entity = renderer.entities[childId];
-    assert(entity.component instanceof ComponentB);
+    assert(entity.component === ComponentB);
   })
 })
 

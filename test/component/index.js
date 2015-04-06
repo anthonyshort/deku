@@ -5,14 +5,14 @@ import {Span} from '../helpers';
 
 it('should define a component', function(){
   var Test = component();
-  assert(type(Test) === 'function')
+  assert(type(Test) === 'object')
 })
 
 it('should create a component with just a render function', function () {
   var Test = component(function(){
     return dom('span');
   })
-  assert(Test.prototype.render)
+  assert(Test.render);
 })
 
 it('should mixin plugins when they are objects', function () {
@@ -23,7 +23,7 @@ it('should mixin plugins when they are objects', function () {
   };
   var Test = component()
   Test.use(plugin)
-  assert(Test.prototype.render)
+  assert(Test.render)
 })
 
 it('should call plugins when they are functions', function (done) {
@@ -34,24 +34,6 @@ it('should call plugins when they are functions', function (done) {
   };
   Test = component();
   Test.use(plugin);
-})
-
-it('should bind `this` to any method', function(done){
-  var Page = component({
-    hack: function(){
-      assert(this instanceof Page);
-      done();
-    }
-  });
-  var page = new Page()
-  page.hack()
-})
-
-it('should compose without needing to use dom object', function () {
-  var Component = component()
-  var vnode = Component({ text: 'foo' })
-  assert.equal(vnode.type, 'component')
-  assert.equal(vnode.props.text, 'foo')
 })
 
 it('should define properties using the functional API', function () {
