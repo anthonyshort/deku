@@ -7,13 +7,13 @@ import raf from 'component-raf'
 import classes from 'component-classes'
 
 var Delegate = component({
-  render: function (props, state) {
+  render: function (props, state, send) {
     var active = state.active || 0;
     var self = this;
     var items = [1,2,3].map(function(i){
       return dom('li', {
         onClick: function(){
-          self.setState({ active: i })
+          send({ active: i })
         },
         class: { active: active === i }
       }, [
@@ -132,13 +132,14 @@ it('should delegate events', function () {
 
 it('should delegate events on the root', function () {
   var DelegateRoot = component({
-    onClick: function(event){
-      this.setState({ active: true });
-    },
-    render: function (props, state) {
-      return dom('div', { class: { active: state.active }, onClick: this.onClick }, [
+    render: function (props, state, send) {
+      return dom('div', { class: { active: state.active }, onClick: onClick }, [
         dom('a', 'link')
       ]);
+
+      function onClick(event) {
+        send({ active: true });
+      }
     }
   });
 
@@ -156,14 +157,15 @@ it('should set a delegateTarget', function (done) {
   var rootEl;
 
   var DelegateRoot = component({
-    onClick: function(event){
-      assert(event.delegateTarget === rootEl.querySelector('div'));
-      done();
-    },
     render: function (props, state) {
-      return dom('div', { onClick: this.onClick }, [
+      return dom('div', { onClick: onClick }, [
         dom('a', 'link')
       ]);
+
+      function onClick(event) {
+        assert(event.delegateTarget === rootEl.querySelector('div'));
+        done();
+      }
     }
   });
 

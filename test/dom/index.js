@@ -174,10 +174,10 @@ it('should only update ONCE when props/state is changed in different parts of th
         text: 'Deku Shield'
       };
     },
-    afterMount: function() {
+    afterMount: function(el, props, state, send) {
       var self = this;
       emitter.on('data', function(text){
-        self.setState({ text: text });
+        send({ text: text });
       })
     },
     render: function(props, state){
@@ -210,25 +210,6 @@ it('should only update ONCE when props/state is changed in different parts of th
   })
 });
 
-it('should invalidate itself so it is updated on the next frame anyway', function (done) {
-  var Invalidate = component({
-    onClick: function(){
-      this.invalidate();
-    },
-    render: function(){
-      return dom('span', { onClick: this.onClick });
-    },
-    afterUpdate: function(){
-      done();
-    }
-  });
-  var app = scene(Invalidate)
-  mount(app, function(el, rendered){
-    trigger(el.querySelector('span'), 'click')
-    rendered.render()
-  })
-});
-
 it('should only update if shouldUpdate returns true', function () {
   var i = 0;
   var Component = component({
@@ -255,8 +236,8 @@ it('should only update if shouldUpdate returns true', function () {
 });
 
 it('should not allow setting the state during render', function (done) {
-  var Impure = component(function(){
-    this.setState({ foo: 'bar' });
+  var Impure = component(function(props, state, send){
+    send({ foo: 'bar' });
     return dom();
   });
   try {

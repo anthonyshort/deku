@@ -9,8 +9,8 @@ var updateMixin = {
   render: function(props, state){
     return dom('span', null, props.count);
   },
-  afterMount: function(){
-    this.setState({ count: 2 });
+  afterMount: function(el, props, state, send){
+    send({ count: 2 });
   }
 };
 
@@ -58,8 +58,8 @@ it('should fire afterUpdate', function () {
 
 it('should not allow setting the state during beforeUpdate', function (done) {
   var Impure = component({
-    beforeUpdate: function(){
-      this.setState({ foo: 'bar' });
+    beforeUpdate: function(props, state, send){
+      send({ foo: 'bar' });
     }
   });
   var app = scene(Impure)

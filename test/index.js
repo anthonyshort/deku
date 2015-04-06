@@ -1,9 +1,11 @@
 
+require('./virtualize')
+
 describe('component', function(){
   require('./component')
 })
 
-describe('render', function () {
+describe('render', function(){
   require('./dom')
   require('./dom/mount-hook')
   require('./dom/update-hook')
@@ -17,7 +19,7 @@ describe('render', function () {
   require('./dom/pool')
 })
 
-describe('renderString', function () {
+describe('renderString', function(){
   require('./string')
 })
 
