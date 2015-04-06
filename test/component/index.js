@@ -66,3 +66,20 @@ it.skip(`should remove the .props property so it can't be accessed`, function ()
   mount(app)
 });
 
+it('should define custom layers', function(){
+  var Test = component()
+    .layer('main', main)
+    .layer('overlay', overlay)
+    .layer('tooltip', tooltip, {
+      initial: { x: 10 }
+    });
+
+  assert.equal(Test.layers.main.template, main);
+  assert.equal(Test.layers.overlay.template, overlay);
+  assert.equal(Test.layers.tooltip.template, tooltip);
+  assert.equal(Test.layers.tooltip.states.initial.x, 10);
+
+  function main(){}
+  function overlay(){}
+  function tooltip(){}
+});
