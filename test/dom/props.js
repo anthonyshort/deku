@@ -1,68 +1,54 @@
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {TwoWords,mount,Span} from '../helpers'
+import {component,dom,World} from '../../'
+import {TwoWords,mount,div,Span} from '../helpers'
 
 var Test = component(TwoWords);
 
 it('should replace props on the world', function(){
-  var app = world(Test)
-    .setProps({ one: 'Hello', two: 'World' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { one: 'Hello', two: 'World' });
 
-  mount(app, function(el, renderer){
-    app.replaceProps({ one: 'Hello' })
-    renderer.render()
-    assert.equal(el.innerHTML, '<span>Hello undefined</span>')
-  })
+  world.update({ one: 'Hello' });
+  assert.equal(el.innerHTML, '<span>Hello undefined</span>')
 });
 
 it('should merge props on the world', function(){
-  var app = world(Test)
-    .setProps({ one: 'Hello', two: 'World' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.update(el, Test, { one: 'Hello', two: 'World' });
 
-  mount(app, function(el, renderer){
-    app.setProps({ two: 'Pluto' })
-    renderer.render()
-    assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
-  })
+  world.update({ two: 'Pluto' })
+  assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
 });
 
-it('should replace then set props on the world', function(){
-  var app = world(Test)
-    .setProps({ one: 'Hello', two: 'World' })
+it('should update on the next frame', function(done){
+  var world = World();
+  var el = div();
+  world.mount(el, Test, { one: 'Hello', two: 'World' });
 
-  mount(app, function(el, renderer){
-    app.replaceProps({ one: 'Hello' });
-    app.setProps({ two: 'Pluto' });
-    renderer.render()
-    assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
-  })
-});
-
-it('should update on the next frame', function(){
-  var app = world(Test)
-    .setProps({ one: 'Hello', two: 'World' })
-
-  mount(app, function(el, renderer){
-    app.setProps({ one: 'Hello', two: 'Pluto' });
-    assert.equal(el.innerHTML, '<span>Hello World</span>')
-  })
+  world.update({ one: 'Hello', two: 'Pluto' });
+  assert.equal(el.innerHTML, '<span>Hello World</span>');
+  requestAnimationFrame(function(){
+    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
+    done();
+  });
 });
 
 it('should not update props if the world is removed', function (done) {
-  var app = world(component(Span))
-    .setProps({ text: 'foo' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, component(Span), { text: 'foo' });
 
-  mount(app, function(el, renderer){
-    renderer.update = function(){
-      done(false)
-    }
-    app.setProps({ text: 'bar' });
-    renderer.remove();
-    raf(function(){
-      done()
-    });
-  })
+  renderer.update = function(){
+    done(false)
+  }
+  world.update({ text: 'bar' });
+  renderer.remove();
+  raf(function(){
+    done()
+  });
 });
 
 it('should not update twice when setting props', function(){
@@ -73,15 +59,13 @@ it('should not update twice when setting props', function(){
     }
   });
 
-  var app = world(IncrementAfterUpdate)
-    .setProps({ text: 'one' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, IncrementAfterUpdate, { text: 'one' });
 
-  mount(app, function(el, renderer){
-    app.setProps({ text: 'two' });
-    app.setProps({ text: 'three' });
-    renderer.render();
-    assert.equal(i, 1);
-  })
+  world.update({ text: 'two' });
+  world.update({ text: 'three' });
+  assert.equal(i, 1);
 });
 
 it('should update child even when the props haven\'t changed', function () {
@@ -102,14 +86,11 @@ it('should update child even when the props haven\'t changed', function () {
     }
   });
 
-  var app = world(Parent)
-    .setProps({ character: 'Link' })
-
-  mount(app, function(el, renderer){
-    app.setProps({ character: 'Zelda' });
-    renderer.render();
-    assert.equal(calls, 2);
-  })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Parent, { character: 'Link' });
+  world.update({ character: 'Zelda' });
+  assert.equal(calls, 2);
 });
 
 it.skip('should call propsChanged when props are changed', function (done) {
@@ -120,13 +101,10 @@ it.skip('should call propsChanged when props are changed', function (done) {
     }
   });
 
-  var app = world(Test)
-    .setProps({ foo: false })
-
-  mount(app, function(el, renderer){
-    app.setProps({ foo: true });
-    renderer.render();
-  })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { foo: false });
+  world.update({ foo: true });
 });
 
 it('should call propsChanged on child components', function (done) {
@@ -142,13 +120,11 @@ it('should call propsChanged on child components', function (done) {
     }
   });
 
-  var app = world(Parent)
-    .setProps({ count: 0 })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Parent, { count: 0 });
 
-  mount(app, function(el, renderer){
-    app.setProps({ count: 1 });
-    renderer.render();
-  })
+  world.update({ count: 1 });
 });
 
 it.skip('should not call propsChanged on child components when they props don\'t change', function () {

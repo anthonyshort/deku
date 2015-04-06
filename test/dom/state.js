@@ -15,16 +15,18 @@ var StateChangeOnMount = component({
   }
 });
 
-it('should update components when state changes', function(){
-  var app = world(StateChangeOnMount)
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span>foo</span>');
-    renderer.render()
+it('should update components when state changes', function(done){
+  var world = World();
+  var el = div();
+  world.mount(el, StateChangeOnMount);
+  assert.equal(el.innerHTML, '<span>foo</span>');
+  requestAnimationFrame(function(){
     assert.equal(el.innerHTML, '<span>bar</span>');
-  })
+    done();
+  });
 });
 
-it('should update composed components when state changes', function(){
+it('should update composed components when state changes', function(done){
   var Composed = component({
     afterUpdate: function(){
       throw new Error('Parent should not be updated');
@@ -35,10 +37,13 @@ it('should update composed components when state changes', function(){
       ]);
     }
   });
-  var app = world(Composed)
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<div><span>foo</span></div>')
-    renderer.render()
-    assert.equal(el.innerHTML, '<div><span>bar</span></div>')
-  })
+  var world = World();
+  var el = div();
+  world.mount(el, Composed)
+
+  assert.equal(el.innerHTML, '<div><span>foo</span></div>')
+  requestAnimationFrame(function(){
+    assert.equal(el.innerHTML, '<div><span>bar</span></div>');
+    done();
+  });
 });

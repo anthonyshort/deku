@@ -26,13 +26,12 @@ it('should fire beforeUpdate', function () {
     }
   });
   Test.use(updateMixin)
-  var app = world(Test)
-  app.setProps({ count: 1 })
-  mount(app, function(el, renderer){
-    app.setProps({count:2})
-    renderer.render()
-    assert(fired)
-  })
+
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { count: 1 });
+  world.update({ count: 2 });
+  assert(fired);
 })
 
 it('should fire afterUpdate', function () {
@@ -47,13 +46,12 @@ it('should fire afterUpdate', function () {
     }
   });
   Test.use(updateMixin)
-  var app = world(Test)
-  app.setProps({ count: 1 })
-  mount(app, function(el, renderer){
-    app.setProps({count:2})
-    renderer.render()
-    assert(fired)
-  })
+
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { count: 1 });
+  world.update({ count: 2 });
+  assert(fired);
 });
 
 it('should not allow setting the state during beforeUpdate', function (done) {
@@ -62,17 +60,16 @@ it('should not allow setting the state during beforeUpdate', function (done) {
       send({ foo: 'bar' });
     }
   });
-  var app = world(Impure)
-  app.setProps({ count: 1 })
-  mount(app, function(el, renderer){
-    app.setProps({count:2})
-    try {
-      renderer.render()
-      throw new Error('Did not prevent set state during beforeUpdate')
-    } catch(e) {
-      return done()
-    }
-  })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Impure, { count: 1 });
+  world.update({ count: 2 });
+  try {
+    renderer.render()
+    throw new Error('Did not prevent set state during beforeUpdate')
+  } catch(e) {
+    return done()
+  }
 });
 
 it('should only call `beforeUpdate` once', function(){
@@ -87,12 +84,11 @@ it('should only call `beforeUpdate` once', function(){
       return dom('div', null, [props.text]);
     }
   });
-  var app = world(Component)
-  app.setProps({ text: 'one' })
-  mount(app, function(el, renderer){
-    app.setProps({ text: 'two' })
-    app.setProps({ text: 'three' })
-    renderer.render()
-    assert(i === 1)
-  })
+
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(Component, { text: 'one' });
+  world.update({ text: 'two' })
+  world.update({ text: 'three' })
+  assert(i === 1);
 });

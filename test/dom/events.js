@@ -1,6 +1,6 @@
 
 import assert from 'assert'
-import {component,dom,world} from '../../'
+import {component,dom,World} from '../../'
 import {mount,Span} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
@@ -32,14 +32,13 @@ it('should add click event', function(){
     }
   });
 
-  var app = world(Page)
-    .setProps({ x: 20 })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Page, { x: 20 });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span>Hello World</span>')
-    trigger(el.querySelector('span'), 'click')
-    assert.equal(count, 1)
-  })
+  assert.equal(el.innerHTML, '<span>Hello World</span>')
+  trigger(el.querySelector('span'), 'click')
+  assert.equal(count, 1)
 
   function onclick(e, props, state) {
     assert(props.x, 10);
@@ -66,17 +65,15 @@ it('should remove click event', function(done){
     }
   });
 
-  var app = world(Page)
-    .setProps({ click: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Page, { click: true });
 
-  mount(app, function(el, renderer){
-    rootEl = el
-    trigger(el.querySelector('span'), 'click')
-    assert.equal(count, 1)
-    app.setProps({ click: false })
-    renderer.render()
-    assert.equal(count, 1)
-  })
+  rootEl = el
+  trigger(el.querySelector('span'), 'click')
+  assert.equal(count, 1)
+  world.update({ click: false })
+  assert.equal(count, 1)
 
   function onclick() {
     ++count;
@@ -92,17 +89,15 @@ it('should update click event', function(){
     }
   });
 
-  var app = world(Page)
-    .setProps({ click: onclicka })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Page, { click: onclicka });
 
-  mount(app, function(el, renderer){
-    trigger(el.querySelector('span'), 'click');
-    assert.equal(count, 1);
-    app.setProps({ click: onclickb })
-    renderer.render()
-    trigger(el.querySelector('span'), 'click')
-    assert.equal(count, 0)
-  })
+  trigger(el.querySelector('span'), 'click');
+  assert.equal(count, 1);
+  world.update({ click: onclickb })
+  trigger(el.querySelector('span'), 'click')
+  assert.equal(count, 0)
 
   function onclicka() {
     count += 1;
@@ -114,19 +109,17 @@ it('should update click event', function(){
 });
 
 it('should delegate events', function () {
-  var app = world(Delegate)
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Delegate);
 
-  mount(app, function(el, renderer){
-    var first = el.querySelectorAll('a')[0]
-    trigger(first, 'click')
-    renderer.render()
-    assert(classes(first.parentNode).has('active'));
-    var second = el.querySelectorAll('a')[1];
-    trigger(second, 'click');
-    renderer.render()
-    assert(classes(second.parentNode).has('active'));
-    assert(classes(first.parentNode).has('active') === false);
-  })
+  var first = el.querySelectorAll('a')[0]
+  trigger(first, 'click')
+  assert(classes(first.parentNode).has('active'));
+  var second = el.querySelectorAll('a')[1];
+  trigger(second, 'click');
+  assert(classes(second.parentNode).has('active'));
+  assert(classes(first.parentNode).has('active') === false);
 });
 
 it('should delegate events on the root', function () {
@@ -142,14 +135,13 @@ it('should delegate events on the root', function () {
     }
   });
 
-  var app = world(DelegateRoot)
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, DelegateRoot);
 
-  mount(app, function(el, renderer){
-    var first = el.querySelectorAll('a')[0]
-    trigger(first, 'click')
-    renderer.render()
-    assert(classes(first.parentNode).has('active') === true)
-  })
+  var first = el.querySelectorAll('a')[0]
+  trigger(first, 'click')
+  assert(classes(first.parentNode).has('active') === true)
 });
 
 it('should set a delegateTarget', function (done) {
@@ -168,13 +160,13 @@ it('should set a delegateTarget', function (done) {
     }
   });
 
-  var app = world(DelegateRoot)
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, DelegateRoot);
 
-  mount(app, function(el, renderer){
-    rootEl = el
-    var first = el.querySelectorAll('a')[0]
-    trigger(first, 'click')
-  })
+  rootEl = el
+  var first = el.querySelectorAll('a')[0]
+  trigger(first, 'click')
 });
 
 it('should update events when nested children are removed', function () {
@@ -217,19 +209,15 @@ it('should update events when nested children are removed', function () {
     }
   });
 
-  var app = world(List)
-    .setProps({ items: items })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, List, { items: items });
 
-  mount(app, function(el, renderer){
-    trigger(el.querySelector('a'), 'click')
-    app.setProps({ items: items })
-    renderer.render()
-    trigger(el.querySelector('a'), 'click')
-    app.setProps({ items: items })
-    renderer.render()
-    trigger(el.querySelector('a'), 'click')
-    app.setProps({ items: items })
-    renderer.render()
-    assert.equal(el.innerHTML, '<ul></ul>')
-  })
+  trigger(el.querySelector('a'), 'click')
+  world.update({ items: items })
+  trigger(el.querySelector('a'), 'click')
+  world.update({ items: items })
+  trigger(el.querySelector('a'), 'click')
+  world.update({ items: items })
+  assert.equal(el.innerHTML, '<ul></ul>')
 });

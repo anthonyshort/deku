@@ -1,5 +1,5 @@
 import {mount,div} from '../helpers'
-import {component,render,world,dom} from '../../'
+import {component,render,World,dom} from '../../'
 import assert from 'assert'
 
 it('should fire the `afterMount` hook', function(done){
@@ -8,7 +8,9 @@ it('should fire the `afterMount` hook', function(done){
       done();
     }
   });
-  mount(world(Page))
+  var world = World();
+  var el = div();
+  world.mount(el, Page);
 })
 
 it('should fire the `beforeMount` hook before `mount`', function(){
@@ -21,18 +23,20 @@ it('should fire the `beforeMount` hook before `mount`', function(){
       pass = true;
     }
   });
-  mount(world(Page))
+  var world = World();
+  var el = div();
+  world.mount(el, Page);
   assert(pass);
 })
 
 it('should not unmount twice', function(){
   var Page = component()
-  var app = world(Page)
-  var el = div()
-  var mount = render(app, el)
-  mount.remove()
-  mount.remove()
-  document.body.removeChild(el)
+  var world = World();
+  var el = div();
+  world.mount(el, Page);
+  world.unmount(0);
+  world.unmount(0);
+  document.body.removeChild(el);
 })
 
 it('should fire mount events on sub-components', function(){
@@ -56,12 +60,11 @@ it('should fire mount events on sub-components', function(){
     }
   });
 
-  var app = world(ComponentB)
-  app.setProps({ name: 'Bob' })
+  var world = World();
+  var el = div();
+  world.mount(el, ComponentB, { name: 'Bob' });
 
-  mount(app, function(){
-    assert.equal(i, 4);
-  })
+  assert.equal(i, 4);
 });
 
 it('should fire unmount events on sub-components from the bottom up', function(){
@@ -93,16 +96,14 @@ it('should fire unmount events on sub-components from the bottom up', function()
     }
   })
 
-  var app = world(Parent)
-  app.setProps({ show: true })
+  var world = World();
+  var el = div();
+  world.mount(el, Parent, { show: true });
 
-  mount(app, function(el, renderer){
-    app.setProps({ show: false })
-    renderer.render()
-    assert.equal(arr.length, 2)
-    assert.equal(arr[0], 'A')
-    assert.equal(arr[1], 'B')
-  })
+  world.update({ show: false });
+  assert.equal(arr.length, 2)
+  assert.equal(arr[0], 'A')
+  assert.equal(arr[1], 'B')
 });
 
 it('should unmount sub-components that move themselves in the DOM', function () {
@@ -130,16 +131,14 @@ it('should unmount sub-components that move themselves in the DOM', function () 
     }
   })
 
-  var app = world(Parent)
-  app.setProps({ show: true })
+  var world = World();
+  var el = div();
+  world.mount(el, Parent, { show: true });
 
-  mount(app, function(el, renderer){
-    var overlay = document.querySelector('.Overlay')
-    assert(overlay.parentElement === document.body, 'It should move element to the root')
-    app.setProps({ show: false })
-    renderer.render()
-    assert.equal(arr[0], 'A')
-  })
+  var overlay = document.querySelector('.Overlay')
+  assert(overlay.parentElement === document.body, 'It should move element to the root')
+  world.update({ show: false });
+  assert.equal(arr[0], 'A')
 });
 
 it('should fire mount events on sub-components created later', function(){
@@ -161,14 +160,12 @@ it('should fire mount events on sub-components created later', function(){
     }
   });
 
-  var app = world(ComponentB)
-  app.setProps({ showComponent: false })
+  var world = World();
+  var el = div();
+  world.mount(el, ComponentB, { showComponent: false });
 
-  mount(app, function(el, renderer){
-    app.setProps({ showComponent: true })
-    renderer.render()
-    assert.equal(calls, 2)
-  })
+  world.update({ showComponent: true });
+  assert.equal(calls, 2);
 });
 
 it('should fire unmount events on sub-components created later', function(){
@@ -189,14 +186,10 @@ it('should fire unmount events on sub-components created later', function(){
     }
   });
 
-  var app = world(ComponentB)
-  app.setProps({ showComponent: true })
+  var world = World();
+  var el = div();
+  world.mount(el, ComponentB, { showComponent: true });
 
-  mount(app, function(el, renderer){
-    app.setProps({ showComponent: false })
-    renderer.render()
-    assert.equal(calls, 1)
-  })
-
-})
-
+  world.update({ showComponent: false });
+  assert.equal(calls, 1);
+});

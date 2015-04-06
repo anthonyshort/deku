@@ -1,6 +1,6 @@
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {mount} from '../helpers'
+import {component,dom,World} from '../../'
+import {mount,div} from '../helpers'
 
 var Toggle = component({
   render: function(props, state) {
@@ -11,26 +11,21 @@ var Toggle = component({
 });
 
 it('should replace elements with text elements', function(){
-  var app = world(Toggle)
-    .setProps({ showElement: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Toggle, { showElement: true });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<div><span></span></div>')
-    app.setProps({ showElement: false, showText: true })
-    renderer.render()
-    assert.equal(el.innerHTML, '<div>bar</div>')
-  })
+  assert.equal(el.innerHTML, '<div><span></span></div>')
+  world.update({ showElement: false, showText: true })
+  assert.equal(el.innerHTML, '<div>bar</div>')
 });
 
 it('should replace text nodes with elements', function(){
-  var app = world(Toggle)
-    .setProps({ showElement: false, showText: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Toggle, { showElement: false, showText: true });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<div>bar</div>')
-    app.setProps({ showElement: true, showText: false })
-    renderer.render()
-    assert.equal(el.innerHTML, '<div><span></span></div>')
-  })
+  assert.equal(el.innerHTML, '<div>bar</div>')
+  world.update({ showElement: true, showText: false })
+  assert.equal(el.innerHTML, '<div><span></span></div>')
 });
-

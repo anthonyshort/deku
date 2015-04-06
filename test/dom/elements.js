@@ -1,6 +1,6 @@
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {mount} from '../helpers'
+import {component,dom,World} from '../../'
+import {mount,div} from '../helpers'
 
 /**
  * Custom components used for testing
@@ -52,18 +52,17 @@ var ComponentToggle = component({
  */
 
 it('should add/remove element nodes', function(){
-  var app = world(Toggle)
-    .setProps({ showChildren: false })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Toggle, {
+    showChildren: false
+  });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<div></div>')
-    app.setProps({ showChildren: true })
-    renderer.render()
-    assert.equal(el.innerHTML, '<div><span id="foo"></span></div>')
-    app.setProps({ showChildren: false })
-    renderer.render()
-    assert.equal(el.innerHTML, '<div></div>')
-  })
+  assert.equal(el.innerHTML, '<div></div>')
+  world.update({ showChildren: true })
+  assert.equal(el.innerHTML, '<div><span id="foo"></span></div>')
+  world.update({ showChildren: false })
+  assert.equal(el.innerHTML, '<div></div>')
 });
 
 /**
@@ -72,19 +71,19 @@ it('should add/remove element nodes', function(){
  */
 
 it('should only remove adjacent element nodes', function(){
-  var app = world(AdjacentTest)
-    .setProps({ i: 1 })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, AdjacentTest, {
+    i: 1
+  });
 
-  mount(app, function(el, renderer){
-    assert(document.querySelector('#foo'));
-    assert(document.querySelector('#bar'));
-    assert(document.querySelector('#baz'));
-    app.setProps({ i: 2 });
-    renderer.render();
-    assert(document.querySelector('#foo'));
-    assert(document.querySelector('#bar') == null);
-    assert(document.querySelector('#baz') == null);
-  })
+  assert(document.querySelector('#foo'));
+  assert(document.querySelector('#bar'));
+  assert(document.querySelector('#baz'));
+  world.update({ i: 2 });
+  assert(document.querySelector('#foo'));
+  assert(document.querySelector('#bar') == null);
+  assert(document.querySelector('#baz') == null);
 })
 
 /**
@@ -92,15 +91,13 @@ it('should only remove adjacent element nodes', function(){
  */
 
 it('should change tag names', function(){
-  var app = world(CustomTag)
-    .setProps({ type: 'span' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, CustomTag, { type: 'span' });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span></span>');
-    app.setProps({ type: 'div' });
-    renderer.render();
-    assert.equal(el.innerHTML, '<div></div>');
-  })
+  assert.equal(el.innerHTML, '<span></span>');
+  world.update({ type: 'div' });
+  assert.equal(el.innerHTML, '<div></div>');
 });
 
 /**
@@ -121,18 +118,18 @@ it('should change root node and still update correctly', function(){
     }
   });
 
-  var app = world(Test)
-    .setProps({ type: 'span', text: 'test' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, {
+    type: 'span',
+    text: 'test'
+  });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span>test</span>');
-    app.setProps({ type: 'div', text: 'test' });
-    renderer.render()
-    assert.equal(el.innerHTML, '<div>test</div>');
-    app.setProps({ type: 'div', text: 'foo' });
-    renderer.render()
-    assert.equal(el.innerHTML, '<div>foo</div>');
-  })
+  assert.equal(el.innerHTML, '<span>test</span>');
+  world.update({ type: 'div', text: 'test' });
+  assert.equal(el.innerHTML, '<div>test</div>');
+  world.update({ type: 'div', text: 'foo' });
+  assert.equal(el.innerHTML, '<div>foo</div>');
 });
 
 /**
@@ -162,14 +159,14 @@ it('should unmount components when removing an element node', function(){
     }
   });
 
-  var app = world(App)
-    .setProps({ showElements: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, App, {
+    showElements: true
+  });
 
-  mount(app, function(el, renderer){
-    app.setProps({ showElements: false });
-    renderer.render();
-    assert.equal(i, 1);
-  })
+  world.update({ showElements: false });
+  assert.equal(i, 1);
 });
 
 /**
@@ -185,14 +182,12 @@ it('should change sub-component tag names', function(){
     }
   });
 
-  var app = world(Test)
-    .setProps({ type: 'span' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { type: 'span' });
 
-  mount(app, function(el, renderer){
-    app.setProps({ type: 'div' });
-    renderer.render();
-    assert.equal(el.innerHTML, '<div></div>');
-  })
+  world.update({ type: 'div' });
+  assert.equal(el.innerHTML, '<div></div>');
 });
 
 /**
@@ -210,15 +205,13 @@ it('should replace elements with component nodes', function(){
     }
   });
 
-  var app = world(Test)
-    .setProps({ showElement: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Test, { showElement: true });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span>element</span>');
-    app.setProps({ showElement: false });
-    renderer.render()
-    assert.equal(el.innerHTML, '<div>component</div>');
-  })
+  assert.equal(el.innerHTML, '<span>element</span>');
+  world.update({ showElement: false });
+  assert.equal(el.innerHTML, '<div>component</div>');
 });
 
 /**
@@ -244,18 +237,16 @@ it('should replace components', function(){
     }
   });
 
-  var app = world(ComponentC)
-    .setProps({ type: 'A' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, ComponentC, { type: 'A' });
 
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<div>A</div>')
-    app.setProps({ type: 'B' })
-    renderer.render()
-    assert.equal(el.innerHTML, '<div>B</div>')
-    var childId = renderer.children[app.root.id]['0'];
-    var entity = renderer.entities[childId];
-    assert(entity.component === ComponentB);
-  })
+  assert.equal(el.innerHTML, '<div>A</div>')
+  world.update({ type: 'B' })
+  assert.equal(el.innerHTML, '<div>B</div>')
+  var childId = renderer.children[app.root.id]['0'];
+  var entity = renderer.entities[childId];
+  assert(entity.component === ComponentB);
 })
 
 /**
@@ -264,15 +255,12 @@ it('should replace components', function(){
  */
 
 it('should remove references to child components when they are removed', function(){
-  var app = world(ComponentToggle)
-    .setProps({ showComponent: true })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, ComponentToggle, { showComponent: true });
 
-  mount(app, function(el, renderer){
-    var entityId = app.root.id;
-    assert(renderer.children[entityId]);
-    app.setProps({ showComponent: false });
-    renderer.render()
-    assert(!renderer.children[entityId]['0']);
-  })
+  var entityId = app.root.id;
+  assert(renderer.children[entityId]);
+  world.update({ showComponent: false });
+  assert(!renderer.children[entityId]['0']);
 });
-

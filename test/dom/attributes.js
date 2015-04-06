@@ -59,10 +59,10 @@ it('should render innerHTML', function () {
   var Test = component(function(){
     return dom('div', { innerHTML: 'Hello <strong>World</strong>' });
   });
-  var app = world(Test)
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML,'<div>Hello <strong>World</strong></div>')
-  })
+  var world = World();
+  var el = div();
+  world.mount(el, Test);
+  assert.equal(el.innerHTML,'<div>Hello <strong>World</strong></div>');
 })
 
 it('should update innerHTML', function () {
@@ -70,12 +70,12 @@ it('should update innerHTML', function () {
     return dom('div', { innerHTML: props.content });
   });
 
-  var app = world(Test)
-    .setProps({ content: 'Hello <strong>World</strong>' })
+  var world = World().set('renderImmediate', true);
+  var el = div():
+  world.mount(el, Test, {
+    content: 'Hello <strong>World</strong>'
+  });
 
-  mount(app, function(el, renderer){
-    app.setProps({ content: 'Hello <strong>Pluto</strong>' });
-    renderer.render();
-    assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>');
-  })
+  world.update({ content: 'Hello <strong>Pluto</strong>' });
+  assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>');
 })
