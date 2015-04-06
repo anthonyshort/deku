@@ -42,7 +42,6 @@ it('should add click event', function(){
   })
 
   function onclick(e, props, state) {
-    assert(this instanceof Page);
     assert(props.x, 10);
     ++count;
   }
@@ -195,7 +194,7 @@ it('should update events when nested children are removed', function () {
   var ListItem = component({
     render: function(props, state){
       return dom('li', [
-        Button({
+        dom(Button, {
           onClick: function(){
             items.splice(props.index, 1);
           }
@@ -208,7 +207,7 @@ it('should update events when nested children are removed', function () {
     render: function (props, state) {
       return dom('ul', [
         props.items.map(function(item, i){
-          return ListItem({
+          return dom(ListItem, {
             data: item,
             index: i,
             items: props.items

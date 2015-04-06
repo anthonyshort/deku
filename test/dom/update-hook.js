@@ -58,7 +58,7 @@ it('should fire afterUpdate', function () {
 
 it('should not allow setting the state during beforeUpdate', function (done) {
   var Impure = component({
-    beforeUpdate: function(props, state, send){
+    beforeUpdate: function(props, state, nextProps, nextState, send){
       send({ foo: 'bar' });
     }
   });

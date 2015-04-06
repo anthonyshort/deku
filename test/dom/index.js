@@ -97,7 +97,7 @@ it('should allow components to have child nodes', function () {
   });
   var ComponentB = component({
     render: function(props, state){
-      return ComponentA(null, [
+      return dom(ComponentA, null, [
         dom('span', null, 'Hello World!')
       ]);
     }
@@ -116,7 +116,7 @@ it('should update component child nodes', function () {
   });
   var ComponentB = component({
     render: function(props, state){
-      return ComponentA(null, [
+      return dom(ComponentA, null, [
         dom('span', null, props.text)
       ]);
     }
@@ -143,8 +143,8 @@ it('should allow components to have other components as child nodes', function (
   var ComponentB = component({
     render: function(props, state){
       return dom('div', { name: 'ComponentB' }, [
-        ComponentA(null, [
-          ComponentC({ text: props.text }, [
+        dom(ComponentA, null, [
+          dom(ComponentC, { text: props.text }, [
             dom('span', null, 'Hello Pluto!')
           ])
         ])
