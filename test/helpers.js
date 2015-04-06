@@ -4,13 +4,13 @@ import {render,scene,dom} from '../'
  * Mount a scene, execute a function and then
  * remove the scene. This is used for testing.
  *
- * @param {Scene} app
+ * @param {World} app
  * @param {Function} fn
  */
 
-exports.mount = function(app, fn) {
+exports.mount = function(world, fn) {
   var el = exports.div();
-  var renderer = render(app, el);
+  var renderer = render(world, el);
   try {
     if (fn) fn(el, renderer);
   }

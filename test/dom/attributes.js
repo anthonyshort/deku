@@ -1,8 +1,8 @@
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {mount} from '../helpers'
+import {component,dom,World} from '../../'
+import {mount,div} from '../helpers'
 
 var AttrComponent = component(function(props, state){
   var attrs = {};
@@ -11,33 +11,30 @@ var AttrComponent = component(function(props, state){
 });
 
 it('should add/update/remove attributes', function(){
-  var app = world(AttrComponent)
-  mount(app, function(el, renderer){
-    assert.equal(el.innerHTML, '<span></span>')
-    app.setProps({ name: 'Bob' })
-    renderer.render()
-    assert.equal(el.innerHTML, '<span name="Bob"></span>')
-    app.setProps({ name: 'Tom' })
-    renderer.render()
-    assert.equal(el.innerHTML, '<span name="Tom"></span>')
-    app.setProps({ name: null })
-    renderer.render()
-    assert.equal(el.innerHTML, '<span></span>')
-  })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, AttrComponent);
+  assert.equal(el.innerHTML, '<span></span>')
+  world.update({ name: 'Bob' })
+  assert.equal(el.innerHTML, '<span name="Bob"></span>')
+  world.update({ name: 'Tom' })
+  assert.equal(el.innerHTML, '<span name="Tom"></span>')
+  world.update({ name: null })
+  assert.equal(el.innerHTML, '<span></span>')
 })
 
 it('should not touch the DOM if attributes have not changed', function(){
   var pass = true;
-  var app = world(AttrComponent)
-    .setProps({ name: 'Bob' })
-  mount(app, function(el, renderer){
-    el.setAttribute = function(){
-      pass = false;
-    }
-    app.setProps({ name: 'Bob' })
-    renderer.render()
-    assert(pass)
-  })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, AttrComponent, {
+    name: 'Bob'
+  });
+  el.setAttribute = function(){
+    pass = false;
+  };
+  world.update({ name: 'Bob' })
+  assert(pass)
 })
 
 it('should update the real value of input fields', function () {
@@ -47,15 +44,15 @@ it('should update the real value of input fields', function () {
     }
   });
 
-  var app = world(Input)
-    .setProps({ value: 'Bob' })
+  var world = World().set('renderImmediate', true);
+  var el = div();
+  world.mount(el, Input, {
+    value: 'Bob'
+  });
 
-  mount(app, function(el, renderer){
-    assert(el.querySelector('input').value === 'Bob');
-    app.setProps({ value: 'Tom' });
-    renderer.render();
-    assert(el.querySelector('input').value === 'Tom');
-  })
+  assert.equal(el.querySelector('input').value, 'Bob');
+  world.update({ value: 'Tom' });
+  assert.equal(el.querySelector('input').value, 'Tom');
 })
 
 it('should render innerHTML', function () {
