@@ -4,6 +4,7 @@
 #
 
 export PATH := ./node_modules/.bin:${PATH}
+BIN := ./node_modules/.bin
 
 #
 # Wildcards.
@@ -40,7 +41,7 @@ test:
 .PHONY: test
 
 test-browser: build.js
-	@duo-test browser --commands 'make build.js'
+	@$(BIN)/duo-test browser --commands 'make build.js'
 
 test-cloud: tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
