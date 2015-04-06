@@ -1,7 +1,7 @@
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount} from '../helpers'
 
 var AttrComponent = component(function(props, state){
@@ -11,7 +11,7 @@ var AttrComponent = component(function(props, state){
 });
 
 it('should add/update/remove attributes', function(){
-  var app = scene(AttrComponent)
+  var app = world(AttrComponent)
   mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<span></span>')
     app.setProps({ name: 'Bob' })
@@ -28,7 +28,7 @@ it('should add/update/remove attributes', function(){
 
 it('should not touch the DOM if attributes have not changed', function(){
   var pass = true;
-  var app = scene(AttrComponent)
+  var app = world(AttrComponent)
     .setProps({ name: 'Bob' })
   mount(app, function(el, renderer){
     el.setAttribute = function(){
@@ -47,7 +47,7 @@ it('should update the real value of input fields', function () {
     }
   });
 
-  var app = scene(Input)
+  var app = world(Input)
     .setProps({ value: 'Bob' })
 
   mount(app, function(el, renderer){
@@ -62,7 +62,7 @@ it('should render innerHTML', function () {
   var Test = component(function(){
     return dom('div', { innerHTML: 'Hello <strong>World</strong>' });
   });
-  var app = scene(Test)
+  var app = world(Test)
   mount(app, function(el, renderer){
     assert.equal(el.innerHTML,'<div>Hello <strong>World</strong></div>')
   })
@@ -73,7 +73,7 @@ it('should update innerHTML', function () {
     return dom('div', { innerHTML: props.content });
   });
 
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ content: 'Hello <strong>World</strong>' })
 
   mount(app, function(el, renderer){

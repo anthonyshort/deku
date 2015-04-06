@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount} from '../helpers'
 
 /**
@@ -52,7 +52,7 @@ var ComponentToggle = component({
  */
 
 it('should add/remove element nodes', function(){
-  var app = scene(Toggle)
+  var app = world(Toggle)
     .setProps({ showChildren: false })
 
   mount(app, function(el, renderer){
@@ -72,7 +72,7 @@ it('should add/remove element nodes', function(){
  */
 
 it('should only remove adjacent element nodes', function(){
-  var app = scene(AdjacentTest)
+  var app = world(AdjacentTest)
     .setProps({ i: 1 })
 
   mount(app, function(el, renderer){
@@ -92,7 +92,7 @@ it('should only remove adjacent element nodes', function(){
  */
 
 it('should change tag names', function(){
-  var app = scene(CustomTag)
+  var app = world(CustomTag)
     .setProps({ type: 'span' })
 
   mount(app, function(el, renderer){
@@ -121,7 +121,7 @@ it('should change root node and still update correctly', function(){
     }
   });
 
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ type: 'span', text: 'test' })
 
   mount(app, function(el, renderer){
@@ -162,7 +162,7 @@ it('should unmount components when removing an element node', function(){
     }
   });
 
-  var app = scene(App)
+  var app = world(App)
     .setProps({ showElements: true })
 
   mount(app, function(el, renderer){
@@ -185,7 +185,7 @@ it('should change sub-component tag names', function(){
     }
   });
 
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ type: 'span' })
 
   mount(app, function(el, renderer){
@@ -210,7 +210,7 @@ it('should replace elements with component nodes', function(){
     }
   });
 
-  var app = scene(Test)
+  var app = world(Test)
     .setProps({ showElement: true })
 
   mount(app, function(el, renderer){
@@ -244,7 +244,7 @@ it('should replace components', function(){
     }
   });
 
-  var app = scene(ComponentC)
+  var app = world(ComponentC)
     .setProps({ type: 'A' })
 
   mount(app, function(el, renderer){
@@ -264,7 +264,7 @@ it('should replace components', function(){
  */
 
 it('should remove references to child components when they are removed', function(){
-  var app = scene(ComponentToggle)
+  var app = world(ComponentToggle)
     .setProps({ showComponent: true })
 
   mount(app, function(el, renderer){

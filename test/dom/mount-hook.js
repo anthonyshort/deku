@@ -1,5 +1,5 @@
 import {mount,div} from '../helpers'
-import {component,render,scene,dom} from '../../'
+import {component,render,world,dom} from '../../'
 import assert from 'assert'
 
 it('should fire the `afterMount` hook', function(done){
@@ -8,7 +8,7 @@ it('should fire the `afterMount` hook', function(done){
       done();
     }
   });
-  mount(scene(Page))
+  mount(world(Page))
 })
 
 it('should fire the `beforeMount` hook before `mount`', function(){
@@ -21,13 +21,13 @@ it('should fire the `beforeMount` hook before `mount`', function(){
       pass = true;
     }
   });
-  mount(scene(Page))
+  mount(world(Page))
   assert(pass);
 })
 
 it('should not unmount twice', function(){
   var Page = component()
-  var app = scene(Page)
+  var app = world(Page)
   var el = div()
   var mount = render(app, el)
   mount.remove()
@@ -56,7 +56,7 @@ it('should fire mount events on sub-components', function(){
     }
   });
 
-  var app = scene(ComponentB)
+  var app = world(ComponentB)
   app.setProps({ name: 'Bob' })
 
   mount(app, function(){
@@ -93,7 +93,7 @@ it('should fire unmount events on sub-components from the bottom up', function()
     }
   })
 
-  var app = scene(Parent)
+  var app = world(Parent)
   app.setProps({ show: true })
 
   mount(app, function(el, renderer){
@@ -130,7 +130,7 @@ it('should unmount sub-components that move themselves in the DOM', function () 
     }
   })
 
-  var app = scene(Parent)
+  var app = world(Parent)
   app.setProps({ show: true })
 
   mount(app, function(el, renderer){
@@ -161,7 +161,7 @@ it('should fire mount events on sub-components created later', function(){
     }
   });
 
-  var app = scene(ComponentB)
+  var app = world(ComponentB)
   app.setProps({ showComponent: false })
 
   mount(app, function(el, renderer){
@@ -189,7 +189,7 @@ it('should fire unmount events on sub-components created later', function(){
     }
   });
 
-  var app = scene(ComponentB)
+  var app = world(ComponentB)
   app.setProps({ showComponent: true })
 
   mount(app, function(el, renderer){

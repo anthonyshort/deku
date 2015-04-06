@@ -1,4 +1,4 @@
-import {component,scene,render,dom} from '../../';
+import {component,world,render,dom} from '../../';
 import {mount} from '../helpers';
 import assert from 'assert';
 
@@ -26,7 +26,7 @@ it('should fire beforeUpdate', function () {
     }
   });
   Test.use(updateMixin)
-  var app = scene(Test)
+  var app = world(Test)
   app.setProps({ count: 1 })
   mount(app, function(el, renderer){
     app.setProps({count:2})
@@ -47,7 +47,7 @@ it('should fire afterUpdate', function () {
     }
   });
   Test.use(updateMixin)
-  var app = scene(Test)
+  var app = world(Test)
   app.setProps({ count: 1 })
   mount(app, function(el, renderer){
     app.setProps({count:2})
@@ -62,7 +62,7 @@ it('should not allow setting the state during beforeUpdate', function (done) {
       send({ foo: 'bar' });
     }
   });
-  var app = scene(Impure)
+  var app = world(Impure)
   app.setProps({ count: 1 })
   mount(app, function(el, renderer){
     app.setProps({count:2})
@@ -87,7 +87,7 @@ it('should only call `beforeUpdate` once', function(){
       return dom('div', null, [props.text]);
     }
   });
-  var app = scene(Component)
+  var app = world(Component)
   app.setProps({ text: 'one' })
   mount(app, function(el, renderer){
     app.setProps({ text: 'two' })

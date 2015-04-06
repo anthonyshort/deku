@@ -1,6 +1,6 @@
 
 import assert from 'assert'
-import {component,dom,scene} from '../../'
+import {component,dom,world} from '../../'
 import {mount,Span} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
@@ -32,7 +32,7 @@ it('should add click event', function(){
     }
   });
 
-  var app = scene(Page)
+  var app = world(Page)
     .setProps({ x: 20 })
 
   mount(app, function(el, renderer){
@@ -66,7 +66,7 @@ it('should remove click event', function(done){
     }
   });
 
-  var app = scene(Page)
+  var app = world(Page)
     .setProps({ click: true })
 
   mount(app, function(el, renderer){
@@ -92,7 +92,7 @@ it('should update click event', function(){
     }
   });
 
-  var app = scene(Page)
+  var app = world(Page)
     .setProps({ click: onclicka })
 
   mount(app, function(el, renderer){
@@ -114,7 +114,7 @@ it('should update click event', function(){
 });
 
 it('should delegate events', function () {
-  var app = scene(Delegate)
+  var app = world(Delegate)
 
   mount(app, function(el, renderer){
     var first = el.querySelectorAll('a')[0]
@@ -142,7 +142,7 @@ it('should delegate events on the root', function () {
     }
   });
 
-  var app = scene(DelegateRoot)
+  var app = world(DelegateRoot)
 
   mount(app, function(el, renderer){
     var first = el.querySelectorAll('a')[0]
@@ -168,7 +168,7 @@ it('should set a delegateTarget', function (done) {
     }
   });
 
-  var app = scene(DelegateRoot)
+  var app = world(DelegateRoot)
 
   mount(app, function(el, renderer){
     rootEl = el
@@ -217,7 +217,7 @@ it('should update events when nested children are removed', function () {
     }
   });
 
-  var app = scene(List)
+  var app = world(List)
     .setProps({ items: items })
 
   mount(app, function(el, renderer){
