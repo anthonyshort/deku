@@ -1,4 +1,21 @@
 
+0.1.0 / 2015-04-06
+==================
+
+ * BREAKNG CHANGE: There is no more `this` in any of the functions used in a component. Instead of `this.setState`, the last argument to the function is `setState`, or `send` (think of it as sending changes to the UI).
+ * used 1 function for constructing world
+ * updated event tests to use send
+ * used local virtualize
+ * added comment about component spec
+ * added placeholder idea and tests for layers
+ * renamed scene -> world
+ * converted component to object, and updated tests to reflect
+ * bypassed component.setState
+ * fixed failing test
+ * began removing `this` in all functions
+ * added virtualize into repo for easier dev
+ * added local duo to makefile
+
 0.0.33 / 2015-04-02
 ==================
 

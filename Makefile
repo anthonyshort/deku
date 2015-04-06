@@ -85,7 +85,3 @@ release: clean index.js
 	git push origin master --tags && \
 	npm publish
 .PHONY: release
-
-
-
-

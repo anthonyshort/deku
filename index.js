@@ -1,128 +1,134 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.deku=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
 
 /**
- * Module dependencies.
+ * Expose `Component`.
  */
 
-var assign = _require('extend');
-var Emitter = _require('component-emitter');
-var statics = _require('./statics');
-var protos = _require('./protos');
-var dom = _require('virtualize').node;
+module.exports = Component;
 
 /**
- * Expose `component`.
- */
-
-module.exports = component;
-
-/**
- * Generate a new `Component` constructor.
+ * A component is a stateful virtual dom element.
  *
- * @param {Object} spec
- * @return {Function} Component
+ * TODO: Remove this DSL. The component will just be a JSON object,
+ * with functions for templates. Then you can write your own wrapper
+ * around it to give a nice DSL or whatever.
+ *
+ * For the moment, we're leaving this DSL in here so we don't have
+ * to change a bunch of existing code at once. Once the formal spec is all
+ * working, then we'll remove out the DSL :)
+ *
+ * A component is just this:
+ *
+ *   {
+ *     "name": "Button",
+ *     "properties": {},
+ *     "options": {},
+ *     "layers": {
+ *       "main": {
+ *         "template": fn,
+ *         "states": {
+ *           "name": {}
+ *         }
+ *       }
+ *     }
+ *   }
+ *
  * @api public
  */
 
-function component(spec) {
-  spec = spec || {};
-
-  // Alow just a render function.
-
-  if (typeof spec === 'function') {
-    spec = { render: spec };
+function Component(opts) {
+  if (!(this instanceof Component)) return new Component(opts);
+  this.options = {};
+  this.layers = {};
+  this.props = {};
+  if ('function' == typeof opts) {
+    this.layers.main = {
+      template: opts,
+      states: {}
+    };
+  } else if ('string' == typeof opts) {
+    this.name = opts;
+  } else if (opts) {
+    // TODO: come back to multiple layers
+    this.layers.main = {
+      template: opts.render,
+      states: {}
+    };
+    if (opts.props) this.props = opts.props;
+    // TODO: cleanup or potentially deprecate
+    if (opts.beforeMount) this.beforeMount = opts.beforeMount;
+    if (opts.afterMount) this.afterMount = opts.afterMount;
+    if (opts.beforeUpdate) this.beforeUpdate = opts.beforeUpdate;
+    if (opts.afterUpdate) this.afterUpdate = opts.afterUpdate;
+    if (opts.beforeUnmount) this.beforeUnmount = opts.beforeUnmount;
+    if (opts.afterUnmount) this.afterUnmount = opts.afterUnmount;
+    if (opts.initialState) this.initialState = opts.initialState;
+    if (opts.shouldUpdate) this.shouldUpdate = opts.shouldUpdate;
+    if (opts.propsChanged) this.propsChanged = opts.propsChanged;
   }
-
-  /**
-   * A component is a stateful virtual dom element.
-   *
-   * @api public
-   */
-
-  function Component() {
-    if (!(this instanceof Component)) {
-      return dom(Component, arguments[0], arguments[1]);
-    }
-    bindAll(this);
-  }
-
-  // statics.
-
-  Component.props = {};
-  Component.options = {};
-  assign(Component, statics, Emitter.prototype);
-
-  // protos.
-
-  assign(Component.prototype, protos, spec, Emitter.prototype);
-
-  // for debugging.
-
-  if (spec.displayName) {
-    Component.displayName = spec.displayName;
-    delete spec.displayName;
-  }
-
-  // extract props
-
-  if (spec.props) {
-    for (var key in spec.props) {
-      Component.prop(key, spec.props[key]);
-    }
-    delete spec.props;
-  }
-
-  return Component;
 }
 
 /**
- * Bind all functions on an object to the object
+ * Use plugin.
+ *
+ * @param {Function|Object} plugin Passing an object will extend the prototype.
+ * @return {Component}
+ * @api public
  */
 
-function bindAll(obj) {
-  for (var key in obj) {
-    var val = obj[key];
-    if (typeof val === 'function') obj[key] = val.bind(obj);
+Component.prototype.use = function(plugin){
+  if ('function' === typeof plugin) {
+    plugin(this);
+  } else {
+    for (var k in plugin) this[k] = plugin[k];
   }
-  return obj;
-}
-},{"./protos":2,"./statics":3,"component-emitter":18,"extend":21,"virtualize":33}],2:[function(_require,module,exports){
-/**
- * Set properties on `this.state`.
- *
- * @param {Object} state State to merge with existing state.
- * @param {Function} done
- */
-
-exports.setState = function(state, done){
-  this.emit('change', state, done);
+  return this;
 };
 
 /**
- * Invalidate the component so that it is updated on the next
- * frame regardless of whether or not the state has changed.
- *
- * This sets a temporary state value that is checked and trigger
- * an update. This special property is removed after the component is
- * updated.
- *
- * @return {void}
+ * Define a layer.
  */
 
-exports.invalidate = function(){
-  this.emit('invalidate');
+Component.prototype.layer = function(name, template, animationStates){
+  this.layers[name] = {
+    template: template,
+    states: animationStates || {}
+  };
+  return this;
 };
 
 /**
- * Default render. Renders a noscript tag by
- * default so nothing shows up in the DOM.
+ * Define a property
  *
- * @param {node} dom
- * @return {Node}
+ * @param {String} name
+ * @param {Object} options
  */
 
-exports.render = function(){
+Component.prototype.prop = function(name, options){
+  this.props[name] = options;
+  return this;
+};
 
+/**
+ * Set an option
+ *
+ * @param {String} name
+ * @param {*} value
+ */
+
+Component.prototype.set = function(name, value){
+  this.options[name] = value;
+  return this;
+};
+
+/**
+ * Render template.
+ */
+
+Component.prototype.render = function(state, props, send){
+  return this.layers.main && this.layers.main.template
+    ? this.layers.main.template.call(null, state, props, send)
+    : null;
 };
 
 /**
@@ -132,7 +138,7 @@ exports.render = function(){
  * @return {Object}
  */
 
-exports.initialState = function(){
+Component.prototype.initialState = function(){
   return {};
 };
 
@@ -147,53 +153,11 @@ exports.initialState = function(){
  * @return {Boolean}
  */
 
-exports.shouldUpdate = function(props, state, nextProps, nextState){
+Component.prototype.shouldUpdate = function(props, state, nextProps, nextState){
   return true;
 };
-},{}],3:[function(_require,module,exports){
 
-/**
- * Use plugin.
- *
- * @param {Function|Object} plugin Passing an object will extend the prototype.
- * @return {Component}
- * @api public
- */
-
-exports.use = function(plugin){
-  if ('function' === typeof plugin) {
-    plugin(this);
-  } else {
-    for (var k in plugin) this.prototype[k] = plugin[k];
-  }
-  return this;
-};
-
-/**
- * Define a property
- *
- * @param {String} name
- * @param {Object} options
- */
-
-exports.prop = function(name, options){
-  this.props[name] = options;
-  return this;
-};
-
-/**
- * Set an option
- *
- * @param {String} name
- * @param {*} value
- */
-
-exports.set = function(name, value){
-  this.options[name] = value;
-  return this;
-};
-
-},{}],4:[function(_require,module,exports){
+},{}],2:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -225,15 +189,16 @@ module.exports = Entity;
  *
  * This manages the lifecycle, props and state of the component.
  *
- * @param {Function} Component
+ * @param {Function} component
  * @param {Object} props
  */
 
-function Entity(Component, props) {
+function Entity(component, props) {
   this.id = uid();
-  this.options = Component.options;
+  this.setState = this.setState.bind(this);
+  this.options = component.options;
   this.props = props || {};
-  this.component = this.instance(Component);
+  this.component = component;
   this.state = this.component.initialState(this.props);
   this.lifecycle = null;
   this._pendingProps = assign({}, this.props);
@@ -260,21 +225,6 @@ Entity.prototype.option = function(name) {
 };
 
 /**
- * Create the component instance
- *
- * @param {Component} Component
- *
- * @return {Object}
- */
-
-Entity.prototype.instance = function(Component) {
-  var component = new Component();
-  component.on('change', this.setState.bind(this));
-  component.on('invalidate', this.invalidate.bind(this));
-  return component;
-};
-
-/**
  * Get an updated version of the virtual tree.
  *
  * @return {VirtualTree}
@@ -282,7 +232,7 @@ Entity.prototype.instance = function(Component) {
 
 Entity.prototype.render = function(){
   this.lifecycle = 'render';
-  var result = this.component.render(this.props, this.state);
+  var result = this.component.render(this.props, this.state, this.setState);
   this.lifecycle = null;
   return result;
 };
@@ -456,7 +406,8 @@ Entity.prototype.propsChanged = function(nextProps){
 Entity.prototype.trigger = function(name, args){
   this.lifecycle = name;
   if (typeof this.component[name] === 'function') {
-    this.component[name].apply(this.component, args);
+    args.push(this.setState); // last arg is `send`
+    this.component[name].apply(null, args);
   }
   this.lifecycle = null;
   this.emit(name);
@@ -473,17 +424,19 @@ function checkSetState(lifecycle) {
   var message = preventSetState[lifecycle];
   if (message) throw new Error(message);
 }
-},{"component-emitter":18,"extend":21,"get-uid":22}],5:[function(_require,module,exports){
+
+},{"component-emitter":21,"extend":26,"get-uid":27}],3:[function(_require,module,exports){
 exports.component = _require('./component');
-exports.dom = _require('virtualize').node;
-exports.scene = _require('./scene');
+exports.dom = _require('./virtualize').node;
+exports.scene =
+exports.world = _require('./world');
 exports.renderString = _require('./renderer/string');
 
 if (typeof window !== 'undefined') {
   exports.render = _require('./renderer/dom');
 }
 
-},{"./component":1,"./renderer/dom":7,"./renderer/string":9,"./scene":10,"virtualize":33}],6:[function(_require,module,exports){
+},{"./component":1,"./renderer/dom":5,"./renderer/string":7,"./virtualize":10,"./world":13}],4:[function(_require,module,exports){
 var zip = _require('array-zip');
 
 module.exports = patch;
@@ -664,7 +617,7 @@ function diffElement(previous, current, context){
   // Recursive
   diffChildren(previous, current, context);
 }
-},{"array-zip":11}],7:[function(_require,module,exports){
+},{"array-zip":14}],5:[function(_require,module,exports){
 
 /**
  * Dependencies.
@@ -674,6 +627,7 @@ var Interactions = _require('./interactions');
 var Emitter = _require('component-emitter');
 var shallowCopy = _require('shallow-copy');
 var virtualize = _require('virtualize');
+var virtualize = _require('../../virtualize');
 var Entity = _require('../../entity');
 var each = _require('component-each');
 var Pool = _require('dom-pool');
@@ -1237,7 +1191,8 @@ function removeAllChildren(el) {
     el.removeChild(el.firstChild);
   }
 }
-},{"../../entity":4,"./diff":6,"./interactions":8,"component-each":14,"component-emitter":18,"dom-pool":19,"dom-walk":20,"is-dom":23,"raf-loop":27,"shallow-copy":32,"virtualize":33}],8:[function(_require,module,exports){
+
+},{"../../entity":2,"../../virtualize":10,"./diff":4,"./interactions":6,"component-each":17,"component-emitter":21,"dom-pool":24,"dom-walk":25,"is-dom":28,"raf-loop":31,"shallow-copy":36,"virtualize":39}],6:[function(_require,module,exports){
 
 var throttle = _require('per-frame');
 var keypath = _require('object-path');
@@ -1376,7 +1331,7 @@ Interactions.prototype.handle = function(event){
   }
 };
 
-},{"object-path":24,"per-frame":25}],9:[function(_require,module,exports){
+},{"object-path":29,"per-frame":30}],7:[function(_require,module,exports){
 var virtual = _require('virtualize');
 var Entity = _require('../../entity');
 
@@ -1477,17 +1432,507 @@ function attr(key, val) {
   return ' ' + key + '="' + val + '"';
 }
 
-},{"../../entity":4,"virtualize":33}],10:[function(_require,module,exports){
+},{"../../entity":2,"virtualize":39}],8:[function(_require,module,exports){
+
+module.exports = ComponentNode;
+
+/**
+ * Initialize a new `ComponentNode`.
+ *
+ * @param {Component} component
+ * @param {Object} props
+ * @param {String} key Used for sorting/replacing during diffing.
+ * @param {Array} children Child virtual nodes
+ * @api public
+ */
+
+function ComponentNode(component, props, key, children) {
+  this.key = key;
+  this.props = props;
+  this.type = 'component';
+  this.component = component;
+  this.props.children = children || [];
+}
+
+},{}],9:[function(_require,module,exports){
+var type = _require('component-type');
+
+/**
+ * Exports
+ */
+
+module.exports = ElementNode;
+
+/**
+ * All of the events can bind to
+ */
+
+var events = {
+  onBlur: 'blur',
+  onChange: 'change',
+  onClick: 'click',
+  onContextMenu: 'contextmenu',
+  onCopy: 'copy',
+  onCut: 'cut',
+  onDoubleClick: 'dblclick',
+  onDrag: 'drag',
+  onDragEnd: 'dragend',
+  onDragEnter: 'dragenter',
+  onDragExit: 'dragexit',
+  onDragLeave: 'dragleave',
+  onDragOver: 'dragover',
+  onDragStart: 'dragstart',
+  onDrop: 'drop',
+  onFocus: 'focus',
+  onInput: 'input',
+  onKeyDown: 'keydown',
+  onKeyUp: 'keyup',
+  onMouseDown: 'mousedown',
+  onMouseMove: 'mousemove',
+  onMouseOut: 'mouseout',
+  onMouseOver: 'mouseover',
+  onMouseUp: 'mouseup',
+  onPaste: 'paste',
+  onScroll: 'scroll',
+  onSubmit: 'submit',
+  onTouchCancel: 'touchcancel',
+  onTouchEnd: 'touchend',
+  onTouchMove: 'touchmove',
+  onTouchStart: 'touchstart'
+};
+
+/**
+ * Initialize a new `ElementNode`.
+ *
+ * @param {String} tagName
+ * @param {Object} attributes
+ * @param {String} key Used for sorting/replacing during diffing.
+ * @param {Array} children Child virtual dom nodes.
+ * @api public
+ */
+
+function ElementNode(tagName, attributes, key, children) {
+  this.type = 'element';
+  this.attributes = parseAttributes(attributes);
+  this.events = parseEvents(attributes);
+  this.tagName = parseTag(tagName, attributes);
+  this.children = children || [];
+  this.key = key;
+}
+
+/**
+ * Parse attributes for some special cases.
+ *
+ * TODO: This could be more functional and allow hooks
+ * into the processing of the attributes at a component-level
+ *
+ * @param {Object} attributes
+ *
+ * @return {Object}
+ */
+
+function parseAttributes(attributes) {
+
+  // style: { 'text-align': 'left' }
+  if (attributes.style) {
+    attributes.style = parseStyle(attributes.style);
+  }
+
+  // data: { foo: 'bar' }
+  if (attributes.data) {
+    attributes = parseData(attributes);
+  }
+
+  // class: { foo: true, bar: false, baz: true }
+  // class: ['foo', 'bar', 'baz']
+  if (attributes.class) {
+    attributes.class = parseClass(attributes.class);
+  }
+
+  // Remove attributes with false values
+  for (var name in attributes) {
+    if (attributes[name] === false) {
+      delete attributes[name];
+    }
+  }
+
+  return attributes;
+}
+
+/**
+ * Parse a block of styles into a string.
+ *
+ * TODO: this could do a lot more with vendor prefixing,
+ * number values etc. Maybe there's a way to allow users
+ * to hook into this?
+ *
+ * @param {Object} styles
+ *
+ * @return {String}
+ */
+
+function parseStyle(styles) {
+  if (type(styles) !== 'object') {
+    return styles;
+  }
+  var str = '';
+  for (var name in styles) {
+    var value = styles[name];
+    str += name + ':' + value + ';';
+  }
+  return str;
+}
+
+/**
+ * Parse the dataset
+ *
+ * @param {Object} attributes
+ *
+ * @return {Object}
+ */
+
+function parseData(attributes) {
+  if (type(attributes.data) !== 'object') {
+    return attributes;
+  }
+
+  for (var name in attributes.data) {
+    attributes['data-' + name] = attributes.data[name];
+  }
+
+  delete attributes.data;
+  return attributes;
+}
+
+/**
+ * Parse the class attribute so it's able to be
+ * set in a more user-friendly way
+ *
+ * @param {String|Object|Array} value
+ *
+ * @return {String}
+ */
+
+function parseClass(value) {
+
+  // { foo: true, bar: false, baz: true }
+  if (type(value) === 'object') {
+    var matched = [];
+    for (var key in value) {
+      if (value[key]) matched.push(key);
+    }
+    value = matched;
+  }
+
+  // ['foo', 'bar', 'baz']
+  if (type(value) === 'array') {
+    if (value.length === 0) {
+      return;
+    }
+    value = value.join(' ');
+  }
+
+  return value;
+}
+
+/**
+ * Events are stored on the node and are creating using
+ * special attributes
+ *
+ * @param {Object} attributes
+ *
+ * @return {Object}
+ */
+
+function parseEvents(attributes) {
+  var ret = {};
+  for (var name in events) {
+    var type = events[name];
+    var callback = attributes[name];
+    if (callback) {
+      ret[type] = callback;
+      delete attributes[name];
+    }
+  }
+  return ret;
+}
+
+/**
+ * Parse the tag to allow using classes and ids
+ * within the tagname like in CSS.
+ *
+ * @param {String} name
+ * @param {Object} attributes
+ *
+ * @return {String}
+ */
+
+function parseTag(name, attributes) {
+  if (!name) return 'div';
+
+  var parts = name.split(/([\.#]?[a-zA-Z0-9_:-]+)/);
+  var tagName = 'div';
+
+  parts
+    .filter(Boolean)
+    .forEach(function(part, i){
+      var type = part.charAt(0);
+      if (type === '.') {
+        attributes.class = ((attributes.class || '') + ' ' + part.substring(1, part.length)).trim();
+      } else if (type === '#') {
+        attributes.id = part.substring(1, part.length);
+      } else {
+        tagName = part;
+      }
+    });
+
+  return tagName;
+}
+
+},{"component-type":23}],10:[function(_require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var ComponentNode = _require('./component');
+var ElementNode = _require('./element');
+var TextNode = _require('./text');
+var tree = _require('./tree');
+var slice = _require('sliced');
+var uid = _require('get-uid');
+
+/**
+ * Exports.
+ */
+
+exports.node = dom;
+exports.tree = tree;
+
+/**
+ * Create virtual DOM trees.
+ *
+ * This creates the nicer API for the user.
+ * It translates that friendly API into an actual tree of nodes.
+ *
+ * @param {String|Function} type
+ * @param {Object} props
+ * @param {Array} children
+ * @return {Node}
+ * @api public
+ */
+
+function dom(type, props, children) {
+
+  // Skipped adding attributes and we're passing
+  // in children instead.
+  if (arguments.length === 2 && (typeof props === 'string' || Array.isArray(props))) {
+    children = props;
+    props = {};
+  }
+
+  // Account for JSX putting the children as multiple arguments.
+  // This is essentially just the ES6 rest param
+  if (arguments.length > 2 && Array.isArray(arguments[2]) === false) {
+    children = slice(arguments, 2);
+  }
+
+  children = children || [];
+  props = props || {};
+
+  // passing in a single child, you can skip
+  // using the array
+  if (!Array.isArray(children)) {
+    children = [ children ];
+  }
+
+  children = children
+    .filter(notEmpty)
+    .reduce(flatten, [])
+    .map(textNodes)
+    .map(addIndex);
+
+  // pull the key out from the data.
+  var key = props.key;
+  delete props.key;
+
+  // if you pass in a function, it's a `Component` constructor.
+  // otherwise it's an element.
+  var node;
+  if ('function' == typeof type) {
+    node = new ComponentNode(type, props, key, children);
+  } else if (type && type.render) { // component as object
+    node = new ComponentNode(type, props, key, children);
+  } else {
+    node = new ElementNode(type, props, key, children);
+  }
+
+  // set the unique ID
+  node.id = uid();
+  node.index = 0;
+
+  return node;
+}
+
+/**
+ * Remove null/undefined values from the array
+ *
+ * @param {*} value
+ *
+ * @return {Boolean}
+ */
+
+function notEmpty(value) {
+  return value !== null && value !== undefined;
+}
+
+/**
+ * Flatten nested array
+ *
+ * @param {Array} arr
+ * @param {*} value
+ *
+ * @return {Array}
+ */
+
+function flatten(result, node) {
+  if (Array.isArray(node)) {
+    result = result.concat(node);
+  } else {
+    result.push(node);
+  }
+  return result;
+}
+
+/**
+ * Parse nodes into real `Node` objects.
+ *
+ * @param {Mixed} node
+ * @param {Integer} index
+ * @return {Node}
+ * @api private
+ */
+
+function textNodes(node, index) {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return new TextNode(String(node));
+  } else {
+    return node;
+  }
+}
+
+/**
+ * Add an index
+ *
+ * @param {Node} node
+ * @param {Number} index
+ *
+ * @return {Node}
+ */
+
+function addIndex(node, index) {
+  node.index = index;
+  return node;
+}
+
+},{"./component":8,"./element":9,"./text":11,"./tree":12,"get-uid":27,"sliced":37}],11:[function(_require,module,exports){
+module.exports = TextNode;
+
+/**
+ * Initialize a new `TextNode`.
+ *
+ * This is just a virtual HTML text object.
+ *
+ * @param {String} text
+ * @api public
+ */
+
+function TextNode(text) {
+  this.type = 'text';
+  this.data = String(text);
+}
+
+},{}],12:[function(_require,module,exports){
+
+/**
+ * Export `Tree`.
+ */
+
+module.exports = function(node) {
+  return new Tree(node);
+};
+
+/**
+ * A tree is representation of Node that is easier
+ * to parse and diff. The tree should be considered
+ * immutable and won't change.
+ *
+ * @param {Node} node
+ */
+
+function Tree(node) {
+  this.root = node;
+  this.paths = {};
+  this.nodes = {};
+  this.components = {};
+  this.parse(node);
+}
+
+/**
+ * Get the path for a node.
+ *
+ * @param {Node} node
+ * @return {String}
+ */
+
+Tree.prototype.getPath = function(node){
+  return this.paths[node.id];
+};
+
+/**
+ * Get the node at a path
+ *
+ * @param {String} path
+ *
+ * @return {Node}
+ */
+
+Tree.prototype.getNode = function(path){
+  return this.nodes[path];
+};
+
+/**
+ * Parse a Node into a hash table. This allows
+ * us to quickly find the path for a node and to
+ * find a node at any path.
+ *
+ * @param {Node} node
+ * @param {String} path
+ * @return {Object}
+ */
+
+Tree.prototype.parse = function(node, path){
+  path = path || '0';
+  this.paths[node.id] = path;
+  this.nodes[path] = node;
+  if (node.type === 'component') {
+    this.components[path] = node;
+  }
+  if (node.children) {
+    node.children.forEach(function(node, index){
+      this.parse(node, path + '.' + (node.key || index));
+    }, this);
+  }
+};
+
+},{}],13:[function(_require,module,exports){
 var Entity = _require('../entity');
 
 /**
- * Expose the factory function to create
- * scene objects that can be rendered.
+ * Expose `World`.
  */
 
-module.exports = function(Component){
-  return new Scene(Component);
-};
+module.exports = World;
 
 /**
  * A scene renders a component tree to an element
@@ -1496,7 +1941,8 @@ module.exports = function(Component){
  * @param {Object} component
  */
 
-function Scene(component) {
+function World(component) {
+  if (!(this instanceof World)) return new World(component);
   this.root = new Entity(component);
   this.debug = false;
 }
@@ -1507,7 +1953,7 @@ function Scene(component) {
  * @param {Function} plugin
  */
 
-Scene.prototype.use = function(plugin){
+World.prototype.use = function(plugin){
   plugin(this);
   return this;
 };
@@ -1518,7 +1964,7 @@ Scene.prototype.use = function(plugin){
  * @param {Object} newProps
  */
 
-Scene.prototype.setProps = function(newProps){
+World.prototype.setProps = function(newProps){
   this.root.setProps(newProps);
   return this;
 };
@@ -1529,11 +1975,12 @@ Scene.prototype.setProps = function(newProps){
  * @param {Objct} newProps
  */
 
-Scene.prototype.replaceProps = function(newProps){
+World.prototype.replaceProps = function(newProps){
   this.root.replaceProps(newProps);
   return this;
 };
-},{"../entity":4}],11:[function(_require,module,exports){
+
+},{"../entity":2}],14:[function(_require,module,exports){
 /*
  * array-zip
  * https://github.com/frozzare/array-zip
@@ -1555,7 +2002,7 @@ module.exports = function () {
   });
 };
 
-},{}],12:[function(_require,module,exports){
+},{}],15:[function(_require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1858,7 +2305,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],13:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -1895,6 +2342,7 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
 
 function noop() {}
 
@@ -1917,7 +2365,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],14:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -2008,7 +2456,7 @@ function array(obj, fn, ctx) {
   }
 }
 
-},{"component-type":15,"to-function":16,"type":15}],15:[function(_require,module,exports){
+},{"component-type":18,"to-function":19,"type":18}],18:[function(_require,module,exports){
 
 /**
  * toString ref.
@@ -2042,7 +2490,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],16:[function(_require,module,exports){
+},{}],19:[function(_require,module,exports){
 var expr;
 try {
     expr = void 0;
@@ -2114,12 +2562,12 @@ function stripNested(prop, str, val) {
         return $1 ? $0 : val;
     });
 }
-},{"component-props":17}],17:[function(_require,module,exports){
+},{"component-props":20}],20:[function(_require,module,exports){
 /**
  * Global Names
  */
 
-var globals = /\b(this|Array|Date|Object|Math|JSON)\b/g;
+var globals = /\b(Array|Date|Object|Math|JSON)\b/g;
 
 /**
  * Return immediate identifiers parsed from `str`.
@@ -2149,7 +2597,7 @@ function props(str) {
   return str
     .replace(/\.\w+|\w+ *\(|"[^"]*"|'[^']*'|\/([^/]+)\//g, '')
     .replace(globals, '')
-    .match(/[$a-zA-Z_]\w*/g)
+    .match(/[a-zA-Z_]\w*/g)
     || [];
 }
 
@@ -2201,7 +2649,7 @@ function prefixed(str) {
   };
 }
 
-},{}],18:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2364,7 +2812,79 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],19:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
+/**
+ * Expose `requestAnimationFrame()`.
+ */
+
+exports = module.exports = window.requestAnimationFrame
+  || window.webkitRequestAnimationFrame
+  || window.mozRequestAnimationFrame
+  || fallback;
+
+/**
+ * Fallback implementation.
+ */
+
+var prev = new Date().getTime();
+function fallback(fn) {
+  var curr = new Date().getTime();
+  var ms = Math.max(0, 16 - (curr - prev));
+  var req = setTimeout(fn, ms);
+  prev = curr;
+  return req;
+}
+
+/**
+ * Cancel.
+ */
+
+var cancel = window.cancelAnimationFrame
+  || window.webkitCancelAnimationFrame
+  || window.mozCancelAnimationFrame
+  || window.clearTimeout;
+
+exports.cancel = function(id){
+  cancel.call(window, id);
+};
+
+},{}],23:[function(_require,module,exports){
+/**
+ * toString ref.
+ */
+
+var toString = Object.prototype.toString;
+
+/**
+ * Return the type of `val`.
+ *
+ * @param {Mixed} val
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(val){
+  switch (toString.call(val)) {
+    case '[object Date]': return 'date';
+    case '[object RegExp]': return 'regexp';
+    case '[object Arguments]': return 'arguments';
+    case '[object Array]': return 'array';
+    case '[object Error]': return 'error';
+  }
+
+  if (val === null) return 'null';
+  if (val === undefined) return 'undefined';
+  if (val !== val) return 'nan';
+  if (val && val.nodeType === 1) return 'element';
+
+  val = val.valueOf
+    ? val.valueOf()
+    : Object.prototype.valueOf.apply(val)
+
+  return typeof val;
+};
+
+},{}],24:[function(_require,module,exports){
 function Pool(params) {
     if (typeof params !== 'object') {
         throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
@@ -2418,7 +2938,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Pool;
 }
 
-},{}],20:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2444,7 +2964,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],21:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 var undefined;
@@ -2527,14 +3047,14 @@ module.exports = function extend() {
 };
 
 
-},{}],22:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],23:[function(_require,module,exports){
+},{}],28:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2551,7 +3071,7 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],24:[function(_require,module,exports){
+},{}],29:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2822,7 +3342,7 @@ module.exports = function isNode(val){
   return objectPath;
 });
 
-},{}],25:[function(_require,module,exports){
+},{}],30:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -2861,47 +3381,7 @@ function throttle(fn) {
   };
 }
 
-},{"raf":26}],26:[function(_require,module,exports){
-/**
- * Expose `requestAnimationFrame()`.
- */
-
-exports = module.exports = window.requestAnimationFrame
-  || window.webkitRequestAnimationFrame
-  || window.mozRequestAnimationFrame
-  || window.oRequestAnimationFrame
-  || window.msRequestAnimationFrame
-  || fallback;
-
-/**
- * Fallback implementation.
- */
-
-var prev = new Date().getTime();
-function fallback(fn) {
-  var curr = new Date().getTime();
-  var ms = Math.max(0, 16 - (curr - prev));
-  var req = setTimeout(fn, ms);
-  prev = curr;
-  return req;
-}
-
-/**
- * Cancel.
- */
-
-var cancel = window.cancelAnimationFrame
-  || window.webkitCancelAnimationFrame
-  || window.mozCancelAnimationFrame
-  || window.oCancelAnimationFrame
-  || window.msCancelAnimationFrame
-  || window.clearTimeout;
-
-exports.cancel = function(id){
-  cancel.call(window, id);
-};
-
-},{}],27:[function(_require,module,exports){
+},{"raf":22}],31:[function(_require,module,exports){
 var inherits = _require('inherits')
 var EventEmitter = _require('events').EventEmitter
 var raf = _require('raf')
@@ -2946,7 +3426,7 @@ Engine.prototype.tick = function() {
     this.emit('tick', dt)
     this.last = time
 }
-},{"events":12,"inherits":28,"raf":29,"right-now":31}],28:[function(_require,module,exports){
+},{"events":15,"inherits":32,"raf":33,"right-now":35}],32:[function(_require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2971,7 +3451,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],29:[function(_require,module,exports){
+},{}],33:[function(_require,module,exports){
 var now = _require('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -3053,7 +3533,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":30}],30:[function(_require,module,exports){
+},{"performance-now":34}],34:[function(_require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -3093,7 +3573,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_require('_process'))
-},{"_process":13}],31:[function(_require,module,exports){
+},{"_process":16}],35:[function(_require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -3104,7 +3584,7 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],32:[function(_require,module,exports){
+},{}],36:[function(_require,module,exports){
 module.exports = function (obj) {
     if (!obj || typeof obj !== 'object') return obj;
     
@@ -3141,7 +3621,45 @@ var isArray = Array.isArray || function (xs) {
     return {}.toString.call(xs) === '[object Array]';
 };
 
-},{}],33:[function(_require,module,exports){
+},{}],37:[function(_require,module,exports){
+module.exports = exports = _require('./lib/sliced');
+
+},{"./lib/sliced":38}],38:[function(_require,module,exports){
+
+/**
+ * An Array.prototype.slice.call(arguments) alternative
+ *
+ * @param {Object} args something with a length
+ * @param {Number} slice
+ * @param {Number} sliceEnd
+ * @api public
+ */
+
+module.exports = function (args, slice, sliceEnd) {
+  var ret = [];
+  var len = args.length;
+
+  if (0 === len) return ret;
+
+  var start = slice < 0
+    ? Math.max(0, slice + len)
+    : slice || 0;
+
+  if (sliceEnd !== undefined) {
+    len = sliceEnd < 0
+      ? sliceEnd + len
+      : sliceEnd
+  }
+
+  while (len-- > start) {
+    ret[len - start] = args[len];
+  }
+
+  return ret;
+}
+
+
+},{}],39:[function(_require,module,exports){
 
 /**
  * Module dependencies.
@@ -3212,6 +3730,8 @@ function dom(type, props, children) {
   // otherwise it's an element.
   var node;
   if ('function' == typeof type) {
+    node = new ComponentNode(type, props, key, children);
+  } else if (type.render) { // HACK
     node = new ComponentNode(type, props, key, children);
   } else {
     node = new ElementNode(type, props, key, children);
@@ -3285,29 +3805,9 @@ function addIndex(node, index) {
   return node;
 }
 
-},{"./lib/component":34,"./lib/element":35,"./lib/text":36,"./lib/tree":37,"get-uid":22,"sliced":39}],34:[function(_require,module,exports){
-
-module.exports = ComponentNode;
-
-/**
- * Initialize a new `ComponentNode`.
- *
- * @param {Component} component
- * @param {Object} props
- * @param {String} key Used for sorting/replacing during diffing.
- * @param {Array} children Child virtual nodes
- * @api public
- */
-
-function ComponentNode(component, props, key, children) {
-  this.key = key;
-  this.props = props;
-  this.type = 'component';
-  this.component = component;
-  this.props.children = children || [];
-}
-
-},{}],35:[function(_require,module,exports){
+},{"./lib/component":40,"./lib/element":41,"./lib/text":42,"./lib/tree":43,"get-uid":27,"sliced":44}],40:[function(_require,module,exports){
+arguments[4][8][0].apply(exports,arguments)
+},{"dup":8}],41:[function(_require,module,exports){
 var type = _require('component-type');
 
 /**
@@ -3541,7 +4041,7 @@ function parseTag(name, attributes) {
 
   return tagName;
 }
-},{"component-type":38}],36:[function(_require,module,exports){
+},{"component-type":23}],42:[function(_require,module,exports){
 module.exports = TextNode;
 
 /**
@@ -3557,152 +4057,11 @@ function TextNode(text) {
   this.type = 'text';
   this.data = String(text);
 }
-},{}],37:[function(_require,module,exports){
-
-/**
- * Export `Tree`.
- */
-
-module.exports = function(node) {
-  return new Tree(node);
-};
-
-/**
- * A tree is representation of Node that is easier
- * to parse and diff. The tree should be considered
- * immutable and won't change.
- *
- * @param {Node} node
- */
-
-function Tree(node) {
-  this.root = node;
-  this.paths = {};
-  this.nodes = {};
-  this.components = {};
-  this.parse(node);
-}
-
-/**
- * Get the path for a node.
- *
- * @param {Node} node
- * @return {String}
- */
-
-Tree.prototype.getPath = function(node){
-  return this.paths[node.id];
-};
-
-/**
- * Get the node at a path
- *
- * @param {String} path
- *
- * @return {Node}
- */
-
-Tree.prototype.getNode = function(path){
-  return this.nodes[path];
-};
-
-/**
- * Parse a Node into a hash table. This allows
- * us to quickly find the path for a node and to
- * find a node at any path.
- *
- * @param {Node} node
- * @param {String} path
- * @return {Object}
- */
-
-Tree.prototype.parse = function(node, path){
-  path = path || '0';
-  this.paths[node.id] = path;
-  this.nodes[path] = node;
-  if (node.type === 'component') {
-    this.components[path] = node;
-  }
-  if (node.children) {
-    node.children.forEach(function(node, index){
-      this.parse(node, path + '.' + (node.key || index));
-    }, this);
-  }
-};
-
-},{}],38:[function(_require,module,exports){
-/**
- * toString ref.
- */
-
-var toString = Object.prototype.toString;
-
-/**
- * Return the type of `val`.
- *
- * @param {Mixed} val
- * @return {String}
- * @api public
- */
-
-module.exports = function(val){
-  switch (toString.call(val)) {
-    case '[object Date]': return 'date';
-    case '[object RegExp]': return 'regexp';
-    case '[object Arguments]': return 'arguments';
-    case '[object Array]': return 'array';
-    case '[object Error]': return 'error';
-  }
-
-  if (val === null) return 'null';
-  if (val === undefined) return 'undefined';
-  if (val !== val) return 'nan';
-  if (val && val.nodeType === 1) return 'element';
-
-  val = val.valueOf
-    ? val.valueOf()
-    : Object.prototype.valueOf.apply(val)
-
-  return typeof val;
-};
-
-},{}],39:[function(_require,module,exports){
-module.exports = exports = _require('./lib/sliced');
-
-},{"./lib/sliced":40}],40:[function(_require,module,exports){
-
-/**
- * An Array.prototype.slice.call(arguments) alternative
- *
- * @param {Object} args something with a length
- * @param {Number} slice
- * @param {Number} sliceEnd
- * @api public
- */
-
-module.exports = function (args, slice, sliceEnd) {
-  var ret = [];
-  var len = args.length;
-
-  if (0 === len) return ret;
-
-  var start = slice < 0
-    ? Math.max(0, slice + len)
-    : slice || 0;
-
-  if (sliceEnd !== undefined) {
-    len = sliceEnd < 0
-      ? sliceEnd + len
-      : sliceEnd
-  }
-
-  while (len-- > start) {
-    ret[len - start] = args[len];
-  }
-
-  return ret;
-}
-
-
-},{}]},{},[5])(5)
+},{}],43:[function(_require,module,exports){
+arguments[4][12][0].apply(exports,arguments)
+},{"dup":12}],44:[function(_require,module,exports){
+arguments[4][37][0].apply(exports,arguments)
+},{"./lib/sliced":45,"dup":37}],45:[function(_require,module,exports){
+arguments[4][38][0].apply(exports,arguments)
+},{"dup":38}]},{},[3])(3)
 });
