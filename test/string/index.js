@@ -1,37 +1,34 @@
 import assert from 'assert'
-import {component,dom,world,renderString} from '../../'
+import {component,dom,renderString} from '../../'
 
-it('should render an element', function () {
+it('should render an element', function(){
   var Component = component({
     render: function(props, state){
       return dom('div');
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div></div>')
+  assert.equal(renderString(Component), '<div></div>')
 });
 
-it('should render an element with attributes', function () {
+it('should render an element with attributes', function(){
   var Component = component({
     render: function(props, state){
       return dom('div', { id: 'foo'});
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div id="foo"></div>')
+  assert.equal(renderString(Component), '<div id="foo"></div>')
 });
 
-it('should render an element with text', function () {
+it('should render an element with text', function(){
   var Component = component({
     render: function(props, state){
       return dom('div', null, 'foo');
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div>foo</div>')
+  assert.equal(renderString(Component), '<div>foo</div>')
 });
 
-it('should render an element with child elements', function () {
+it('should render an element with child elements', function(){
   var Component = component({
     render: function(props, state){
       return dom('div', null, [
@@ -39,11 +36,10 @@ it('should render an element with child elements', function () {
       ]);
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div><span>foo</span></div>')
+  assert.equal(renderString(Component), '<div><span>foo</span></div>')
 });
 
-it('should render an element with child components', function () {
+it('should render an element with child components', function(){
   var Span = component({
     render: function(props, state){
       return dom('span', null, 'foo');
@@ -56,11 +52,10 @@ it('should render an element with child components', function () {
       ]);
     }
   });
-  var app = world(Div)
-  assert.equal(renderString(app),'<div><span>foo</span></div>')
+  assert.equal(renderString(Div), '<div><span>foo</span></div>')
 });
 
-it('should render an element with component root', function () {
+it('should render an element with component root', function(){
   var Span = component({
     render: function(props, state){
       return dom('span', null, 'foo');
@@ -71,21 +66,19 @@ it('should render an element with component root', function () {
       return dom(Span);
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<span>foo</span>')
+  assert.equal(renderString(Component), '<span>foo</span>')
 });
 
-it('should render with props', function () {
+it('should render with props', function(){
   var Component = component({
     render: function(props, state){
       return dom('div', null, [props.text]);
     }
   });
-  var app = world(Component).setProps({ text: 'foo' })
-  assert.equal(renderString(app),'<div>foo</div>')
+  assert.equal(renderString(Component, { text: 'foo' }), '<div>foo</div>')
 });
 
-it('should render with initial state', function () {
+it('should render with initial state', function(){
   var Component = component({
     initialState: function(){
       return { text: 'foo' }
@@ -94,12 +87,12 @@ it('should render with initial state', function () {
       return dom('div', null, [state.text]);
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div>foo</div>')
+  assert.equal(renderString(Component), '<div>foo</div>')
 });
 
-
-it('should call beforeMount', function (done) {
+// TODO: it used to only call `beforeMount` on root node, no child nodes.
+// wondering if that would work on them.
+it.skip('should call beforeMount', function(done){
   var Component = component({
     initialState: function(){
       return { text: 'foo' }
@@ -114,25 +107,23 @@ it('should call beforeMount', function (done) {
     }
   });
   var app = world(Component).setProps({ foo: 'bar' })
-  renderString(app)
+  renderString(Component)
 })
 
-it('should render innerHTML', function () {
+it('should render innerHTML', function(){
   var Component = component({
     render: function(props, state){
       return dom('div', { innerHTML: '<span>foo</span>' });
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<div><span>foo</span></div>')
+  assert.equal(renderString(Component), '<div><span>foo</span></div>')
 })
 
-it('should render the value of inputs', function () {
+it('should render the value of inputs', function(){
   var Component = component({
     render: function(props, state){
       return dom('input', { value: 'foo' });
     }
   });
-  var app = world(Component)
-  assert.equal(renderString(app),'<input value="foo"></input>')
+  assert.equal(renderString(Component), '<input value="foo"></input>')
 })
