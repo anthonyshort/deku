@@ -1,6 +1,6 @@
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {mount} from '../helpers'
+import {component,dom,World} from '../../'
+import {mount,div} from '../helpers'
 
 var Toggle = component({
   render: function(props, state) {

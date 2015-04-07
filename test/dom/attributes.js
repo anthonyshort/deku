@@ -59,7 +59,7 @@ it('should render innerHTML', function () {
   var Test = component(function(){
     return dom('div', { innerHTML: 'Hello <strong>World</strong>' });
   });
-  var world = World();
+  var world = World().set('renderImmediate', true);
   var el = div();
   world.mount(el, Test);
   assert.equal(el.innerHTML,'<div>Hello <strong>World</strong></div>');
@@ -71,7 +71,7 @@ it('should update innerHTML', function () {
   });
 
   var world = World().set('renderImmediate', true);
-  var el = div():
+  var el = div();
   world.mount(el, Test, {
     content: 'Hello <strong>World</strong>'
   });

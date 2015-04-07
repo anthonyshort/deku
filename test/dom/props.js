@@ -5,19 +5,10 @@ import {TwoWords,mount,div,Span} from '../helpers'
 
 var Test = component(TwoWords);
 
-it('should replace props on the world', function(){
-  var world = World().set('renderImmediate', true);
-  var el = div();
-  world.mount(el, Test, { one: 'Hello', two: 'World' });
-
-  world.update({ one: 'Hello' });
-  assert.equal(el.innerHTML, '<span>Hello undefined</span>')
-});
-
 it('should merge props on the world', function(){
   var world = World().set('renderImmediate', true);
   var el = div();
-  world.update(el, Test, { one: 'Hello', two: 'World' });
+  world.mount(el, Test, { one: 'Hello', two: 'World' });
 
   world.update({ two: 'Pluto' })
   assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
@@ -44,8 +35,9 @@ it('should not update props if the world is removed', function (done) {
   renderer.update = function(){
     done(false)
   }
+
   world.update({ text: 'bar' });
-  renderer.remove();
+  world.remove();
   raf(function(){
     done()
   });

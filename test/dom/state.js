@@ -1,6 +1,6 @@
 import assert from 'assert'
-import {component,dom,world} from '../../'
-import {mount,Span} from '../helpers'
+import {component,dom,World} from '../../'
+import {mount,Span,div} from '../helpers'
 
 var StateChangeOnMount = component({
   initialState: function(){
