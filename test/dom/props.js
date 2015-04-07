@@ -1,4 +1,3 @@
-import raf from 'component-raf'
 import assert from 'assert'
 import {component,dom,World} from '../../'
 import {TwoWords,mount,div,Span} from '../helpers'
@@ -28,9 +27,11 @@ it('should update on the next frame', function(done){
 });
 
 it('should not update props if the world is removed', function (done) {
-  var world = World().set('renderImmediate', true);
+  var Test = component(Span);
+  var world = World();
   var el = div();
-  world.mount(el, component(Span), { text: 'foo' });
+  world.mount(el, Test, { text: 'foo' });
+  var renderer = world.renderer;
 
   renderer.update = function(){
     done(false)
@@ -38,12 +39,12 @@ it('should not update props if the world is removed', function (done) {
 
   world.update({ text: 'bar' });
   world.remove();
-  raf(function(){
+  requestAnimationFrame(function(){
     done()
   });
 });
 
-it('should not update twice when setting props', function(){
+it('should not update twice when setting props', function(done){
   var i = 0;
   var IncrementAfterUpdate = component({
     afterUpdate: function(){
@@ -51,13 +52,15 @@ it('should not update twice when setting props', function(){
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var world = World();
   var el = div();
   world.mount(el, IncrementAfterUpdate, { text: 'one' });
-
   world.update({ text: 'two' });
   world.update({ text: 'three' });
-  assert.equal(i, 1);
+  requestAnimationFrame(function(){
+    assert.equal(i, 1);
+    done();
+  });
 });
 
 it('should update child even when the props haven\'t changed', function () {

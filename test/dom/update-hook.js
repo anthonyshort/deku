@@ -14,8 +14,7 @@ var updateMixin = {
   }
 };
 
-// TODO: figure out
-it('should fire beforeUpdate', function(){
+it('should fire beforeUpdate', function(done){
   var fired = false;
   var Test = component({
     beforeUpdate: function(props, state, nextProps, nextState){
@@ -28,15 +27,17 @@ it('should fire beforeUpdate', function(){
   });
   Test.use(updateMixin)
 
-  var world = World().set('renderImmediate', true);
+  var world = World();
   var el = div();
   world.mount(el, Test, { count: 1 });
   world.update({ count: 2 });
-  assert(fired);
+  requestAnimationFrame(function(){
+    assert(fired);
+    done();
+  });
 })
 
-// TODO: figure out
-it.skip('should fire afterUpdate', function(){
+it('should fire afterUpdate', function(done){
   var fired = false;
   var Test = component({
     afterUpdate: function(props, state, prevProps, prevState){
@@ -49,28 +50,31 @@ it.skip('should fire afterUpdate', function(){
   });
   Test.use(updateMixin)
 
-  var world = World().set('renderImmediate', true);
+  var world = World();
   var el = div();
   world.mount(el, Test, { count: 1 });
   world.update({ count: 2 });
-  assert(fired);
+  requestAnimationFrame(function(){
+    assert(fired);
+    done();
+  });
 });
 
-it('should not allow setting the state during beforeUpdate', function (done) {
+it('should not allow setting the state during beforeUpdate', function(done){
   var Impure = component({
     beforeUpdate: function(props, state, nextProps, nextState, send){
       send({ foo: 'bar' });
     }
   });
-  var world = World().set('renderImmediate', true);
+  var world = World();
   var el = div();
   world.mount(el, Impure, { count: 1 });
-  world.update({ count: 2 });
   try {
-    renderer.render()
+    world.set('renderImmediate', true);
+    world.update({ count: 2 });
     throw new Error('Did not prevent set state during beforeUpdate')
   } catch(e) {
-    return done()
+    return done();
   }
 });
 
