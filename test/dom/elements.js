@@ -244,7 +244,7 @@ it('should replace components', function(){
   assert.equal(el.innerHTML, '<div>A</div>')
   world.update({ type: 'B' })
   assert.equal(el.innerHTML, '<div>B</div>')
-  var childId = world.children[world.root.id]['0'];
+  var childId = world.root.children['0'];
   var entity = world.entities[childId];
   assert(entity.component === ComponentB);
 })
@@ -259,8 +259,7 @@ it('should remove references to child components when they are removed', functio
   var el = div();
   world.mount(el, ComponentToggle, { showComponent: true });
 
-  var entityId = world.root.id;
-  assert(world.children[entityId]);
+  assert(world.root.children);
   world.update({ showComponent: false });
-  assert(!world.children[entityId]['0']);
+  assert(!world.root.children['0']);
 });
