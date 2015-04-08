@@ -26,7 +26,7 @@ it('should update on the next frame', function(done){
   });
 });
 
-it('should not update props if the world is removed', function (done) {
+it.skip('should not update props if the world is removed', function (done) {
   var Test = component(Span);
   var world = World();
   var el = div();
