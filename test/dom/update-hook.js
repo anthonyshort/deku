@@ -1,4 +1,4 @@
-import {component,World,render,dom} from '../../';
+import {component,deku,render,dom} from '../../';
 import {mount,div} from '../helpers';
 import assert from 'assert';
 
@@ -27,10 +27,10 @@ it('should fire beforeUpdate', function(done){
   });
   Test.use(updateMixin)
 
-  var world = World();
+  var app = deku();
   var el = div();
-  world.mount(el, Test, { count: 1 });
-  world.update({ count: 2 });
+  app.mount(el, Test, { count: 1 });
+  app.update({ count: 2 });
   requestAnimationFrame(function(){
     assert(fired);
     done();
@@ -50,10 +50,10 @@ it('should fire afterUpdate', function(done){
   });
   Test.use(updateMixin)
 
-  var world = World();
+  var app = deku();
   var el = div();
-  world.mount(el, Test, { count: 1 });
-  world.update({ count: 2 });
+  app.mount(el, Test, { count: 1 });
+  app.update({ count: 2 });
   requestAnimationFrame(function(){
     assert(fired);
     done();
@@ -66,12 +66,12 @@ it('should not allow setting the state during beforeUpdate', function(done){
       send({ foo: 'bar' });
     }
   });
-  var world = World();
+  var app = deku();
   var el = div();
-  world.mount(el, Impure, { count: 1 });
+  app.mount(el, Impure, { count: 1 });
   try {
-    world.set('renderImmediate', true);
-    world.update({ count: 2 });
+    app.set('renderImmediate', true);
+    app.update({ count: 2 });
     throw new Error('Did not prevent set state during beforeUpdate')
   } catch(e) {
     return done();
@@ -91,11 +91,11 @@ it('should only call `beforeUpdate` once', function(done){
     }
   });
 
-  var world = World();
+  var app = deku();
   var el = div();
-  world.mount(el, Component, { text: 'one' });
-  world.update({ text: 'two' })
-  world.update({ text: 'three' });
+  app.mount(el, Component, { text: 'one' });
+  app.update({ text: 'two' })
+  app.update({ text: 'three' });
   requestAnimationFrame(function(){
     assert(i === 1);
     done();

@@ -1,6 +1,6 @@
 
 import assert from 'assert'
-import {component,dom,World} from '../../'
+import {component,dom,deku} from '../../'
 import {mount,Span,div} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
@@ -32,9 +32,9 @@ it('should add click event', function(){
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Page, { x: 20 });
+  app.mount(el, Page, { x: 20 });
 
   assert.equal(el.innerHTML, '<span>Hello World</span>')
   trigger(el.querySelector('span'), 'click')
@@ -65,14 +65,14 @@ it('should remove click event', function(done){
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Page, { click: true });
+  app.mount(el, Page, { click: true });
 
   rootEl = el
   trigger(el.querySelector('span'), 'click')
   assert.equal(count, 1)
-  world.update({ click: false })
+  app.update({ click: false })
   assert.equal(count, 1)
 
   function onclick() {
@@ -89,13 +89,13 @@ it('should update click event', function(){
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Page, { click: onclicka });
+  app.mount(el, Page, { click: onclicka });
 
   trigger(el.querySelector('span'), 'click');
   assert.equal(count, 1);
-  world.update({ click: onclickb })
+  app.update({ click: onclickb })
   trigger(el.querySelector('span'), 'click')
   assert.equal(count, 0)
 
@@ -109,9 +109,9 @@ it('should update click event', function(){
 });
 
 it('should delegate events', function () {
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Delegate);
+  app.mount(el, Delegate);
 
   var first = el.querySelectorAll('a')[0]
   trigger(first, 'click')
@@ -135,9 +135,9 @@ it('should delegate events on the root', function () {
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, DelegateRoot);
+  app.mount(el, DelegateRoot);
 
   var first = el.querySelectorAll('a')[0]
   trigger(first, 'click')
@@ -160,9 +160,9 @@ it('should set a delegateTarget', function (done) {
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, DelegateRoot);
+  app.mount(el, DelegateRoot);
 
   rootEl = el
   var first = el.querySelectorAll('a')[0]
@@ -209,15 +209,15 @@ it('should update events when nested children are removed', function () {
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, List, { items: items });
+  app.mount(el, List, { items: items });
 
   trigger(el.querySelector('a'), 'click')
-  world.update({ items: items })
+  app.update({ items: items })
   trigger(el.querySelector('a'), 'click')
-  world.update({ items: items })
+  app.update({ items: items })
   trigger(el.querySelector('a'), 'click')
-  world.update({ items: items })
+  app.update({ items: items })
   assert.equal(el.innerHTML, '<ul></ul>')
 });

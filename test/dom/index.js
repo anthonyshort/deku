@@ -2,14 +2,14 @@ import trigger from 'trigger-event';
 import Emitter from 'component-emitter';
 import raf from 'component-raf';
 import assert from 'assert';
-import {component,World,dom,render} from '../../';
+import {component,deku,dom,render} from '../../';
 import {HelloWorld,Span,TwoWords,mount,div} from '../helpers';
 
 it('should render a component', function(){
   var Test = component(HelloWorld);
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Test);
+  app.mount(el, Test);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 })
 
@@ -24,9 +24,9 @@ it('should have initial state', function(){
       return dom('span', null, state.text);
     }
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, DefaultState);
+  app.mount(el, DefaultState);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 })
 
@@ -36,18 +36,18 @@ it('should create a component with properties', function(){
       return dom('span', null, [props.text])
     }
   })
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Test, { text: 'Hello World' })
+  app.mount(el, Test, { text: 'Hello World' })
   assert.equal(el.innerHTML, '<span>Hello World</span>')
 })
 
 // TODO: come back to later
 it.skip('should remove from the DOM', function(){
   var Test = component(HelloWorld);
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Test);
+  app.mount(el, Test);
   renderer.remove();
   assert.equal(container.innerHTML, '')
   assert.deepEqual(renderer.entities, {})
@@ -62,9 +62,9 @@ it('should compose components', function(){
       return dom(Inner);
     }
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Composed);
+  app.mount(el, Composed);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 });
 
@@ -73,9 +73,9 @@ it('should compose components and pass in props', function(){
   var Composed = component(function(props, state){
     return dom(Inner, { one: 'Hello', two: 'World' });
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Composed);
+  app.mount(el, Composed);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 });
 
@@ -83,12 +83,12 @@ it('should update sub-components', function(){
   var Inner = component(TwoWords);
   var Composed = component(function(props, state){
     return dom('div', null, [
-      dom(Inner, { one: 'Hello', two: props.world })
+      dom(Inner, { one: 'Hello', two: props.app })
     ]);
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Composed, { world: 'Pluto' });
+  app.mount(el, Composed, { app: 'Pluto' });
   assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>');
 });
 
@@ -105,9 +105,9 @@ it('should allow components to have child nodes', function(){
       ]);
     }
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, ComponentB);
+  app.mount(el, ComponentB);
   assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
 });
 
@@ -124,10 +124,10 @@ it('should update component child nodes', function(){
       ]);
     }
   });
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, ComponentB);
-  world.update({ text: 'Hello Pluto!' });
+  app.mount(el, ComponentB);
+  app.update({ text: 'Hello Pluto!' });
   assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
 });
 
@@ -154,9 +154,9 @@ it('should allow components to have other components as child nodes', function()
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, ComponentB, { text: 'Hello World!' })
+  app.mount(el, ComponentB, { text: 'Hello World!' })
 
   assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>');
 });
@@ -190,15 +190,15 @@ it('should only update ONCE when props/state is changed in different parts of th
     }
   });
 
-  var world = World();
+  var app = deku();
   var el = div();
-  world.mount(el, ComponentB, { text: '2x' })
+  app.mount(el, ComponentB, { text: '2x' })
 
   i = 0;
     // Mark ComponentA as dirty from a state change
   emitter.emit('data', 'Mirror Shield');
   // Update the top-level props
-  world.update({ text: '3x' });
+  app.update({ text: '3x' });
   requestAnimationFrame(function(){
     assert.equal(i, 2)
     assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>")
@@ -220,12 +220,12 @@ it('should only update if shouldUpdate returns true', function(){
     }
   });
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Component)
-  world.update({ foo: 'bar' });
+  app.mount(el, Component)
+  app.update({ foo: 'bar' });
   assert.equal(i, 0);
-  world.update({ foo: 'baz' });
+  app.update({ foo: 'baz' });
   assert.equal(i, 0);
 });
 
@@ -235,7 +235,7 @@ it('should not allow setting the state during render', function (done) {
     return dom();
   });
   try {
-    var app = world(Impure)
+    var app = app(Impure)
     mount(app)
   } catch(e) {
     return done();
