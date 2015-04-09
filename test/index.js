@@ -23,3 +23,6 @@ describe('renderString', function(){
   require('./string')
 })
 
+describe('data', function(){
+  require('./data')
+})
