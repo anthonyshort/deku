@@ -29,7 +29,8 @@ it('should fire beforeUpdate', function(done){
 
   var app = deku();
   var el = div();
-  app.mount(el, Test, { count: 1 });
+  app.layer('main', el);
+  app.mount(Test, { count: 1 });
   app.update({ count: 2 });
   requestAnimationFrame(function(){
     assert(fired);
@@ -52,7 +53,8 @@ it('should fire afterUpdate', function(done){
 
   var app = deku();
   var el = div();
-  app.mount(el, Test, { count: 1 });
+  app.layer('main', el);
+  app.mount(Test, { count: 1 });
   app.update({ count: 2 });
   requestAnimationFrame(function(){
     assert(fired);
@@ -68,7 +70,8 @@ it('should not allow setting the state during beforeUpdate', function(done){
   });
   var app = deku();
   var el = div();
-  app.mount(el, Impure, { count: 1 });
+  app.layer('main', el);
+  app.mount(Impure, { count: 1 });
   try {
     app.set('renderImmediate', true);
     app.update({ count: 2 });
@@ -93,7 +96,8 @@ it('should only call `beforeUpdate` once', function(done){
 
   var app = deku();
   var el = div();
-  app.mount(el, Component, { text: 'one' });
+  app.layer('main', el);
+  app.mount(Component, { text: 'one' });
   app.update({ text: 'two' })
   app.update({ text: 'three' });
   requestAnimationFrame(function(){

@@ -10,7 +10,8 @@ it('should fire the `afterMount` hook', function(done){
   });
   var app = deku();
   var el = div();
-  app.mount(el, Page);
+  app.layer('main', el);
+  app.mount(Page);
 })
 
 it('should fire the `beforeMount` hook before `mount`', function(){
@@ -25,7 +26,8 @@ it('should fire the `beforeMount` hook before `mount`', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Page);
+  app.layer('main', el);
+  app.mount(Page);
   assert(pass);
 })
 
@@ -33,7 +35,8 @@ it.skip('should not unmount twice', function(){
   var Page = component()
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Page);
+  app.layer('main', el);
+  app.mount(Page);
   app.unmount(0);
   app.unmount(0);
 })
@@ -61,7 +64,8 @@ it('should fire mount events on sub-components', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB, { name: 'Bob' });
+  app.layer('main', el);
+  app.mount(ComponentB, { name: 'Bob' });
 
   assert.equal(i, 4);
 });
@@ -97,7 +101,8 @@ it('should fire unmount events on sub-components from the bottom up', function()
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Parent, { show: true });
+  app.layer('main', el);
+  app.mount(Parent, { show: true });
 
   app.update({ show: false });
   assert.equal(arr.length, 2)
@@ -132,7 +137,8 @@ it('should unmount sub-components that move themselves in the DOM', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Parent, { show: true });
+  app.layer('main', el);
+  app.mount(Parent, { show: true });
 
   var overlay = document.querySelector('.Overlay')
   assert(overlay.parentElement === document.body, 'It should move element to the root')
@@ -161,7 +167,8 @@ it('should fire mount events on sub-components created later', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB, { showComponent: false });
+  app.layer('main', el);
+  app.mount(ComponentB, { showComponent: false });
 
   app.update({ showComponent: true });
   assert.equal(calls, 2);
@@ -187,7 +194,8 @@ it('should fire unmount events on sub-components created later', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB, { showComponent: true });
+  app.layer('main', el);
+  app.mount(ComponentB, { showComponent: true });
 
   app.update({ showComponent: false });
   assert.equal(calls, 1);

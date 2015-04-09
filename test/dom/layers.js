@@ -17,7 +17,7 @@ it('render multiple layers', function(){
   var main = div();
   app.layer('dialog', dialog);
   app.layer('main', main);
-  app.mount(main, Page);
+  app.mount(Page);
   assert.equal(main.innerHTML, '<div>A page</div>');
   assert.equal(dialog.innerHTML, '<div>A dialog</div>');
 
