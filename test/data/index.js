@@ -37,7 +37,6 @@ it('should update with new value from data source', function(){
 
   app.mount(el, Test);
   assert.equal(el.innerHTML, '<div>Hello World</div>');
-  debugger;
   app.value('meta', { title: 'Hello Pluto' });
   assert.equal(el.innerHTML, '<div>Hello Pluto</div>');
 
