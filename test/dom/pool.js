@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,World} from '../../'
+import {component,dom,deku} from '../../'
 import {mount,div} from '../helpers'
 
 // Helpers.
@@ -20,17 +20,17 @@ function render(props) {
 
 it('should pool dom nodes', function(){
   var Component = component(render)
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
 
-  world.mount(el, Component, { type: 'div', attr: 'foo', value: 'bar' });
+  app.mount(el, Component, { type: 'div', attr: 'foo', value: 'bar' });
 
   // Switch the nodes back and forth to trigger the pooling
   var target = el.querySelector('#foo div')
   var deepTarget = el.querySelector('strong')
 
-  world.update({ type: 'span', attr: null, value: null });
-  world.update({ type: 'div', attr: null, value: null });
+  app.update({ type: 'span', attr: null, value: null });
+  app.update({ type: 'div', attr: null, value: null });
 
   var next = el.querySelector('#foo div')
   var deepNext = el.querySelector('strong')
@@ -42,7 +42,7 @@ it('should pool dom nodes', function(){
   assert.equal(deepTarget, deepNext)
 
   // It should have placed the span back in the pool
-  assert.equal(world.pools.span.storage.length, 1)
+  assert.equal(app.pools.span.storage.length, 1)
 
   // It should remove attributes from nodes when they are re-used
   assert(next.hasAttribute('foo') === false)
@@ -50,7 +50,7 @@ it('should pool dom nodes', function(){
 
   // // It should empty the pools when unmounted so that elements don't hang
   // // around in the cache forever.
-  // assert.deepEqual(world.pools, {});
+  // assert.deepEqual(app.pools, {});
 })
 
 it('should not pool any components that have the option disabled', function () {
@@ -78,15 +78,15 @@ it('should not pool any components that have the option disabled', function () {
 
   GrandParent.set('disablePooling', true)
 
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, GrandParent, { show: true });
+  app.mount(el, GrandParent, { show: true });
 
   var adiv = el.querySelector('div')
   var span = el.querySelector('span')
   var a = el.querySelector('a')
-  world.update({ show: false });
-  world.update({ show: true });
+  app.update({ show: false });
+  app.update({ show: true });
   var nextdiv = el.querySelector('div')
   var nextspan = el.querySelector('span')
   var nexta = el.querySelector('a')

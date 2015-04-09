@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {component,dom,World} from '../../'
+import {component,dom,deku} from '../../'
 import {mount,div} from '../helpers'
 
 var Toggle = component({
@@ -10,15 +10,15 @@ var Toggle = component({
 });
 
 it('should add/update/remove text nodes', function(){
-  var world = World().set('renderImmediate', true);
+  var app = deku().set('renderImmediate', true);
   var el = div();
-  world.mount(el, Toggle, { showText: false });
+  app.mount(el, Toggle, { showText: false });
 
   assert.equal(el.innerHTML, '<div></div>')
-  world.update({ showText: true, text: 'bar' });
+  app.update({ showText: true, text: 'bar' });
   assert.equal(el.innerHTML, '<div>bar</div>')
-  world.update({ text: 'Hello Pluto' });
+  app.update({ text: 'Hello Pluto' });
   assert.equal(el.innerHTML, '<div>Hello Pluto</div>')
-  world.update({ showText: false });
+  app.update({ showText: false });
   assert.equal(el.innerHTML, '<div></div>')
 })
