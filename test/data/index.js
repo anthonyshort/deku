@@ -21,9 +21,6 @@ it('should get default value from data value', function(){
   }
 
   function metaSource(app) {
-    app.send('update value', {
-      type: 'meta',
-      data: { title: 'Hello World' }
-    });
+    app.value('meta', { title: 'Hello World' });
   }
 });
