@@ -6,7 +6,7 @@ import {mount,div} from '../helpers'
 it('render multiple layers', function(){
   var Page = component()
     .layer('main', mainLayer)
-    .layer('overlay', overlayLayer);
+    .layer('dialog', dialogLayer);
 
   var Dialog = component(function(props){
     return dom('div', {}, [ props.message ]);
@@ -25,7 +25,7 @@ it('render multiple layers', function(){
     return dom('div', {}, [ 'A page' ]);
   }
 
-  function overlayLayer(props) {
+  function dialogLayer(props) {
     return dom(Dialog, { message: 'A dialog' });
   }
 });
