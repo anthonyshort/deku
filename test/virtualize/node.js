@@ -92,12 +92,6 @@ describe('Virtual Node', function(){
     assert.equal(node.children.length, 4);
   });
 
-  it('should store events', function () {
-    var node = dom('div', { onClick: click });
-    function click() {};
-    assert(node.events['click'] === click);
-  });
-
   it('should allow skipping attributes and using an array of children', function () {
     var node = dom('div', ['foo']);
     assert(node.children[0].data === 'foo');
