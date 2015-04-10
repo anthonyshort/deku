@@ -12,7 +12,8 @@ var Toggle = component({
 it('should add/update/remove text nodes', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Toggle, { showText: false });
+  app.layer('main', el);
+  app.mount(Toggle, { showText: false });
 
   assert.equal(el.innerHTML, '<div></div>')
   app.update({ showText: true, text: 'bar' });

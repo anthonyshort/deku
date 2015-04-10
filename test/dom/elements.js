@@ -54,7 +54,8 @@ var ComponentToggle = component({
 it('should add/remove element nodes', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Toggle, {
+  app.layer('main', el);
+  app.mount(Toggle, {
     showChildren: false
   });
 
@@ -73,7 +74,8 @@ it('should add/remove element nodes', function(){
 it('should only remove adjacent element nodes', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, AdjacentTest, {
+  app.layer('main', el);
+  app.mount(AdjacentTest, {
     i: 1
   });
 
@@ -93,7 +95,8 @@ it('should only remove adjacent element nodes', function(){
 it('should change tag names', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, CustomTag, { type: 'span' });
+  app.layer('main', el);
+  app.mount(CustomTag, { type: 'span' });
 
   assert.equal(el.innerHTML, '<span></span>');
   app.update({ type: 'div' });
@@ -120,7 +123,8 @@ it('should change root node and still update correctly', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, {
+  app.layer('main', el);
+  app.mount(Test, {
     type: 'span',
     text: 'test'
   });
@@ -161,7 +165,8 @@ it('should unmount components when removing an element node', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, App, {
+  app.layer('main', el);
+  app.mount(App, {
     showElements: true
   });
 
@@ -184,7 +189,8 @@ it('should change sub-component tag names', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, { type: 'span' });
+  app.layer('main', el);
+  app.mount(Test, { type: 'span' });
 
   app.update({ type: 'div' });
   assert.equal(el.innerHTML, '<div></div>');
@@ -207,7 +213,8 @@ it('should replace elements with component nodes', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, { showElement: true });
+  app.layer('main', el);
+  app.mount(Test, { showElement: true });
 
   assert.equal(el.innerHTML, '<span>element</span>');
   app.update({ showElement: false });
@@ -239,13 +246,14 @@ it('should replace components', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentC, { type: 'A' });
+  app.layer('main', el);
+  app.mount(ComponentC, { type: 'A' });
 
   assert.equal(el.innerHTML, '<div>A</div>')
   app.update({ type: 'B' })
   assert.equal(el.innerHTML, '<div>B</div>')
   var childId = app.root.children['0'];
-  var entity = app.entities[childId];
+  var entity = app.renders[childId];
   assert(entity.component === ComponentB);
 })
 
@@ -257,7 +265,8 @@ it('should replace components', function(){
 it('should remove references to child components when they are removed', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentToggle, { showComponent: true });
+  app.layer('main', el);
+  app.mount(ComponentToggle, { showComponent: true });
 
   assert(app.root.children);
   app.update({ showComponent: false });

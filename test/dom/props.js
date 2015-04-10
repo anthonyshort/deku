@@ -7,7 +7,8 @@ var Test = component(TwoWords);
 it('should merge props on the app', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, { one: 'Hello', two: 'deku' });
+  app.layer('main', el);
+  app.mount(Test, { one: 'Hello', two: 'deku' });
 
   app.update({ two: 'Pluto' })
   assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
@@ -16,7 +17,8 @@ it('should merge props on the app', function(){
 it('should update on the next frame', function(done){
   var app = deku();
   var el = div();
-  app.mount(el, Test, { one: 'Hello', two: 'deku' });
+  app.layer('main', el);
+  app.mount(Test, { one: 'Hello', two: 'deku' });
 
   app.update({ one: 'Hello', two: 'Pluto' });
   assert.equal(el.innerHTML, '<span>Hello deku</span>');
@@ -30,7 +32,8 @@ it.skip('should not update props if the app is removed', function (done) {
   var Test = component(Span);
   var app = deku();
   var el = div();
-  app.mount(el, Test, { text: 'foo' });
+  app.layer('main', el);
+  app.mount(Test, { text: 'foo' });
   var renderer = app.renderer;
 
   renderer.update = function(){
@@ -54,7 +57,8 @@ it('should not update twice when setting props', function(done){
 
   var app = deku();
   var el = div();
-  app.mount(el, IncrementAfterUpdate, { text: 'one' });
+  app.layer('main', el);
+  app.mount(IncrementAfterUpdate, { text: 'one' });
   app.update({ text: 'two' });
   app.update({ text: 'three' });
   requestAnimationFrame(function(){
@@ -83,7 +87,8 @@ it('should update child even when the props haven\'t changed', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Parent, { character: 'Link' });
+  app.layer('main', el);
+  app.mount(Parent, { character: 'Link' });
   app.update({ character: 'Zelda' });
   assert.equal(calls, 2);
 });

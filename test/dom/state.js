@@ -18,7 +18,8 @@ var StateChangeOnMount = component({
 it('should update components when state changes', function(done){
   var app = deku();
   var el = div();
-  app.mount(el, StateChangeOnMount);
+  app.layer('main', el);
+  app.mount(StateChangeOnMount);
   assert.equal(el.innerHTML, '<span>foo</span>');
   requestAnimationFrame(function(){
     assert.equal(el.innerHTML, '<span>bar</span>');
@@ -39,7 +40,8 @@ it('should update composed components when state changes', function(done){
   });
   var app = deku();
   var el = div();
-  app.mount(el, Composed)
+  app.layer('main', el);
+  app.mount(Composed)
 
   assert.equal(el.innerHTML, '<div><span>foo</span></div>')
   requestAnimationFrame(function(){

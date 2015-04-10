@@ -13,7 +13,8 @@ var Toggle = component({
 it('should replace elements with text elements', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Toggle, { showElement: true });
+  app.layer('main', el);
+  app.mount(Toggle, { showElement: true });
 
   assert.equal(el.innerHTML, '<div><span></span></div>')
   app.update({ showElement: false, showText: true })
@@ -23,7 +24,8 @@ it('should replace elements with text elements', function(){
 it('should replace text nodes with elements', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Toggle, { showElement: false, showText: true });
+  app.layer('main', el);
+  app.mount(Toggle, { showElement: false, showText: true });
 
   assert.equal(el.innerHTML, '<div>bar</div>')
   app.update({ showElement: true, showText: false })

@@ -23,7 +23,8 @@ it('should pool dom nodes', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
 
-  app.mount(el, Component, { type: 'div', attr: 'foo', value: 'bar' });
+  app.layer('main', el);
+  app.mount(Component, { type: 'div', attr: 'foo', value: 'bar' });
 
   // Switch the nodes back and forth to trigger the pooling
   var target = el.querySelector('#foo div')
@@ -80,7 +81,8 @@ it('should not pool any components that have the option disabled', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, GrandParent, { show: true });
+  app.layer('main', el);
+  app.mount(GrandParent, { show: true });
 
   var adiv = el.querySelector('div')
   var span = el.querySelector('span')

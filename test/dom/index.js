@@ -9,7 +9,8 @@ it('should render a component', function(){
   var Test = component(HelloWorld);
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test);
+  app.layer('main', el);
+  app.mount(Test);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 })
 
@@ -26,7 +27,8 @@ it('should have initial state', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, DefaultState);
+  app.layer('main', el);
+  app.mount(DefaultState);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 })
 
@@ -38,7 +40,8 @@ it('should create a component with properties', function(){
   })
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, { text: 'Hello World' })
+  app.layer('main', el);
+  app.mount(Test, { text: 'Hello World' })
   assert.equal(el.innerHTML, '<span>Hello World</span>')
 })
 
@@ -47,7 +50,8 @@ it.skip('should remove from the DOM', function(){
   var Test = component(HelloWorld);
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test);
+  app.layer('main', el);
+  app.mount(Test);
   renderer.remove();
   assert.equal(container.innerHTML, '')
   assert.deepEqual(renderer.entities, {})
@@ -64,7 +68,8 @@ it('should compose components', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Composed);
+  app.layer('main', el);
+  app.mount(Composed);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 });
 
@@ -75,7 +80,8 @@ it('should compose components and pass in props', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Composed);
+  app.layer('main', el);
+  app.mount(Composed);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 });
 
@@ -88,7 +94,8 @@ it('should update sub-components', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Composed, { app: 'Pluto' });
+  app.layer('main', el);
+  app.mount(Composed, { app: 'Pluto' });
   assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>');
 });
 
@@ -107,7 +114,8 @@ it('should allow components to have child nodes', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB);
+  app.layer('main', el);
+  app.mount(ComponentB);
   assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
 });
 
@@ -126,7 +134,8 @@ it('should update component child nodes', function(){
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB);
+  app.layer('main', el);
+  app.mount(ComponentB);
   app.update({ text: 'Hello Pluto!' });
   assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
 });
@@ -156,7 +165,8 @@ it('should allow components to have other components as child nodes', function()
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, ComponentB, { text: 'Hello World!' })
+  app.layer('main', el);
+  app.mount(ComponentB, { text: 'Hello World!' })
 
   assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>');
 });
@@ -192,7 +202,8 @@ it('should only update ONCE when props/state is changed in different parts of th
 
   var app = deku();
   var el = div();
-  app.mount(el, ComponentB, { text: '2x' })
+  app.layer('main', el);
+  app.mount(ComponentB, { text: '2x' })
 
   i = 0;
     // Mark ComponentA as dirty from a state change
@@ -222,7 +233,8 @@ it('should only update if shouldUpdate returns true', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Component)
+  app.layer('main', el);
+  app.mount(Component)
   app.update({ foo: 'bar' });
   assert.equal(i, 0);
   app.update({ foo: 'baz' });

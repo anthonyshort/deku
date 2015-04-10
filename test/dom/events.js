@@ -34,7 +34,8 @@ it('should add click event', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Page, { x: 20 });
+  app.layer('main', el);
+  app.mount(Page, { x: 20 });
 
   assert.equal(el.innerHTML, '<span>Hello World</span>')
   trigger(el.querySelector('span'), 'click')
@@ -67,7 +68,8 @@ it('should remove click event', function(done){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Page, { click: true });
+  app.layer('main', el);
+  app.mount(Page, { click: true });
 
   rootEl = el
   trigger(el.querySelector('span'), 'click')
@@ -91,7 +93,8 @@ it('should update click event', function(){
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Page, { click: onclicka });
+  app.layer('main', el);
+  app.mount(Page, { click: onclicka });
 
   trigger(el.querySelector('span'), 'click');
   assert.equal(count, 1);
@@ -111,7 +114,8 @@ it('should update click event', function(){
 it('should delegate events', function () {
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Delegate);
+  app.layer('main', el);
+  app.mount(Delegate);
 
   var first = el.querySelectorAll('a')[0]
   trigger(first, 'click')
@@ -137,7 +141,8 @@ it('should delegate events on the root', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, DelegateRoot);
+  app.layer('main', el);
+  app.mount(DelegateRoot);
 
   var first = el.querySelectorAll('a')[0]
   trigger(first, 'click')
@@ -162,7 +167,8 @@ it('should set a delegateTarget', function (done) {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, DelegateRoot);
+  app.layer('main', el);
+  app.mount(DelegateRoot);
 
   rootEl = el
   var first = el.querySelectorAll('a')[0]
@@ -211,7 +217,8 @@ it('should update events when nested children are removed', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, List, { items: items });
+  app.layer('main', el);
+  app.mount(List, { items: items });
 
   trigger(el.querySelector('a'), 'click')
   app.update({ items: items })

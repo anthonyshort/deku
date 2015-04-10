@@ -13,7 +13,8 @@ var AttrComponent = component(function(props, state){
 it('should add/update/remove attributes', function(){
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, AttrComponent);
+  app.layer('main', el);
+  app.mount(AttrComponent);
   assert.equal(el.innerHTML, '<span></span>')
   app.update({ name: 'Bob' })
   assert.equal(el.innerHTML, '<span name="Bob"></span>')
@@ -27,7 +28,8 @@ it('should not touch the DOM if attributes have not changed', function(){
   var pass = true;
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, AttrComponent, {
+  app.layer('main', el);
+  app.mount(AttrComponent, {
     name: 'Bob'
   });
   el.setAttribute = function(){
@@ -46,7 +48,8 @@ it('should update the real value of input fields', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Input, {
+  app.layer('main', el);
+  app.mount(Input, {
     value: 'Bob'
   });
 
@@ -61,7 +64,8 @@ it('should render innerHTML', function () {
   });
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test);
+  app.layer('main', el);
+  app.mount(Test);
   assert.equal(el.innerHTML,'<div>Hello <strong>deku</strong></div>');
 })
 
@@ -72,7 +76,8 @@ it('should update innerHTML', function () {
 
   var app = deku().set('renderImmediate', true);
   var el = div();
-  app.mount(el, Test, {
+  app.layer('main', el);
+  app.mount(Test, {
     content: 'Hello <strong>deku</strong>'
   });
 

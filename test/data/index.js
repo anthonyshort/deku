@@ -13,7 +13,8 @@ it('should get default value from data value', function(){
 
   var el = div();
 
-  app.mount(el, Test);
+  app.layer('main', el);
+  app.mount(Test);
   assert.equal(el.innerHTML, '<div>Hello World</div>');
 
   function template(props) {
@@ -35,7 +36,8 @@ it('should update with new value from data source', function(){
 
   var el = div();
 
-  app.mount(el, Test);
+  app.layer('main', el);
+  app.mount(Test);
   assert.equal(el.innerHTML, '<div>Hello World</div>');
   app.value('meta', { title: 'Hello Pluto' });
   assert.equal(el.innerHTML, '<div>Hello Pluto</div>');
