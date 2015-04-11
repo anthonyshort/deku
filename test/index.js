@@ -1,5 +1,7 @@
 
-require('./virtualize')
+describe('virtual', function(){
+  require('./virtual')
+});
 
 describe('component', function(){
   require('./component')

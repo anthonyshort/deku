@@ -33,7 +33,6 @@
     "object-path": "^0.8.1",
     "per-frame": "^3.0.0",
     "raf-loop": "^1.0.1",
-    "shallow-copy": "0.0.1",
-    "virtualize": "~0.0.1"
+    "shallow-copy": "0.0.1"
   }
 }
