@@ -19,6 +19,7 @@ describe('render', function(){
   require('./dom/events')
   require('./dom/state')
   require('./dom/pool')
+  require('./dom/jsx')
 })
 
 describe('renderString', function(){
