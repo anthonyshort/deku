@@ -58,6 +58,10 @@ test-coverage:
 	@mochify --cover
 .PHONY: coverage
 
+test-size: index.js
+	minify index.js | gzip -9 | wc -c
+.PHONY: test-size
+
 #
 # Tasks.
 #
