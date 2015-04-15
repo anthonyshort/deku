@@ -5,9 +5,7 @@ import {component,dom,deku} from '../../'
 import {mount,div} from '../helpers'
 
 var AttrComponent = component(function(props, state){
-  var attrs = {};
-  if (props.name) attrs.name = props.name;
-  return dom('span', attrs);
+  return dom('span', props);
 });
 
 it('should add/update/remove attributes', function(){
@@ -24,17 +22,28 @@ it('should add/update/remove attributes', function(){
 })
 
 it('should not touch the DOM if attributes have not changed', function(){
-  var pass = true;
   var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, AttrComponent, {
-    name: 'Bob'
-  });
+  var root = div();
+  app.mount(root, AttrComponent, { name: 'Bob' });
+  var el = root.children[0];
   el.setAttribute = function(){
-    pass = false;
+    throw new Error('should not set attributes');
   };
   app.update({ name: 'Bob' })
-  assert(pass)
+})
+
+it('should not touch the DOM just because attributes are falsy', function () {
+  var app = deku().set('renderImmediate', true);
+  var root = div();
+  app.mount(root, AttrComponent, { name: '' });
+  var el = root.children[0];
+  el.setAttribute = function () {
+    throw new Error('should not set attributes');
+  };
+  el.removeAttribute = function () {
+    throw new Error('should not remove attributes');
+  };
+  app.update({ name: '' })
 })
 
 it('should update the real value of input fields', function () {
