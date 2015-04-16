@@ -41,3 +41,39 @@ it('should update with new value from data source', function(){
     return dom('div', {}, props.text);
   }
 });
+
+it('should handle two-way updating', function(){
+  var Test = component(template)
+    .prop('text', { source: 'title' })
+    .prop('change', { source: 'setTitle' });
+
+  var app = deku()
+    .set('renderImmediate', true)
+    .source('title', 'Hello World')
+    .source('setTitle', setTitle);
+
+  var el = div();
+
+  app.mount(el, Test);
+  assert.equal(el.innerHTML, '<div>Hello World</div>');
+  trigger(el.querySelector('div'), 'click');
+  assert.equal(el.innerHTML, '<div>Hello Pluto</div>');
+
+  /**
+   * Show some data.
+   *
+   * @param {Mixed} data Can be a virtual node(!) or just plain data. Or set it to null to remove
+   */
+
+  function setTitle(string) {
+    app.value('title', string);
+  }
+
+  function template(props, state) {
+    return dom('div', { onClick: onClick }, props.text);
+
+    function onClick() {
+      props.change('Hello Pluto');
+    }
+  }
+});
