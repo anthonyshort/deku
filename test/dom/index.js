@@ -50,7 +50,7 @@ it.skip('should remove from the DOM', function(){
   app.mount(el, Test);
   renderer.remove();
   assert.equal(container.innerHTML, '')
-  assert.deepEqual(renderer.entities, {})
+  assert.deepEqual(renderer.renderRecords, {})
   assert.deepEqual(renderer.elements, {})
   assert.deepEqual(renderer.children, {})
 })
