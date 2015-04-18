@@ -5,8 +5,12 @@ import assert from 'assert';
 import {component,deku,dom,render} from '../../';
 import {HelloWorld,Span,TwoWords,mount,div} from '../helpers';
 
-it('should render a component', function(){
-  var Test = component(HelloWorld);
+it.only('should render a component', function(){
+  var Test = {
+    render: function(){
+      return dom('span', null, 'Hello World');
+    }
+  };
   var app = deku().set('renderImmediate', true);
   var el = div();
   app.mount(el, Test);
