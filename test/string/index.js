@@ -144,3 +144,18 @@ it('should render the value of inputs', function(){
   app.mount(<Component />)
   assert.equal(renderString(app), '<input value="foo"></input>')
 })
+
+it('should render data sources', function(){
+  var Component = {
+    props: {
+      'text': { source: 'text' }
+    },
+    render: function(props, state){
+      return <div>{props.text}</div>
+    }
+  };
+  var app = deku()
+    .set('text', 'Hello World')
+    .mount(<Component />)
+  assert.equal(renderString(app), '<div>Hello World</div>')
+})
