@@ -37,10 +37,10 @@ Then we create an app, mount the component and render it to the DOM.
 ```js
 // app.js
 import * as Button from './button';
-import {scene,render} from 'deku';
+import {tree,render} from 'deku';
 
 // Create an app
-var app = scene()
+var app = tree()
 app.mount(<Button text="Click me!" />)
 
 // Render the app to the DOM
