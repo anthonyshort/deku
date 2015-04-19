@@ -79,7 +79,7 @@ it('should remove click event', function(done){
     trigger(el.querySelector('span'), 'click')
     assert.equal(count, 1)
     app.mount(<Page click={false} />)
-    app.update({ click: false })
+    trigger(el.querySelector('span'), 'click')
     assert.equal(count, 1)
     document.body.removeChild(el);
   })
@@ -94,19 +94,19 @@ it('should update click event', function(){
 
   var Page = {
     render: function(props, state){
-      return <span onClick={onclick}>Hello World</span>
+      return <span onClick={props.clicker}>Hello World</span>
     }
   }
 
   var app = deku()
   var el = div();
-  app.mount(<Page click={onclicka} />)
+  app.mount(<Page clicker={onclicka} />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     document.body.appendChild(el);
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1)
-    app.mount(<Page click={onclickb} />)
+    app.mount(<Page clicker={onclickb} />)
     trigger(el.querySelector('span'), 'click')
     assert.equal(count, 0)
     document.body.removeChild(el);
