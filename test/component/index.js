@@ -83,3 +83,18 @@ it('should define custom layers', function(){
   function overlay(){}
   function tooltip(){}
 });
+
+it('should not unmount twice', function(){
+  var Page = {
+    render: function(){
+      return dom('div')
+    }
+  }
+  var app = deku()
+  app.mount(dom(Page));
+  app.unmount();
+  app.on('unmount', function(){
+    throw new Error();
+  })
+  app.unmount();
+})
