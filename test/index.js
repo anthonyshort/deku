@@ -16,12 +16,9 @@ describe('DOM Renderer', function(){
   require('./dom/events')
   require('./dom/state')
   require('./dom/pool')
+  require('./dom/data')
 })
 
 describe('String Renderer', function(){
   require('./string')
 })
-
-// describe('data', function(){
-//   require('./data')
-// })
