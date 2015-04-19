@@ -16,10 +16,10 @@ describe('DOM Renderer', function(){
   require('./dom/elements')
   require('./dom/text')
   require('./dom/attributes')
-  // require('./dom/replace')
+  require('./dom/replace')
   // require('./dom/events')
-  // require('./dom/state')
-  // require('./dom/pool')
+  require('./dom/state')
+  require('./dom/pool')
 })
 
 // describe('renderString', function(){
