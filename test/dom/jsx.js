@@ -1,7 +1,7 @@
-/** @jsx dom */
+/** @jsx element */
 
 import assert from 'assert';
-import {component,deku,dom,render} from '../../';
+import {component,deku,element,render} from '../../';
 
 it('should support JSX', function(){
   var Test = component(function(){

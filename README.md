@@ -23,34 +23,26 @@ npm install deku
 
 ## Example
 
+First we create a new component. This represents a single UI element on the page that needs to manage some state. Components are just plain objects, there are no classes or DSL to learn, just use modules.
+
 ```js
-import {component,dom} from 'deku';
-
-let Button = component({
-  onClick() {
-    this.setState({ clicked: true });
-  },
-  render(props, state) {
-    return dom('button', { onClick: this.onClick }, [props.text]);
-  }
-});
-
-export {Button}
+// button.js
+export function render(props) {
+  return <button>{props.text}</button>
+}
 ```
 
+Then we create an app, mount the component and render it to the DOM.
+
 ```js
-import {Button} from './button';
-import {render,scene} from 'deku';
+// app.js
+import * as Button from './button';
+import {scene,render} from 'deku';
 
-// Create a scene
-var app = scene(Button)
-app.setProps({ text: 'Click Me!' })
+// Create an app
+var app = scene()
+app.mount(<Button text="Click me!" />)
 
-// Render the scene to the page
-render(app, document.body);
-
-// Update the scene
-app.setProps({
-  text: 'Seriously, click me.'
-});
+// Render the app to the DOM
+render(app, document.body)
 ```

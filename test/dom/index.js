@@ -1,3 +1,5 @@
+/** @jsx dom */
+
 import trigger from 'trigger-event';
 import Emitter from 'component-emitter';
 import raf from 'component-raf';
@@ -5,16 +7,21 @@ import assert from 'assert';
 import {component,deku,dom,render} from '../../';
 import {HelloWorld,Span,TwoWords,mount,div} from '../helpers';
 
-it.only('should render a component', function(){
+it.only('should render and remove a component', function(){
   var Test = {
     render: function(){
       return dom('span', null, 'Hello World');
     }
   };
-  var app = deku().set('renderImmediate', true);
+  var app = deku();
+  app.mount(
+    dom(Test)
+  );
   var el = div();
-  app.mount(el, Test);
+  var renderer = render(app, el);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
+  renderer.remove();
+  assert.equal(el.innerHTML, '');
 })
 
 it('should have initial state', function(){
@@ -71,6 +78,18 @@ it('should compose components', function(){
   app.mount(el, Composed);
   assert.equal(el.innerHTML, '<span>Hello World</span>');
 });
+
+it.skip('should render a component using jsx', function(){
+  var Test = {
+    render: function(){
+      return <span class="yup">Hello World</span>
+    }
+  };
+  var app = deku().set('renderImmediate', true);
+  var el = div();
+  app.mount(el, Test);
+  assert.equal(el.innerHTML, '<span class="yup">Hello World</span>');
+})
 
 it('should compose components and pass in props', function(){
   var Inner = component(TwoWords);
