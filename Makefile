@@ -10,8 +10,8 @@ BIN := ./node_modules/.bin
 # Wildcards.
 #
 
-lib = $(shell find lib/*/*.js)
-js = $(shell find lib/*/*.js test/*.js)
+lib = $(shell find lib/*.js)
+js = $(shell find lib/*.js test/*.js)
 
 #
 # Default.

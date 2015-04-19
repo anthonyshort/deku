@@ -1,16 +1,17 @@
-import {render,scene,dom} from '../'
+import {render,deku,dom} from '../'
+import assert from 'assert'
 
 /**
  * Mount a scene, execute a function and then
  * remove the scene. This is used for testing.
  *
- * @param {World} app
+ * @param {Application} app
  * @param {Function} fn
  */
 
-exports.mount = function(world, fn) {
-  var el = exports.div();
-  var renderer = render(world, el);
+exports.mount = function(app, fn) {
+  var el = document.createElement('div');
+  var renderer = render(app, el, { batching: false });
   try {
     if (fn) fn(el, renderer);
   }
@@ -19,7 +20,8 @@ exports.mount = function(world, fn) {
   }
   finally {
     renderer.remove();
-    document.body.removeChild(el);
+    assert.equal(el.innerHTML, '');
+    if (el.parentNode) el.parentNode.removeChild(el);
   }
   return el;
 };
@@ -28,24 +30,30 @@ exports.mount = function(world, fn) {
  * Basic component for testing
  */
 
-exports.HelloWorld = function(props, state){
-  return dom('span', null, ['Hello World']);
+exports.HelloWorld = {
+  render: function(props, state){
+    return dom('span', null, ['Hello World']);
+  }
 };
 
 /**
  * Create a span
  */
 
-exports.Span = function(props, state){
-  return dom('span', null, [props.text]);
+exports.Span = {
+  render: function(props, state){
+    return dom('span', null, [props.text]);
+  }
 };
 
 /**
  * Create a span with two words
  */
 
-exports.TwoWords = function(props, state){
-  return dom('span', null, [props.one + ' ' + props.two]);
+exports.TwoWords = {
+  render: function(props, state){
+    return dom('span', null, [props.one + ' ' + props.two]);
+  }
 };
 
 /**

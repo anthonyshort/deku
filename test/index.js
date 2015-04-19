@@ -1,13 +1,14 @@
 
-// describe('virtual', function(){
-//   require('./virtual')
-// });
+describe('virtual', function(){
+  // require('./virtual')
+  // require('./virtual/jsx')
+});
 
 // describe('component', function(){
 //   require('./component')
 // })
 
-describe('render', function(){
+describe('DOM Renderer', function(){
   require('./dom')
   // require('./dom/mount-hook')
   // require('./dom/update-hook')
