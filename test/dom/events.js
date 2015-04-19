@@ -1,19 +1,20 @@
+/** @jsx dom */
 
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {dom,deku} from '../../'
 import {mount,Span,div} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import classes from 'component-classes'
 
-var Delegate = component({
-  render: function (props, state, send) {
+var Delegate = {
+  render: function (props, state) {
     var active = state.active || 0;
     var self = this;
     var items = [1,2,3].map(function(i){
       return dom('li', {
-        onClick: function(){
-          send({ active: i })
+        onClick: function(e, props, state, setState){
+          setState({ active: i })
         },
         class: { active: active === i }
       }, [
@@ -22,23 +23,26 @@ var Delegate = component({
     });
     return dom('ul', items);
   }
-});
+}
 
 it('should add click event', function(){
   var count = 0;
-  var Page = component({
+  var Page = {
     render: function(props, state){
-      return dom('span', { onClick: onclick }, ['Hello World']);
+      return <span onClick={onclick}>Hello World</span>
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, Page, { x: 20 });
+  var app = deku()
+  app.mount(<Page x={20} />)
 
-  assert.equal(el.innerHTML, '<span>Hello World</span>')
-  trigger(el.querySelector('span'), 'click')
-  assert.equal(count, 1)
+  mount(app, function(el, renderer){
+    document.body.appendChild(el);
+    assert.equal(el.innerHTML, '<span>Hello World</span>')
+    trigger(el.querySelector('span'), 'click')
+    assert.equal(count, 1)
+    document.body.removeChild(el);
+  })
 
   function onclick(e, props, state) {
     assert(props.x, 10);
@@ -50,30 +54,35 @@ it('should remove click event', function(done){
   var count = 0;
   var rootEl;
 
-  var Page = component({
+  var Page = {
     render: function(props, state){
       if (props.click) {
-        return dom('span', { onClick: onclick }, ['Hello World']);
+        return <span onClick={onclick}>Hello World</span>
       } else {
-        return dom('span', {}, ['Hello World']);
+        return <span>Hello World</span>
       }
     },
     afterUpdate: function(){
-      trigger(rootEl.querySelector('span'), 'click');
-      assert.equal(count, 1);
-      done();
+      trigger(rootEl.querySelector('span'), 'click')
+      assert.equal(count, 1)
+      done()
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
+  var app = deku()
   var el = div();
-  app.mount(el, Page, { click: true });
+  app.mount(<Page click={true} />)
 
-  rootEl = el
-  trigger(el.querySelector('span'), 'click')
-  assert.equal(count, 1)
-  app.update({ click: false })
-  assert.equal(count, 1)
+  mount(app, function(el){
+    document.body.appendChild(el);
+    rootEl = el
+    trigger(el.querySelector('span'), 'click')
+    assert.equal(count, 1)
+    app.mount(<Page click={false} />)
+    app.update({ click: false })
+    assert.equal(count, 1)
+    document.body.removeChild(el);
+  })
 
   function onclick() {
     ++count;
@@ -83,21 +92,25 @@ it('should remove click event', function(done){
 it('should update click event', function(){
   var count = 0;
 
-  var Page = component({
+  var Page = {
     render: function(props, state){
-      return dom('span', { onClick: props.click }, ['Hello World']);
+      return <span onClick={onclick}>Hello World</span>
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
+  var app = deku()
   var el = div();
-  app.mount(el, Page, { click: onclicka });
+  app.mount(<Page click={onclicka} />)
 
-  trigger(el.querySelector('span'), 'click');
-  assert.equal(count, 1);
-  app.update({ click: onclickb })
-  trigger(el.querySelector('span'), 'click')
-  assert.equal(count, 0)
+  mount(app, function(el){
+    document.body.appendChild(el);
+    trigger(el.querySelector('span'), 'click');
+    assert.equal(count, 1)
+    app.mount(<Page click={onclickb} />)
+    trigger(el.querySelector('span'), 'click')
+    assert.equal(count, 0)
+    document.body.removeChild(el);
+  })
 
   function onclicka() {
     count += 1;
@@ -106,68 +119,75 @@ it('should update click event', function(){
   function onclickb() {
     count -= 1;
   }
-});
+})
 
 it('should delegate events', function () {
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, Delegate);
+  var app = deku()
+  app.mount(<Delegate />)
 
-  var first = el.querySelectorAll('a')[0]
-  trigger(first, 'click')
-  assert(classes(first.parentNode).has('active'));
-  var second = el.querySelectorAll('a')[1];
-  trigger(second, 'click');
-  assert(classes(second.parentNode).has('active'));
-  assert(classes(first.parentNode).has('active') === false);
-});
+  mount(app, function(el){
+    document.body.appendChild(el);
+    var first = el.querySelectorAll('a')[0]
+    trigger(first, 'click')
+    assert(classes(first.parentNode).has('active'));
+    var second = el.querySelectorAll('a')[1];
+    trigger(second, 'click');
+    assert(classes(second.parentNode).has('active'));
+    assert(classes(first.parentNode).has('active') === false)
+    document.body.removeChild(el);
+  })
+})
 
 it('should delegate events on the root', function () {
-  var DelegateRoot = component({
-    render: function (props, state, send) {
-      return dom('div', { class: { active: state.active }, onClick: onClick }, [
-        dom('a', 'link')
-      ]);
-
-      function onClick(event) {
-        send({ active: true });
+  var DelegateRoot = {
+    render: function (props, state) {
+      return (
+        <div class={{ active: state.active }} onClick={onClick}>
+          <a>link</a>
+        </div>
+      )
+      function onClick(event, props, state, setState) {
+        setState({ active: true });
       }
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, DelegateRoot);
+  var app = deku()
+  app.mount(<DelegateRoot />);
 
-  var first = el.querySelectorAll('a')[0]
-  trigger(first, 'click')
-  assert(classes(first.parentNode).has('active') === true)
-});
+  mount(app, function(el){
+    document.body.appendChild(el);
+    var first = el.querySelectorAll('a')[0]
+    trigger(first, 'click')
+    assert(classes(first.parentNode).has('active') === true)
+    document.body.removeChild(el);
+  })
+})
 
 it('should set a delegateTarget', function (done) {
   var rootEl;
 
-  var DelegateRoot = component({
+  var DelegateRoot = {
     render: function (props, state) {
-      return dom('div', { onClick: onClick }, [
-        dom('a', 'link')
-      ]);
-
+      return <div onClick={onClick}><a>link</a></div>;
       function onClick(event) {
         assert(event.delegateTarget === rootEl.querySelector('div'));
         done();
       }
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, DelegateRoot);
+  var app = deku()
+  app.mount(<DelegateRoot />);
 
-  rootEl = el
-  var first = el.querySelectorAll('a')[0]
-  trigger(first, 'click')
-});
+  mount(app, function(el){
+    document.body.appendChild(el);
+    rootEl = el
+    var first = el.querySelectorAll('a')[0]
+    trigger(first, 'click')
+    document.body.removeChild(el);
+  })
+})
 
 it('should update events when nested children are removed', function () {
 
@@ -177,47 +197,46 @@ it('should update events when nested children are removed', function () {
     { text: 'three' }
   ];
 
-  var Button = component({
+  var Button = {
     render: function(props, state){
-      return dom('a', { onClick: props.onClick })
+      return <a onClick={props.onClick}>link</a>
     }
-  });
+  }
 
-  var ListItem = component({
+  var ListItem = {
     render: function(props, state){
-      return dom('li', [
-        dom(Button, {
-          onClick: function(){
-            items.splice(props.index, 1);
-          }
-        })
-      ]);
+      return (
+        <li>
+          <Button onClick={()=>items.splice(props.index, 1)} />
+        </li>
+      )
     }
-  });
+  }
 
-  var List = component({
+  var List = {
     render: function (props, state) {
-      return dom('ul', [
-        props.items.map(function(item, i){
-          return dom(ListItem, {
-            data: item,
-            index: i,
-            items: props.items
-          });
-        })
-      ]);
+      return (
+        <ul>
+          {props.items.map(function(item, i){
+            return <ListItem data={item} index={i} items={props.items} />
+          })}
+        </ul>
+      )
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, List, { items: items });
+  var app = deku()
+  app.mount(<List items={items} />)
 
-  trigger(el.querySelector('a'), 'click')
-  app.update({ items: items })
-  trigger(el.querySelector('a'), 'click')
-  app.update({ items: items })
-  trigger(el.querySelector('a'), 'click')
-  app.update({ items: items })
-  assert.equal(el.innerHTML, '<ul></ul>')
+  mount(app, function(el){
+    document.body.appendChild(el);
+    trigger(el.querySelector('a'), 'click')
+    app.mount(<List items={items} />)
+    trigger(el.querySelector('a'), 'click')
+    app.mount(<List items={items} />)
+    trigger(el.querySelector('a'), 'click')
+    app.mount(<List items={items} />)
+    assert.equal(el.innerHTML, '<ul></ul>')
+    document.body.removeChild(el);
+  })
 });

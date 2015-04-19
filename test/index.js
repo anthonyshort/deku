@@ -13,14 +13,14 @@ describe('DOM Renderer', function(){
   require('./dom/text')
   require('./dom/attributes')
   require('./dom/replace')
-  // require('./dom/events')
+  require('./dom/events')
   require('./dom/state')
   require('./dom/pool')
 })
 
-// describe('renderString', function(){
-//   require('./string')
-// })
+describe('String Renderer', function(){
+  require('./string')
+})
 
 // describe('data', function(){
 //   require('./data')
