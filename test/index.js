@@ -4,15 +4,11 @@ describe('virtual', function(){
   // require('./virtual/jsx')
 });
 
-// describe('component', function(){
-//   require('./component')
-// })
-
 describe('DOM Renderer', function(){
   require('./dom')
   require('./dom/mount-hook')
-  // require('./dom/update-hook')
-  // require('./dom/props')
+  require('./dom/update-hook')
+  require('./dom/props')
   require('./dom/elements')
   require('./dom/text')
   require('./dom/attributes')

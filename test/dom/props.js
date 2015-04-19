@@ -1,89 +1,84 @@
+/** @jsx dom */
+
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {dom,deku,render} from '../../'
 import {TwoWords,mount,div,Span} from '../helpers'
 
-var Test = component(TwoWords);
+it('should replace props on the app', function(){
+  var app = deku()
+  app.mount(<TwoWords one="Hello" two="deku" />)
 
-it('should merge props on the app', function(){
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, Test, { one: 'Hello', two: 'deku' });
-
-  app.update({ two: 'Pluto' })
-  assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
-});
+  mount(app, function(el){
+    app.mount(<TwoWords two="Pluto" />)
+    assert.equal(el.innerHTML, '<span>undefined Pluto</span>')
+  })
+})
 
 it('should update on the next frame', function(done){
-  var app = deku();
   var el = div();
-  app.mount(el, Test, { one: 'Hello', two: 'deku' });
-
-  app.update({ one: 'Hello', two: 'Pluto' });
-  assert.equal(el.innerHTML, '<span>Hello deku</span>');
+  var app = deku();
+  app.mount(<TwoWords one="Hello" two="World" />)
+  var renderer = render(app, el)
+  assert.equal(el.innerHTML, '<span>Hello World</span>')
+  app.mount(<TwoWords one="Hello" two="Pluto" />)
+  assert.equal(el.innerHTML, '<span>Hello World</span>')
   requestAnimationFrame(function(){
-    assert.equal(el.innerHTML, '<span>Hello Pluto</span>');
+    assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
+    renderer.remove()
     done();
-  });
-});
-
-it.skip('should not update props if the app is removed', function (done) {
-  var Test = component(Span);
-  var app = deku();
-  var el = div();
-  app.mount(el, Test, { text: 'foo' });
-  var renderer = app.renderer;
-
-  renderer.update = function(){
-    done(false)
-  }
-
-  app.update({ text: 'bar' });
-  app.remove();
-  requestAnimationFrame(function(){
-    done()
   });
 });
 
 it('should not update twice when setting props', function(done){
   var i = 0;
-  var IncrementAfterUpdate = component({
+
+  var IncrementAfterUpdate = {
+    render: function(){
+      return <div></div>
+    },
     afterUpdate: function(){
-      i++;
+      i++
     }
-  });
+  }
 
-  var app = deku();
-  var el = div();
-  app.mount(el, IncrementAfterUpdate, { text: 'one' });
-  app.update({ text: 'two' });
-  app.update({ text: 'three' });
+  var el = document.createElement('div')
+  var app = deku()
+  app.mount(<IncrementAfterUpdate text="one" />)
+  var renderer = render(app, el)
+  app.mount(<IncrementAfterUpdate text="two" />)
+  app.mount(<IncrementAfterUpdate text="three" />)
   requestAnimationFrame(function(){
-    assert.equal(i, 1);
-    done();
-  });
-});
+    assert.equal(i, 1)
+    renderer.remove()
+    done()
+  })
+})
 
-it('should update child even when the props haven\'t changed', function () {
+it(`should update child even when the props haven't changed`, function () {
   var calls = 0;
 
-  var Child = component({
-    render: function(props, state){
+  var Child = {
+    render: function(props){
       calls++;
-      return dom('span', null, [props.text]);
+      return <span>{props.text}</span>
     }
-  });
+  }
 
-  var Parent = component({
-    render: function(props, state){
-      return dom('div', { name: props.character }, [
-        dom(Child, { text: 'foo' })
-      ]);
+  var Parent = {
+    render: function(props){
+      return (
+        <div name={props.character}>
+          <Child text="foo" />
+        </div>
+      )
     }
-  });
+  }
 
-  var app = deku().set('renderImmediate', true);
-  var el = div();
-  app.mount(el, Parent, { character: 'Link' });
-  app.update({ character: 'Zelda' });
-  assert.equal(calls, 2);
-});
+  var app = deku()
+  app.mount(<Parent character="Link" />)
+
+  mount(app, function(){
+    app.mount(<Parent character="Zelda" />)
+    assert.equal(calls, 2)
+  })
+})
