@@ -47,7 +47,7 @@ test-cloud: test-lint tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
 
 test-lint: $(lib)
-	@standard lib/*
+	@./node_modules/.bin/standard lib/*
 .PHONY: test-lint
 
 test-watch:
