@@ -14,10 +14,9 @@
     "component-raf": "^1.2.0",
     "component-type": "^1.1.0",
     "duo-test": "^0.3.13",
-    "get-uid": "^1.0.1",
-    "jshint": "~2.5.11",
     "mochify": "^2.1.1",
     "sliced": "0.0.5",
+    "standard": "^3.6.1",
     "trigger-event": "^1.0.0",
     "zuul": "~1.16.4"
   },
