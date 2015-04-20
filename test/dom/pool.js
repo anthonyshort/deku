@@ -89,3 +89,33 @@ it('should disable pooling', function(){
   // Cleanup
   renderer.remove()
 })
+
+it.skip(`should'nt pool certain elements`, function(){
+  var el = div()
+  var app = deku()
+
+  app.mount(
+    <div>
+      <input />
+      <textarea></textarea>
+    </div>
+  )
+
+  var renderer = render(app, el, {
+    batching: false
+  })
+
+  var input = el.querySelector('input')
+  var textarea = el.querySelector('textarea')
+
+  app.mount(
+    <div>
+      <input />
+      <textarea></textarea>
+    </div>
+  )
+
+  assert(input !== el.querySelector('input'))
+  assert(textarea !== el.querySelector('textarea'))
+  renderer.remove()
+})
