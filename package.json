@@ -20,7 +20,6 @@
     "zuul": "~1.16.4"
   },
   "dependencies": {
-    "array-zip": "^1.0.0",
     "component-each": "^0.2.5",
     "component-emitter": "^1.1.3",
     "component-type": "^1.1.0",
