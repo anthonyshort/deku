@@ -1,49 +1,58 @@
+/** @jsx dom */
+
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {component,dom,deku,render} from '../../'
 import {mount,Span,div} from '../helpers'
 
-var StateChangeOnMount = component({
+var StateChangeOnMount = {
   initialState: function(){
     return { text: 'foo' };
   },
-  afterMount: function(el, props, state, send){
-    send({ text: 'bar' });
+  afterMount: function(el, props, state, setState){
+    setState({ text: 'bar' });
   },
   render: function(props, state){
-    var Test = component(Span);
-    return dom(Test, { text: state.text });
+    return <Span text={state.text} />
   }
-});
+}
+
+var Composed = {
+  afterUpdate: function(){
+    throw new Error('Parent should not be updated');
+  },
+  render: function(props, state){
+    return <div><StateChangeOnMount /></div>
+  }
+}
 
 it('should update components when state changes', function(done){
   var app = deku();
-  var el = div();
-  app.mount(el, StateChangeOnMount);
-  assert.equal(el.innerHTML, '<span>foo</span>');
+  app.mount(<StateChangeOnMount />);
+
+  var container = div()
+  var rendered = render(app, container)
+
+  assert.equal(container.innerHTML, '<span>foo</span>');
+
   requestAnimationFrame(function(){
-    assert.equal(el.innerHTML, '<span>bar</span>');
-    done();
-  });
-});
+    assert.equal(container.innerHTML, '<span>bar</span>')
+    rendered.remove()
+    done()
+  })
+})
 
 it('should update composed components when state changes', function(done){
-  var Composed = component({
-    afterUpdate: function(){
-      throw new Error('Parent should not be updated');
-    },
-    render: function(props, state){
-      return dom('div', null, [
-        dom(StateChangeOnMount)
-      ]);
-    }
-  });
   var app = deku();
-  var el = div();
-  app.mount(el, Composed)
+  app.mount(<Composed />)
 
-  assert.equal(el.innerHTML, '<div><span>foo</span></div>')
+  var container = div()
+  var rendered = render(app, container)
+
+  assert.equal(container.innerHTML, '<div><span>foo</span></div>')
+
   requestAnimationFrame(function(){
-    assert.equal(el.innerHTML, '<div><span>bar</span></div>');
-    done();
-  });
-});
+    assert.equal(container.innerHTML, '<div><span>bar</span></div>')
+    rendered.remove()
+    done()
+  })
+})

@@ -1,6 +1,6 @@
 # Deku
 
-[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku)
+[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
 > A simple library for creating UI components using virtual DOM.
 
@@ -21,36 +21,36 @@ npm install deku
 * Batched and optimized updates using `requestAnimationFrame`.
 * Pooling of DOM elements.
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+
 ## Example
 
+First we create a new component. This represents a single UI element on the page that needs to manage some state. Components are just plain objects, there are no classes or DSL to learn, just use modules.
+
 ```js
-import {component,dom} from 'deku';
+// button.js
+function render(props) {
+  return <button>{props.text}</button>
+}
 
-let Button = component({
-  onClick() {
-    this.setState({ clicked: true });
-  },
-  render(props, state) {
-    return dom('button', { onClick: this.onClick }, [props.text]);
-  }
-});
-
-export {Button}
+export {render}
 ```
 
+Then we create an app, mount the component and render it to the DOM.
+
 ```js
-import {Button} from './button';
-import {render,scene} from 'deku';
+// app.js
+import * as Button from './button';
+import {tree,render} from 'deku';
 
-// Create a scene
-var app = scene(Button)
-app.setProps({ text: 'Click Me!' })
+// Create an app
+var app = tree()
 
-// Render the scene to the page
-render(app, document.body);
+// Mount a virtual element onto the tree
+app.mount(
+  <Button text="Click me!" />
+)
 
-// Update the scene
-app.setProps({
-  text: 'Seriously, click me.'
-});
+// Render the app to the DOM
+render(app, document.body)
 ```

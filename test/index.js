@@ -1,13 +1,10 @@
 
 describe('virtual', function(){
   require('./virtual')
+  // require('./virtual/jsx')
 });
 
-describe('component', function(){
-  require('./component')
-})
-
-describe('render', function(){
+describe('DOM Renderer', function(){
   require('./dom')
   require('./dom/mount-hook')
   require('./dom/update-hook')
@@ -19,12 +16,10 @@ describe('render', function(){
   require('./dom/events')
   require('./dom/state')
   require('./dom/pool')
+  require('./dom/data')
+  require('./dom/validate')
 })
 
-describe('renderString', function(){
+describe('String Renderer', function(){
   require('./string')
-})
-
-describe('data', function(){
-  require('./data')
 })

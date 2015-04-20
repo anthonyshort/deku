@@ -10,8 +10,8 @@ BIN := ./node_modules/.bin
 # Wildcards.
 #
 
-lib = $(shell find lib/*/*.js)
-js = $(shell find lib/*/*.js test/*.js)
+lib = $(shell find lib/*.js)
+js = $(shell find lib/*.js test/*.js)
 
 #
 # Default.
@@ -36,7 +36,7 @@ index.js: node_modules $(js)
 # Tests.
 #
 
-test:
+test: tests.js
 	@mochify
 .PHONY: test
 
@@ -47,8 +47,8 @@ test-cloud: tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
 
 test-lint: $(lib)
-	@jshint lib
-.PHONY: lint
+	@./node_modules/.bin/standard lib/*
+.PHONY: test-lint
 
 test-watch:
 	@mochify --watch
