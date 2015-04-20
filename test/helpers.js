@@ -9,21 +9,26 @@ import assert from 'assert'
  * @param {Function} fn
  */
 
-exports.mount = function(app, fn) {
+exports.mount = function(app, fn, errorHandler) {
   var el = document.createElement('div');
-  var renderer = render(app, el, { batching: false });
+
   try {
+    var renderer = render(app, el, { batching: false });
     if (fn) fn(el, renderer);
   }
   catch(e) {
-    throw e;
+    if (errorHandler) {
+      errorHandler(e);
+    } else {
+      throw e;
+    }
   }
   finally {
-    renderer.remove();
+    if (renderer) renderer.remove();
     assert.equal(el.innerHTML, '');
     if (el.parentNode) el.parentNode.removeChild(el);
   }
-  return el;
+  return renderer;
 };
 
 /**

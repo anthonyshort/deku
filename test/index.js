@@ -17,6 +17,7 @@ describe('DOM Renderer', function(){
   require('./dom/state')
   require('./dom/pool')
   require('./dom/data')
+  require('./dom/validate')
 })
 
 describe('String Renderer', function(){
