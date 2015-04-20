@@ -46,6 +46,35 @@ describe('validation', function () {
     })
   })
 
+  it('should validate unexpected prop values when first rendered', function (done) {
+    var Component = {
+      render: div,
+      propTypes: {
+        'text': { type: 'string', expects: ['foo', 'bar', 'baz'] }
+      }
+    }
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component text="raz" />);
+    mount(app, null, function(e){
+      assert.equal(e.message, 'Invalid value for prop named: text. Must be one of foo,bar,baz');
+      done();
+    })
+  });
+
+  it('should validate expected prop values when first rendered', function () {
+    var Component = {
+      render: div,
+      propTypes: {
+        'text': { type: 'string', expects: ['foo', 'bar', 'baz'] }
+      }
+    }
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component text="foo" />);
+    mount(app)
+  });
+
   it('should skip optional props when first rendered', function(){
     var Component = {
       render: div,
