@@ -81,7 +81,7 @@ describe('key diffing', function () {
     })
   })
 
-  it('should move keyed elements around non-keyed elements', function(done){
+  it.skip('should move keyed elements around non-keyed elements', function(done){
     var app = deku()
     app.mount(
       <ul>
