@@ -21,6 +21,8 @@ npm install deku
 * Batched and optimized updates using `requestAnimationFrame`.
 * Pooling of DOM elements.
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+
 ## Example
 
 First we create a new component. This represents a single UI element on the page that needs to manage some state. Components are just plain objects, there are no classes or DSL to learn, just use modules.

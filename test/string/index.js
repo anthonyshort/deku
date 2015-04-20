@@ -104,6 +104,20 @@ it('should render with initial state', function(){
   assert.equal(renderString(app), '<div>foo</div>')
 });
 
+it('should have initial props', function(){
+  var Component = {
+    render: function(props){
+      return <div>{props.text}</div>
+    },
+    defaultProps: {
+      text: 'Hello!'
+    }
+  }
+  var app = deku()
+  app.mount(<Component />)
+  assert.equal(renderString(app), '<div>Hello!</div>')
+})
+
 it('should call beforeMount', function(done){
   var Component = {
     initialState: function(){

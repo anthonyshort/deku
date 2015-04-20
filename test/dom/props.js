@@ -14,6 +14,25 @@ it('should replace props on the app', function(){
   })
 })
 
+it('should have initial props', function(){
+  var Component = {
+    props: {
+      text: { type: 'string' }
+    },
+    render: function(props){
+      return <div>{props.text}</div>
+    },
+    defaultProps: {
+      text: 'Hello!'
+    }
+  }
+  var app = deku()
+  app.mount(<Component />)
+  mount(app, function(el){
+    assert.equal(el.innerHTML, '<div>Hello!</div>')
+  })
+})
+
 it('should update on the next frame', function(done){
   var el = div();
   var app = deku();
