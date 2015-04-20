@@ -7,7 +7,7 @@ import assert from 'assert';
 
 it('should get default value from data value', function(){
   var Test = {
-    props: {
+    propTypes: {
       'data': { source: 'meta' }
     },
     render: function(props) {
@@ -26,7 +26,7 @@ it('should get default value from data value', function(){
 
 it('should update with new value from data source', function(){
   var Test = {
-    props: {
+    propTypes: {
       'text': { source: 'title' }
     },
     render: function(props) {
@@ -47,7 +47,7 @@ it('should update with new value from data source', function(){
 
 it('should handle two-way updating', function(){
   var Test = {
-    props: {
+    propTypes: {
       'text': { source: 'title' },
       'updateTitle': { source: 'setTitle' }
     },
