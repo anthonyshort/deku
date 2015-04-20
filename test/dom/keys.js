@@ -4,7 +4,7 @@ import assert from 'assert'
 import {dom,deku} from '../../'
 import {mount} from '../helpers'
 
-describe.only('key diffing', function () {
+describe('key diffing', function () {
 
   it('should move elements with keys', function(done){
     var app = deku()
@@ -76,6 +76,34 @@ describe.only('key diffing', function () {
       var updated = el.querySelectorAll('li')
       assert(updated[0] === one)
       assert(updated[1] === three)
+      assert(updated[1].innerHTML === 'Four')
+      done()
+    })
+  })
+
+  it('should move keyed elements around non-keyed elements', function(done){
+    var app = deku()
+    app.mount(
+      <ul>
+        <li>One</li>
+        <li>Two</li>
+        <li key="target">Three</li>
+        <li>Four</li>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      var lis = el.querySelectorAll('li')
+      var target = lis[2]
+      app.mount(
+        <ul>
+          <li>One</li>
+          <li key="target">Five</li>
+          <li>Four</li>
+        </ul>
+      )
+      var updated = el.querySelectorAll('li')
+      assert(updated[1] === target)
+      assert(updated[1].innerHTML === 'Five')
       done()
     })
   })
