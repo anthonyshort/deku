@@ -36,7 +36,7 @@ index.js: node_modules $(js)
 # Tests.
 #
 
-test:
+test: tests.js
 	@mochify
 .PHONY: test
 

@@ -27,9 +27,11 @@ First we create a new component. This represents a single UI element on the page
 
 ```js
 // button.js
-export function render(props) {
+function render(props) {
   return <button>{props.text}</button>
 }
+
+export {render}
 ```
 
 Then we create an app, mount the component and render it to the DOM.
@@ -41,7 +43,11 @@ import {tree,render} from 'deku';
 
 // Create an app
 var app = tree()
-app.mount(<Button text="Click me!" />)
+
+// Mount a virtual element onto the tree
+app.mount(
+  <Button text="Click me!" />
+)
 
 // Render the app to the DOM
 render(app, document.body)
