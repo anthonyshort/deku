@@ -43,7 +43,7 @@ test: tests.js
 test-browser: build.js
 	@$(BIN)/duo-test browser --commands 'make build.js'
 
-test-cloud: test-lint tests.js
+test-cloud: tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
 
 test-lint: $(lib)
