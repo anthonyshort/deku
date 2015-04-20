@@ -161,7 +161,7 @@ it('should render the value of inputs', function(){
 
 it('should render data sources', function(){
   var Component = {
-    props: {
+    propTypes: {
       'text': { source: 'text' }
     },
     render: function(props, state){

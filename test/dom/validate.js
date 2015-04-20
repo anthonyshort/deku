@@ -13,7 +13,7 @@ describe('validation', function () {
   it('should validate missing props when first rendered', function(done){
     var Component = {
       render: div,
-      props: {
+      propTypes: {
         'text': { type: 'string' }
       }
     }
@@ -31,7 +31,7 @@ describe('validation', function () {
   it('should validate props types when first rendered', function(done){
     var Component = {
       render: div,
-      props: {
+      propTypes: {
         'text': { type: 'string' }
       }
     }
@@ -49,7 +49,7 @@ describe('validation', function () {
   it('should skip optional props when first rendered', function(){
     var Component = {
       render: div,
-      props: {
+      propTypes: {
         'text': { type: 'string', optional: true }
       }
     }
