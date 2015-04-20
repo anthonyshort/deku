@@ -29,11 +29,9 @@ First we create a new component. This represents a single UI element on the page
 
 ```js
 // button.js
-function render(props) {
+export function render(props) {
   return <button>{props.text}</button>
 }
-
-export {render}
 ```
 
 Then we create an app, mount the component and render it to the DOM.
