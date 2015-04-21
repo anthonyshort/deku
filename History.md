@@ -1,20 +1,26 @@
 
-0.1.0 / 2015-04-06
+0.1.0 / 2015-04-21
 ==================
 
- * BREAKNG CHANGE: There is no more `this` in any of the functions used in a component. Instead of `this.setState`, the last argument to the function is `setState`, or `send` (think of it as sending changes to the UI).
- * used 1 function for constructing world
- * updated event tests to use send
- * used local virtualize
- * added comment about component spec
- * added placeholder idea and tests for layers
- * renamed scene -> world
- * converted component to object, and updated tests to reflect
- * bypassed component.setState
- * fixed failing test
- * began removing `this` in all functions
- * added virtualize into repo for easier dev
- * added local duo to makefile
+Breaking
+ * Updated the top-level API. It now mounts virtual nodes instead of components directly.
+ * Removed the `component()` DSL. Components are just objects now with no concept of `this`. This is one step towards making hook functions pure.
+ * There is no more `this` in any of the functions used in a component. Instead of `this.setState`, the last argument to the function is `setState`, or `send` (think of it as sending changes to the UI).
+ * Removed tagName parsing (eg. `dom('div.foo')`) as it was slowing things down
+
+New Features
+ * Added key diffing using the `key` attribute on virtual nodes
+ * Added optional prop validation via `propTypes`
+ * Added defaultProps hook to components
+ * Added the ability for components to access data on the app. This makes it easy to side-load data.
+
+Fixes
+ * Fixed bug with inputs/textarea being pooled incorrectly
+ * Merge pull request #72 from segmentio/attr-modification-bug
+ * Fixed a bug in the renderer for falsy attributes
+ * Numerous speed improvements
+ * Fixed bug with string renderer not calling `beforeMount`
+ * Removed the raf loop and just batches
 
 0.0.33 / 2015-04-02
 ==================
