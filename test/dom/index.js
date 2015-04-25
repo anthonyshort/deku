@@ -66,7 +66,8 @@ it('should have initial state', function(){
         text: 'Hello World'
       };
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('span', null, state.text);
     }
   };
@@ -79,7 +80,8 @@ it('should have initial state', function(){
 
 it('should create a component with properties', function(){
   var Test = {
-    render(props) {
+    render(component) {
+      let {props, state} = component
       return dom('span', null, [props.text])
     }
   }
@@ -92,7 +94,7 @@ it('should create a component with properties', function(){
 
 it('should compose components', function(){
   var Composed = {
-    render: function(props, state){
+    render: function(){
       return dom(HelloWorld);
     }
   };
@@ -118,7 +120,8 @@ it('should render a component using jsx', function(){
 
 it('should compose components and pass in props', function(){
   var Composed = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(TwoWords, { one: 'Hello', two: 'World' });
     }
   };
@@ -131,7 +134,8 @@ it('should compose components and pass in props', function(){
 
 it('should update sub-components', function(){
   var Composed = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return (
         <div>
           <TwoWords one="Hello" two={props.app} />
@@ -148,7 +152,8 @@ it('should update sub-components', function(){
 
 it('should update on the next frame', function(done){
   var Composed = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return (
         <div>
           <TwoWords one="Hello" two={props.planet} />
@@ -171,12 +176,14 @@ it('should update on the next frame', function(done){
 
 it('should allow components to have child nodes', function(){
   var ComponentA = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', null, props.children);
     }
   };
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(ComponentA, null, [
         dom('span', null, 'Hello World!')
       ]);
@@ -191,12 +198,14 @@ it('should allow components to have child nodes', function(){
 
 it('should update component child nodes', function(){
   var ComponentA = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', null, props.children);
     }
   };
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(ComponentA, null, [
         dom('span', null, props.text)
       ]);
@@ -212,17 +221,20 @@ it('should update component child nodes', function(){
 
 it('should allow components to have other components as child nodes', function(){
   var ComponentA = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { name: 'ComponentA' }, props.children);
     }
   };
   var ComponentC = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { name: 'ComponentC' }, props.children);
     }
   };
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { name: 'ComponentB' }, [
         dom(ComponentA, null, [
           dom(ComponentC, { text: props.text }, [
@@ -249,20 +261,22 @@ it('should only update ONCE when props/state is changed in different parts of th
         text: 'Deku Shield'
       };
     },
-    afterMount: function(el, props, state, send) {
-      var self = this;
+    afterMount: function(component, el, send) {
+      let {props, state} = component
       emitter.on('data', function(text){
         send({ text: text });
       })
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       i++;
       return dom('div', null, [props.text, ' ', state.text]);
     }
   };
 
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       i++;
       return dom('div', null, [
         dom(ComponentA, { text: props.text })
@@ -314,9 +328,10 @@ it('should only update if shouldUpdate returns true', function(){
   })
 });
 
-it('should not allow setting the state during render', function (done) {
+it.skip('should not allow setting the state during render', function (done) {
   var Impure = {
-    render: function(props, state, setState){
+    render: function(component, setState){
+      let {props, state} = component
       assert(!setState);
       done();
       return dom();

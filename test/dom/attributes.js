@@ -7,7 +7,8 @@ import {component,dom,deku} from '../../'
 import {mount,div} from '../helpers'
 
 var AttrComponent = {
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return dom('span', { name: props.name });
   }
 }
@@ -57,7 +58,8 @@ it('should not touch the DOM just because attributes are falsy', function () {
 
 it('should update the real value of input fields', function () {
   var Input = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('input', { value: props.value })
     }
   };
@@ -74,7 +76,8 @@ it('should update the real value of input fields', function () {
 
 it('should render and update innerHTML', function () {
   var Test = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { innerHTML: props.content });
     }
   }

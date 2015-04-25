@@ -7,7 +7,8 @@ import {mount,div} from '../helpers'
 // Helpers.
 
 var Component = {
-  render: function(props) {
+  render: function(component) {
+    let {props, state} = component
     var attrs = {};
     if (props.attr) attrs[props.attr] = props.value;
     return dom('div', { id: 'foo' }, [

@@ -19,6 +19,7 @@ describe('DOM Renderer', function(){
   require('./dom/data')
   require('./dom/validate')
   require('./dom/keys')
+  require('./dom/hooks')
 })
 
 describe('String Renderer', function(){

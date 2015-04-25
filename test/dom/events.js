@@ -8,12 +8,13 @@ import raf from 'component-raf'
 import classes from 'component-classes'
 
 var Delegate = {
-  render: function (props, state) {
+  render: function (component) {
+    let {props, state} = component
     var active = state.active || 0;
     var self = this;
     var items = [1,2,3].map(function(i){
       return dom('li', {
-        onClick: function(e, props, state, setState){
+        onClick: function(e, component, setState){
           setState({ active: i })
         },
         class: { active: active === i }
@@ -28,7 +29,8 @@ var Delegate = {
 it('should add click event', function(){
   var count = 0;
   var Page = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <span onClick={onclick}>Hello World</span>
     }
   }
@@ -44,7 +46,8 @@ it('should add click event', function(){
     document.body.removeChild(el);
   })
 
-  function onclick(e, props, state) {
+  function onclick(e, component) {
+    let {props, state} = component
     assert(props.x, 10);
     ++count;
   }
@@ -55,7 +58,8 @@ it('should remove click event', function(done){
   var rootEl;
 
   var Page = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (props.click) {
         return <span onClick={onclick}>Hello World</span>
       } else {
@@ -93,7 +97,8 @@ it('should update click event', function(){
   var count = 0;
 
   var Page = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <span onClick={props.clicker}>Hello World</span>
     }
   }
@@ -140,13 +145,14 @@ it('should delegate events', function () {
 
 it('should delegate events on the root', function () {
   var DelegateRoot = {
-    render: function (props, state) {
+    render: function (component, setState) {
+      let {props, state} = component
       return (
         <div class={{ active: state.active }} onClick={onClick}>
           <a>link</a>
         </div>
       )
-      function onClick(event, props, state, setState) {
+      function onClick(event, component, setState) {
         setState({ active: true });
       }
     }
@@ -168,7 +174,8 @@ it('should set a delegateTarget', function (done) {
   var rootEl;
 
   var DelegateRoot = {
-    render: function (props, state) {
+    render: function (component) {
+      let {props, state} = component
       return <div onClick={onClick}><a>link</a></div>;
       function onClick(event) {
         assert(event.delegateTarget === rootEl.querySelector('div'));
@@ -198,23 +205,26 @@ it('should update events when nested children are removed', function () {
   ];
 
   var Button = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <a onClick={props.onClick}>link</a>
     }
   }
 
   var ListItem = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return (
         <li>
-          <Button onClick={()=>items.splice(props.index, 1)} />
+          <Button onClick={(component)=>items.splice(props.index, 1)} />
         </li>
       )
     }
   }
 
   var List = {
-    render: function (props, state) {
+    render: function (component) {
+      let {props, state} = component
       return (
         <ul>
           {props.items.map(function(item, i){

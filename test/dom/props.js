@@ -16,10 +16,11 @@ it('should replace props on the app', function(){
 
 it('should have initial props', function(){
   var Component = {
-    props: {
+    propTypes: {
       text: { type: 'string' }
     },
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       return <div>{props.text}</div>
     },
     defaultProps: {
@@ -77,14 +78,16 @@ it(`should update child even when the props haven't changed`, function () {
   var calls = 0;
 
   var Child = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       calls++;
       return <span>{props.text}</span>
     }
   }
 
   var Parent = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       return (
         <div name={props.character}>
           <Child text="foo" />

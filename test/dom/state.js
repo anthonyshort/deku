@@ -8,10 +8,11 @@ var StateChangeOnMount = {
   initialState: function(){
     return { text: 'foo' };
   },
-  afterMount: function(el, props, state, setState){
+  afterMount: function(component, el, setState){
     setState({ text: 'bar' });
   },
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return <Span text={state.text} />
   }
 }
@@ -20,7 +21,8 @@ var Composed = {
   afterUpdate: function(){
     throw new Error('Parent should not be updated');
   },
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return <div><StateChangeOnMount /></div>
   }
 }

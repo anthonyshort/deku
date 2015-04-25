@@ -2,54 +2,22 @@ import {mount,div} from '../helpers'
 import {component,render,deku,dom} from '../../'
 import assert from 'assert'
 
-it('should fire the `afterMount` hook', function(done){
-  var Page = {
-    render: function(){
-      return dom('div');
-    },
-    afterMount: function(){
-      done();
-    }
-  };
-  var app = deku();
-  app.mount(dom(Page))
-  mount(app)
-})
-
-it('should fire the `beforeMount` hook before `mount`', function(){
-  var pass;
-  var Page = {
-    render: function(){
-      return dom('div');
-    },
-    beforeMount: function(){
-      pass = false;
-    },
-    afterMount: function(){
-      pass = true;
-    }
-  };
-  var app = deku()
-  app.mount(dom(Page));
-  mount(app, function(){
-    assert(pass);
-  })
-})
-
 it('should fire mount events on sub-components', function(){
   var i = 0;
   function inc() { i++ }
   var ComponentA = {
     afterMount: inc,
     beforeMount: inc,
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('span', { name: props.name }, [props.text]);
     }
   };
   var ComponentB = {
     afterMount: inc,
     beforeMount: inc,
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(ComponentA, { text: 'foo', name: props.name });
     }
   };
@@ -67,7 +35,8 @@ it('should fire unmount events on sub-components from the bottom up', function()
     beforeUnmount: function(){
       arr.push('A')
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('span', { name: props.name }, [props.text]);
     }
   };
@@ -76,13 +45,15 @@ it('should fire unmount events on sub-components from the bottom up', function()
     beforeUnmount: function(){
       arr.push('B')
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(ComponentA, { text: 'foo', name: props.name });
     }
   };
 
   var Parent = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       if (props.show) {
         return dom(ComponentB)
       } else {
@@ -106,7 +77,7 @@ it('should unmount sub-components that move themselves in the DOM', function(){
   var arr = [];
 
   var Overlay = {
-    afterMount: function(el){
+    afterMount: function(component, el){
       document.body.appendChild(el)
     },
     beforeUnmount: function(){
@@ -118,7 +89,8 @@ it('should unmount sub-components that move themselves in the DOM', function(){
   };
 
   var Parent = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       if (props.show) {
         return dom('div', [
           dom(Overlay)
@@ -150,7 +122,8 @@ it('should fire mount events on sub-components created later', function(){
     beforeMount: inc
   };
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (!props.showComponent) {
         return dom();
       } else {
@@ -178,7 +151,8 @@ it('should fire unmount events on sub-components created later', function(){
   };
 
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (!props.showComponent) {
         return dom();
       } else {

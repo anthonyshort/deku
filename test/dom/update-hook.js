@@ -8,10 +8,11 @@ var Updater = {
   initialState: function(){
     return { count: 1 };
   },
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return dom('span', null, props.count);
   },
-  afterMount: function(el, props, state, setState){
+  afterMount: function(component, el, setState){
     setState({ count: 2 });
   }
 };
@@ -23,17 +24,19 @@ it('should fire beforeUpdate', function(done){
     initialState: function(){
       return { count: 1 };
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('span', null, props.count);
     },
-    beforeUpdate: function(props, state, nextProps, nextState){
+    beforeUpdate: function(component, nextProps, nextState){
+      let {props, state} = component
       assert.equal(nextProps.count, 2);
       assert.equal(props.count, 1);
       assert.equal(nextState.count, 2);
       assert.equal(state.count, 1);
       fired = true;
     },
-    afterMount: function(el, props, state, setState){
+    afterMount: function(component, el, setState){
       setState({ count: 2 });
     }
   }
@@ -55,17 +58,19 @@ it('should fire afterUpdate', function(done){
     initialState: function(){
       return { count: 1 };
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('span', null, props.count);
     },
-    afterUpdate: function(props, state, prevProps, prevState){
+    afterUpdate: function(component, prevProps, prevState){
+      let {props, state} = component
       assert.equal(props.count, 2);
       assert.equal(prevProps.count, 1);
       assert.equal(state.count, 2);
       assert.equal(prevState.count, 1);
       fired = true;
     },
-    afterMount: function(el, props, state, setState){
+    afterMount: function(component, el, setState){
       setState({ count: 2 });
     }
   }
@@ -80,28 +85,11 @@ it('should fire afterUpdate', function(done){
   })
 });
 
-it.skip('should not allow setting the state during beforeUpdate', function(done){
-  var Impure = component({
-    beforeUpdate: function(props, state, nextProps, nextState, send){
-      send({ foo: 'bar' });
-    }
-  });
-
-  var app = deku()
-  app.mount(el, Impure, { count: 1 });
-  try {
-    app.set('renderImmediate', true);
-    app.update({ count: 2 });
-    throw new Error('Did not prevent set state during beforeUpdate')
-  } catch(e) {
-    return done();
-  }
-});
-
 it('should only call `beforeUpdate` once', function(done){
   var i = 0;
   var Component = {
-    beforeUpdate: function(props, state, nextProps, nextState){
+    beforeUpdate: function(component, nextProps, nextState){
+      let {props, state} = component
       i++;
       assert(props.text === 'one');
       assert(nextProps.text === 'three');

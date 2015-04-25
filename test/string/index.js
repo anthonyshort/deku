@@ -5,7 +5,8 @@ import {dom,deku,renderString} from '../../'
 
 it('should render an element', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div></div>
     }
   };
@@ -16,7 +17,8 @@ it('should render an element', function(){
 
 it('should render an element with attributes', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { id: 'foo'});
     }
   };
@@ -27,7 +29,8 @@ it('should render an element with attributes', function(){
 
 it('should render an element with text', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>foo</div>
     }
   }
@@ -38,7 +41,8 @@ it('should render an element with text', function(){
 
 it('should render an element with child elements', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div><span>foo</span></div>;
     }
   };
@@ -49,12 +53,14 @@ it('should render an element with child elements', function(){
 
 it('should render an element with child components', function(){
   var Span = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <span>foo</span>;
     }
   };
   var Div = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div><Span /></div>;
     }
   };
@@ -65,12 +71,14 @@ it('should render an element with child components', function(){
 
 it('should render an element with component root', function(){
   var Span = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <span>foo</span>
     }
   };
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <Span />;
     }
   };
@@ -81,7 +89,8 @@ it('should render an element with component root', function(){
 
 it('should render with props', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>{props.text}</div>;
     }
   };
@@ -95,7 +104,8 @@ it('should render with initial state', function(){
     initialState: function(){
       return { text: 'foo' }
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>{state.text}</div>
     }
   };
@@ -106,7 +116,8 @@ it('should render with initial state', function(){
 
 it('should have initial props', function(){
   var Component = {
-    render: function(props){
+    render: function(component){
+      let {props, state} = component
       return <div>{props.text}</div>
     },
     defaultProps: {
@@ -118,12 +129,18 @@ it('should have initial props', function(){
   assert.equal(renderString(app), '<div>Hello!</div>')
 })
 
-it('should call beforeMount', function(done){
+it('should call beforeMount and beforeRender', function(done){
   var Component = {
     initialState: function(){
       return { text: 'foo' }
     },
-    beforeMount: function(props, state){
+    beforeMount: function(component){
+      let {props, state} = component
+      assert(props.foo)
+      assert(state.text)
+    },
+    beforeRender: function(component){
+      let {props, state} = component
       assert(props.foo)
       assert(state.text)
       done()
@@ -139,7 +156,8 @@ it('should call beforeMount', function(done){
 
 it('should render innerHTML', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom('div', { innerHTML: '<span>foo</span>' });
     }
   };
@@ -150,7 +168,8 @@ it('should render innerHTML', function(){
 
 it('should render the value of inputs', function(){
   var Component = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <input value="foo" />
     }
   };
@@ -164,7 +183,8 @@ it('should render data sources', function(){
     propTypes: {
       'text': { source: 'text' }
     },
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>{props.text}</div>
     }
   };

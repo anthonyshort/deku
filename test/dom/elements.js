@@ -9,7 +9,8 @@ import {mount,div} from '../helpers'
  */
 
 var Toggle = {
-  render: function(props){
+  render: function(component){
+    let {props, state} = component
     if (!props.showChildren) {
       return (
         <div></div>
@@ -25,13 +26,15 @@ var Toggle = {
 }
 
 var CustomTag = {
-  render: function(props){
+  render: function(component){
+    let {props, state} = component
     return dom(props.type);
   }
 }
 
 var AdjacentTest = {
-  render: function(props){
+  render: function(component){
+    let {props, state} = component
     if (props.i === 1) {
       return (
         <div id="root">
@@ -51,13 +54,15 @@ var AdjacentTest = {
 }
 
 var BasicComponent = {
-  render: function(props){
+  render: function(component){
+    let {props, state} = component
     return <div>component</div>
   }
 }
 
 var ComponentToggle = {
-  render: function(props){
+  render: function(component){
+    let {props, state} = component
     if (!props.showComponent) {
       return <span></span>
     } else {
@@ -128,13 +133,15 @@ it('should change tag names', function(){
 
 it('should change root node and still update correctly', function(){
   var ComponentA = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(props.type, null, props.text);
     }
   }
 
   var Test = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return dom(ComponentA, { type: props.type, text: props.text });
     }
   }
@@ -168,7 +175,8 @@ it('should unmount components when removing an element node', function(){
   }
 
   var App = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (props.showElements) {
         return (
           <div>
@@ -203,7 +211,8 @@ it('should unmount components when removing an element node', function(){
 
 it('should change sub-component tag names', function(){
   var Test = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <CustomTag type={props.type} />;
     }
   }
@@ -223,7 +232,8 @@ it('should change sub-component tag names', function(){
 
 it('should replace elements with component nodes', function(){
   var Test = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (props.showElement) {
         return <span>element</span>
       } else {
@@ -249,17 +259,20 @@ it('should replace elements with component nodes', function(){
 
 it('should replace components', function(){
   var ComponentA = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>A</div>
     }
   }
   var ComponentB = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       return <div>B</div>
     }
   }
   var ComponentC = {
-    render: function(props, state){
+    render: function(component){
+      let {props, state} = component
       if (props.type === 'A') {
         return <ComponentA />
       } else {

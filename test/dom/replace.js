@@ -5,7 +5,8 @@ import {component,dom,deku} from '../../'
 import {mount,div} from '../helpers'
 
 var Toggle = {
-  render(props, state) {
+  render(component) {
+    let {props, state} = component
     if (props.showElement) {
       return <div><span></span></div>
     } else if (props.showText) {

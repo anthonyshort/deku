@@ -36,7 +36,8 @@ exports.mount = function(app, fn, errorHandler) {
  */
 
 exports.HelloWorld = {
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return dom('span', null, ['Hello World']);
   }
 };
@@ -46,7 +47,8 @@ exports.HelloWorld = {
  */
 
 exports.Span = {
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return dom('span', null, [props.text]);
   }
 };
@@ -56,7 +58,8 @@ exports.Span = {
  */
 
 exports.TwoWords = {
-  render: function(props, state){
+  render: function(component){
+    let {props, state} = component
     return dom('span', null, [props.one + ' ' + props.two]);
   }
 };

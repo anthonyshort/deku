@@ -10,7 +10,8 @@ it('should get default value from data value', function(){
     propTypes: {
       'data': { source: 'meta' }
     },
-    render: function(props) {
+    render: function(component) {
+      let {props, state} = component
       return <div>{props.data.title}</div>
     }
   }
@@ -29,7 +30,8 @@ it('should update with new value from data source', function(){
     propTypes: {
       'text': { source: 'title' }
     },
-    render: function(props) {
+    render: function(component) {
+      let {props, state} = component
       return <div>{props.text}</div>
     }
   }
@@ -51,7 +53,8 @@ it('should handle two-way updating', function(){
       'text': { source: 'title' },
       'updateTitle': { source: 'setTitle' }
     },
-    render: function(props, state) {
+    render: function(component) {
+      let {props, state} = component
       return dom('div', { onClick: onClick }, props.text);
 
       function onClick() {
