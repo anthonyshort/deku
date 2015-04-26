@@ -1,0 +1,8 @@
+node_modules
+test/
+docs/
+examples/
+.npmignore
+.zuul
+History.md
+LICENSE.md
