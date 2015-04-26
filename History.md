@@ -1,4 +1,10 @@
 
+0.2.1 / 2015-04-25
+==================
+
+ * Fixed bug with diffing keyed nodes
+ * Updated readme
+
 0.2.0 / 2015-04-25
 ==================
 

@@ -652,7 +652,7 @@ function render (app, container, opts) {
 
       // Updated
       if (leftNode && rightNode) {
-        diffNode('.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
+        diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
         positions[rightNode.index] = el.childNodes[leftNode.index]
       }
     }
