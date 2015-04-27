@@ -1,4 +1,0 @@
-# Documentation
-
-* Installation[installation.md]
-* 

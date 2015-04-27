@@ -1,27 +1,56 @@
 # Using JSX
 
-There are a number of libraries around now that can transpile JSX into JS that aren't tied to React. The easiest way to use JSX with Deku is to use [Babel](https://github.com/babel/babel) (formerly known as 6to5). 
-
-Babel comes with a JSX transformer that can be used by adding a comment to the top of your file:
+Without JSX, you'll use the `element` function to build up virtual elements that represent components and DOM elements:
 
 ```js
-/** @jsx dom */
-var {component,dom} = require('deku');
-var Button = component()
+export function render (component) {
+  return element('a', { class: "button", onClick: onClick }, [props.text])
+}
+```
 
-Button.render = function(props, state) {
+JSX just makes this easier to write and read by making it read like HTML:
+
+```js
+export function render (component) {
   return <a class="button" onClick={this.onClick}>{props.text}</a>;
 }
 ```
 
-This will transform your code roughly this:
+There are a number of libraries around now that can transpile JSX into JS that aren't tied to React. The easiest way to use JSX with Deku is to use [Babel](https://github.com/babel/babel). 
+
+## .babelrc
+
+The easiest way is to add it to your `.babelrc` file:
 
 ```
-Button.render = function(props, state) {
-  return dom('a', { class: "button", onClick: this.onClick }, [props.text])
+{
+  "jsxPragma": "element"
 }
 ```
 
-While it might seem a little weird using the JSX syntax, you should just think of it as a nicer syntax for defining trees of objects. 
+Then make sure you import the `element` function:
+
+```js
+import {element} from 'deku'
+
+export function render (component) {
+  return <a class="button" onClick={this.onClick}>{props.text}</a>
+}
+```
+
+## Comment
+
+You can also add a comment to the top of your files that tells babel which function to use when replacing JSX:
+
+```js
+/** @jsx element */
+import {element} from 'deku'
+
+export function render (component) {
+  return <a class="button" onClick={this.onClick}>{props.text}</a>;
+}
+```
+
+## Other transforms
 
 You can also use [jsx-transform](https://github.com/alexmingoia/jsx-transform) if you're looking for something simple.
