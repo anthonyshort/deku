@@ -18,7 +18,7 @@ module.exports = Application
  */
 
 function Application (element) {
-  if (!(this instanceof Application)) return new Application()
+  if (!(this instanceof Application)) return new Application(element)
   this.options = {}
   this.sources = {}
   this.element = element
