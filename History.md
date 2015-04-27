@@ -1,4 +1,13 @@
 
+0.2.2 / 2015-04-27
+==================
+
+ * Merge branch 'docs'
+ * Updated docs
+ * Removed old docs and examples
+ * Allowing easier initial mounting
+ * Adding docs
+
 0.2.1 / 2015-04-25
 ==================
 
