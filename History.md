@@ -1,4 +1,10 @@
 
+0.2.5 / 2015-04-28
+==================
+
+ * Avoid touching elements that haven't moved
+ * Added test for adding nodes with new keys
+
 0.2.4 / 2015-04-28
 ==================
 
