@@ -649,7 +649,7 @@ function render (app, container, opts) {
 
       // New Node
       if (!leftNode) {
-        positions[rightNode.index] = toNative(entityId, '.' + rightNode.index, rightNode)
+        positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
       }
 
       // Updated
