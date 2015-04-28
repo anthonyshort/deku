@@ -81,6 +81,37 @@ describe('key diffing', function () {
     })
   })
 
+  it('should add elements with keys', function(done){
+    var app = deku()
+    app.mount(
+      <ul>
+        <li key="0">One</li>
+        <li key="1">Two</li>
+        <li key="2">Three</li>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      var lis = el.querySelectorAll('li')
+      var one = lis[0]
+      var two = lis[1]
+      var three = lis[2]
+      app.mount(
+        <ul>
+          <li key="0">One</li>
+          <li key="1">Two</li>
+          <li key="3">Four</li>
+          <li key="2">Three</li>
+        </ul>
+      )
+      var updated = el.querySelectorAll('li')
+      assert(updated[0] === one)
+      assert(updated[1] === two)
+      assert(updated[2].innerHTML === "Four")
+      assert(updated[3] === three)
+      done()
+    })
+  })
+
   it.skip('should move keyed elements around non-keyed elements', function(done){
     var app = deku()
     app.mount(
