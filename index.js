@@ -130,7 +130,6 @@ var isDom = _require('is-dom')
 var uid = _require('get-uid')
 var throttle = _require('per-frame')
 var keypath = _require('object-path')
-var omit = _require('object-omit')
 var type = _require('component-type')
 var utils = _require('./utils')
 var defaults = utils.defaults
@@ -338,8 +337,8 @@ function render (app, container, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
-    entities = omit(entities, String(entityId))
-    children = omit(children, String(entityId))
+    delete entities[entityId]
+    delete children[entityId]
   }
 
   /**
@@ -647,7 +646,7 @@ function render (app, container, opts) {
       // Removals
       for (var key in leftKeys) {
         var leftNode = leftKeys[key]
-        if (!rightKeys[key]) {
+        if (rightKeys[key] == null) {
           removeElement(
             entityId,
             path + '.' + leftNode.index,
@@ -661,7 +660,7 @@ function render (app, container, opts) {
         var leftNode = leftKeys[key]
 
         // New Node
-        if (!leftNode) {
+        if (leftNode == null) {
           positions[rightNode.index] = toNative(
             entityId,
             path + '.' + rightNode.index,
@@ -723,7 +722,11 @@ function render (app, container, opts) {
     positions.forEach(function (childEl, newPosition) {
       var target = el.childNodes[newPosition]
       if (childEl !== target) {
-        el.insertBefore(childEl, target)
+        if (target) {
+          el.insertBefore(childEl, target)
+        } else {
+          el.appendChild(childEl)
+        }
       }
     })
   }
@@ -820,7 +823,9 @@ function render (app, container, opts) {
 
     // Remove the paths from the object without touching the
     // old object. This keeps the object using fast properties.
-    children[entityId] = omit(children[entityId], removals)
+    removals.forEach(function (path) {
+      delete children[entityId][path]
+    })
 
     // Remove it from the DOM
     el.parentNode.removeChild(el)
@@ -1338,7 +1343,7 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./utils":5,"component-each":8,"component-raf":13,"component-type":14,"dom-pool":15,"dom-walk":16,"get-uid":17,"is-dom":18,"object-assign":19,"object-omit":20,"object-path":24,"per-frame":25}],4:[function(_require,module,exports){
+},{"./utils":5,"component-each":8,"component-raf":13,"component-type":14,"dom-pool":15,"dom-walk":16,"get-uid":17,"is-dom":18,"object-assign":19,"object-path":20,"per-frame":21}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults
 
@@ -1472,7 +1477,6 @@ exports.defaults = function(options, defaults) {
 var type = _require('component-type')
 var slice = _require('sliced')
 var uid = _require('get-uid')
-var omit = _require('object-omit')
 var flatten = _require('array-flatten')
 
 /**
@@ -1532,25 +1536,22 @@ function virtual (type, props, children) {
     children = [ children ]
   }
 
-  children = flatten(children, 2)
-    .filter(notEmpty)
-    .map(normalize)
+  children = flatten(children).reduce(normalize, [])
 
   // pull the key out from the data.
   var key = props.key
-  var filteredProps = omit(props, 'key')
+  delete props['key']
 
   // if you pass in a function, it's a `Component` constructor.
   // otherwise it's an element.
   var node
   if (typeof type === 'string') {
-    node = new ElementNode(type, filteredProps, key, children)
+    node = new ElementNode(type, props, key, children)
   } else {
-    node = new ComponentNode(type, filteredProps, key, children)
+    node = new ComponentNode(type, props, key, children)
   }
 
   // set the unique ID
-  node.id = uid()
   node.index = 0
 
   return node
@@ -1577,15 +1578,19 @@ function notEmpty (value) {
  * @api private
  */
 
-function normalize (node, index) {
+function normalize (acc, node, index) {
+  if (node == null) {
+    return acc
+  }
   if (typeof node === 'string' || typeof node === 'number') {
     var newNode = new TextNode(String(node))
     newNode.index = index
-    return newNode
+    acc.push(newNode)
   } else {
     node.index = index
-    return node
+    acc.push(node)
   }
+  return acc
 }
 
 /**
@@ -1655,11 +1660,6 @@ function parseAttributes (attributes) {
     attributes.style = parseStyle(attributes.style)
   }
 
-  // data: { foo: 'bar' }
-  if (attributes.data) {
-    attributes = parseData(attributes)
-  }
-
   // class: { foo: true, bar: false, baz: true }
   // class: ['foo', 'bar', 'baz']
   if (attributes.class) {
@@ -1702,26 +1702,6 @@ function parseStyle (styles) {
 }
 
 /**
- * Parse the dataset
- *
- * @param {Object} attributes
- *
- * @return {Object}
- */
-
-function parseData (attributes) {
-  if (type(attributes.data) !== 'object') {
-    return attributes
-  }
-
-  for (var name in attributes.data) {
-    attributes['data-' + name] = attributes.data[name]
-  }
-
-  return omit(attributes, 'data')
-}
-
-/**
  * Parse the class attribute so it's able to be
  * set in a more user-friendly way
  *
@@ -1751,7 +1731,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":7,"component-type":14,"get-uid":17,"object-omit":20,"sliced":26}],7:[function(_require,module,exports){
+},{"array-flatten":7,"component-type":14,"get-uid":17,"sliced":22}],7:[function(_require,module,exports){
 /**
  * Recursive flatten function. Fastest implementation for array flattening.
  *
@@ -2435,104 +2415,6 @@ module.exports = Object.assign || function (target, source) {
 };
 
 },{}],20:[function(_require,module,exports){
-/*!
- * object.omit <https://github.com/jonschlinkert/object.omit>
- *
- * Copyright (c) 2014-2015 Jon Schlinkert.
- * Licensed under the MIT License
- */
-
-'use strict';
-
-var isObject = _require('isobject');
-var forOwn = _require('for-own');
-
-module.exports = function omit(obj, props) {
-  if (obj == null || !isObject(obj)) {
-    return {};
-  }
-
-  if (props == null) {
-    return obj;
-  }
-
-  if (typeof props === 'string') {
-    props = [].slice.call(arguments, 1);
-  }
-
-  var o = {};
-
-  if (!Object.keys(obj).length) {
-    return o;
-  }
-
-  forOwn(obj, function (value, key) {
-    if (props.indexOf(key) === -1) {
-      o[key] = value;
-    }
-  });
-  return o;
-};
-},{"for-own":21,"isobject":23}],21:[function(_require,module,exports){
-/*!
- * for-own <https://github.com/jonschlinkert/for-own>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
-'use strict';
-
-var forIn = _require('for-in');
-var hasOwn = Object.prototype.hasOwnProperty;
-
-module.exports = function forOwn(o, fn, thisArg) {
-  forIn(o, function (val, key) {
-    if (hasOwn.call(o, key)) {
-      return fn.call(thisArg, o[key], key, o);
-    }
-  });
-};
-
-},{"for-in":22}],22:[function(_require,module,exports){
-/*!
- * for-in <https://github.com/jonschlinkert/for-in>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
-'use strict';
-
-module.exports = function forIn(o, fn, thisArg) {
-  for (var key in o) {
-    if (fn.call(thisArg, o[key], key, o) === false) {
-      break;
-    }
-  }
-};
-},{}],23:[function(_require,module,exports){
-/*!
- * isobject <https://github.com/jonschlinkert/isobject>
- *
- * Copyright (c) 2014 Jon Schlinkert, contributors.
- * Licensed under the MIT License
- */
-
-'use strict';
-
-/**
- * is the value an object, and not an array?
- *
- * @param  {*} `value`
- * @return {Boolean}
- */
-
-module.exports = function isObject(o) {
-  return o != null && typeof o === 'object'
-    && !Array.isArray(o);
-};
-},{}],24:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2803,7 +2685,7 @@ module.exports = function isObject(o) {
   return objectPath;
 });
 
-},{}],25:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -2842,10 +2724,10 @@ function throttle(fn) {
   };
 }
 
-},{"raf":13}],26:[function(_require,module,exports){
+},{"raf":13}],22:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":27}],27:[function(_require,module,exports){
+},{"./lib/sliced":23}],23:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative

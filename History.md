@@ -1,4 +1,14 @@
 
+0.2.10 / 2015-04-29
+==================
+
+ * Improved performance by removing 'omit'
+ * IE10 fix
+ * Running all tests
+ * Added tests for components with keys
+ * Coercing keys to strings
+ * Code style
+
 0.2.9 / 2015-04-28
 ==================
 
