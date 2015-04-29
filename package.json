@@ -28,7 +28,6 @@
     "get-uid": "^1.0.1",
     "is-dom": "^1.0.5",
     "object-assign": "^2.0.0",
-    "object-omit": "^1.0.0",
     "object-path": "^0.8.1",
     "per-frame": "^3.0.0",
     "sliced": "0.0.5"
