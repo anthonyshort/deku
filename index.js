@@ -641,56 +641,56 @@ function render (app, container, opts) {
       return acc
     }
 
-    // Diff all of the nodes that have keys. This lets us re-used elements
-    // instead of overriding them and lets us move them around.
-    for (var key in rightKeys) {
-      var rightNode = rightKeys[key]
-      var leftNode = leftKeys[key]
+    // Should we diff with keys or without?
+    if (Object.keys(rightKeys).length) {
+      // Diff all of the nodes that have keys. This lets us re-used elements
+      // instead of overriding them and lets us move them around.
+      for (var key in rightKeys) {
+        var rightNode = rightKeys[key]
+        var leftNode = leftKeys[key]
 
-      // New Node
-      if (!leftNode) {
-        positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
+        // New Node
+        if (!leftNode) {
+          positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
+        }
+
+        // Updated
+        if (leftNode && rightNode) {
+          diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
+          positions[rightNode.index] = el.childNodes[leftNode.index]
+        }
       }
-
-      // Updated
-      if (leftNode && rightNode) {
-        diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
-        positions[rightNode.index] = el.childNodes[leftNode.index]
+      // Removals
+      for (var key in leftKeys) {
+        var leftNode = leftKeys[key]
+        if (!rightKeys[key]) {
+          removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+        }
       }
-    }
+    } else {
+      // Now diff all of the nodes that don't have keys
+      for (var i = 0; i < next.children.length; i++) {
+        var leftNode = prev.children[i]
+        var rightNode = next.children[i]
 
-    // Removals
-    for (var key in leftKeys) {
-      var leftNode = leftKeys[key]
-      if (!rightKeys[key]) {
-        removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+        // New Node
+        if (leftNode == null && rightNode.key == null) {
+          positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
+        }
+        // Updated
+        if (leftNode && rightNode && leftNode.key == null && rightNode.key == null) {
+          diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
+          positions[leftNode.index] = el.childNodes[leftNode.index]
+        }
       }
-    }
+      // Removals
+      for (var i = 0; i < prev.children.length; i++) {
+        var leftNode = prev.children[i]
+        var rightNode = next.children[i]
 
-    // Now diff all of the nodes that don't have keys
-    for (var i = 0; i < next.children.length; i++) {
-      var leftNode = prev.children[i]
-      var rightNode = next.children[i]
-
-      // New Node
-      if (leftNode == null && !rightNode.key) {
-        positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
-      }
-
-      // Updated
-      if (leftNode && rightNode && !leftNode.key && !rightNode.key) {
-        diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
-        positions[leftNode.index] = el.childNodes[leftNode.index]
-      }
-    }
-
-    // Removals
-    for (var i = 0; i < prev.children.length; i++) {
-      var leftNode = prev.children[i]
-      var rightNode = next.children[i]
-
-      if (rightNode == null && !leftNode.key) {
-        removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+        if (rightNode == null && leftNode.key == null) {
+          removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+        }
       }
     }
 
