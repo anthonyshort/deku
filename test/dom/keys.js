@@ -4,7 +4,7 @@ import assert from 'assert'
 import {dom,deku} from '../../'
 import {mount} from '../helpers'
 
-describe('key diffing', function () {
+describe.only('key diffing', function () {
 
   it('should move elements with keys', function(done){
     var app = deku()
@@ -112,32 +112,120 @@ describe('key diffing', function () {
     })
   })
 
-  it.skip('should move keyed elements around non-keyed elements', function(done){
+  var Item = {
+    render(component) {
+      return <li>{component.props.children}</li>
+    }
+  }
+
+  it('should move components with keys', function(done){
     var app = deku()
     app.mount(
       <ul>
-        <li>One</li>
-        <li>Two</li>
-        <li key="target">Three</li>
-        <li>Four</li>
+        <Item key="0">One</Item>
+        <Item key="1">Two</Item>
       </ul>
     )
     mount(app, function(el, renderer){
       var lis = el.querySelectorAll('li')
-      var target = lis[2]
+      var one = lis[0]
+      var two = lis[1]
       app.mount(
         <ul>
-          <li>One</li>
-          <li key="target">Five</li>
-          <li>Four</li>
+          <Item key="1">Two</Item>
+          <Item key="0">One</Item>
         </ul>
       )
       var updated = el.querySelectorAll('li')
-      assert(updated[1] === target)
-      assert(updated[1].innerHTML === 'Five')
+      assert(updated[1] === one)
+      assert(updated[0] === two)
+      done()
+    })
+  })
+
+  it('should remove components with keys', function(done){
+    var app = deku()
+    app.mount(
+      <ul>
+        <Item key="0">One</Item>
+        <Item key="1">Two</Item>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      var lis = el.querySelectorAll('li')
+      var two = lis[1]
+      app.mount(
+        <ul>
+          <Item key="1">Two</Item>
+        </ul>
+      )
+      var updated = el.querySelectorAll('li')
+      assert(updated[0] === two)
+      done()
+    })
+  })
+
+  it('should update components with keys', function(done){
+    var app = deku()
+    app.mount(
+      <ul>
+        <Item key="0">One</Item>
+        <Item key="1">Two</Item>
+        <Item key="2">Three</Item>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      var lis = el.querySelectorAll('li')
+      var one = lis[0]
+      var two = lis[1]
+      var three = lis[2]
+      app.mount(
+        <ul>
+          <Item key="0">One</Item>
+          <Item key="2">Four</Item>
+        </ul>
+      )
+      var updated = el.querySelectorAll('li')
+      assert(updated[0] === one)
+      assert(updated[1] === three)
+      assert(updated[1].innerHTML === 'Four')
+      done()
+    })
+  })
+
+  it('should add components with keys', function(done){
+    var app = deku()
+    app.mount(
+      <ul>
+        <Item key="0">Zero</Item>
+        <Item key="1">One</Item>
+        <Item key="2">Two</Item>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      var lis = el.querySelectorAll('li')
+      var zero = lis[0]
+      var one = lis[1]
+      var two = lis[2]
+      app.mount(
+        <ul>
+          <Item key="5">Five</Item>
+          <Item key="4">Four</Item>
+          <Item key="3">Three</Item>
+          <Item key="0">Zero</Item>
+          <Item key="1">One</Item>
+          <Item key="2">Two</Item>
+        </ul>
+      )
+      var updated = el.querySelectorAll('li')
+      assert(updated[3] === zero)
+      assert(updated[4] === one)
+      assert(updated[5] === two)
+      assert(updated[0].innerHTML === "Five")
+      assert(updated[1].innerHTML === "Four")
+      assert(updated[2].innerHTML === "Three")
       done()
     })
   })
 
 })
-
