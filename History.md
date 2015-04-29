@@ -1,4 +1,10 @@
 
+0.2.11 / 2015-04-29
+==================
+
+ * Added test for virtual node indexes
+ * Correctly casting key to a string
+
 0.2.10 / 2015-04-29
 ==================
 

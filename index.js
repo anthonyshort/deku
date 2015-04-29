@@ -1539,7 +1539,7 @@ function virtual (type, props, children) {
   children = flatten(children).reduce(normalize, [])
 
   // pull the key out from the data.
-  var key = props.key
+  var key = 'key' in props ? String(props.key) : null
   delete props['key']
 
   // if you pass in a function, it's a `Component` constructor.
@@ -1578,16 +1578,16 @@ function notEmpty (value) {
  * @api private
  */
 
-function normalize (acc, node, index) {
+function normalize (acc, node) {
   if (node == null) {
     return acc
   }
   if (typeof node === 'string' || typeof node === 'number') {
     var newNode = new TextNode(String(node))
-    newNode.index = index
+    newNode.index = acc.length
     acc.push(newNode)
   } else {
-    node.index = index
+    node.index = acc.length
     acc.push(node)
   }
   return acc
