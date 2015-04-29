@@ -420,7 +420,7 @@ function render (app, container, opts) {
       currentNativeElement = toNative(rootId, '0', currentElement)
       container.appendChild(currentNativeElement)
     } else if (currentElement !== app.element) {
-      patch(rootId, currentElement, app.element, currentNativeElement)
+      currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
       updateChildren(rootId)
     } else {
       updateChildren(rootId)
@@ -455,7 +455,6 @@ function render (app, container, opts) {
     var currentTree = entity.virtualElement
     var nextProps = entity.pendingProps
     var nextState = entity.pendingState
-    var el = entity.nativeElement
     var previousState = entity.context.state
     var previousProps = entity.context.props
 
@@ -470,7 +469,7 @@ function render (app, container, opts) {
     var nextTree = renderEntity(entity)
 
     // apply new virtual tree to native dom.
-    patch(entityId, currentTree, nextTree, el)
+    entity.nativeElement = patch(entityId, currentTree, nextTree, entity.nativeElement)
     entity.virtualElement = nextTree
     updateChildren(entityId)
 
@@ -594,7 +593,7 @@ function render (app, container, opts) {
    */
 
   function patch (entityId, prev, next, el) {
-    diffNode('0', entityId, prev, next, el)
+    return diffNode('0', entityId, prev, next, el)
   }
 
   /**
@@ -620,6 +619,7 @@ function render (app, container, opts) {
 
   function diffText (previous, current, el) {
     if (current.data !== previous.data) el.data = current.data
+    return el
   }
 
   /**
@@ -627,75 +627,100 @@ function render (app, container, opts) {
    */
 
   function diffChildren (path, entityId, prev, next, el) {
-    // We'll store the elements in this array in the order they
-    // should exist in the DOM. At the end, we'll loop through this array
-    // of elements in reposition the elements all at once.
     var positions = []
+    var hasKeys = false
     var childNodes = Array.prototype.slice.apply(el.childNodes)
     var leftKeys = prev.children.reduce(keyMapReducer, {})
     var rightKeys = next.children.reduce(keyMapReducer, {})
-    var j = -1
 
     function keyMapReducer(acc, child) {
-      if (child.key != null) acc[child.key] = child
+      if (child.key != null) {
+        acc[child.key] = child
+        hasKeys = true
+      }
       return acc
     }
 
-    // Should we diff with keys or without?
-    if (Object.keys(rightKeys).length) {
-      // Diff all of the nodes that have keys. This lets us re-used elements
-      // instead of overriding them and lets us move them around.
+    // Diff all of the nodes that have keys. This lets us re-used elements
+    // instead of overriding them and lets us move them around.
+    if (hasKeys) {
+      // Removals
+      for (var key in leftKeys) {
+        var leftNode = leftKeys[key]
+        if (!rightKeys[key]) {
+          removeElement(
+            entityId,
+            path + '.' + leftNode.index,
+            childNodes[leftNode.index]
+          )
+        }
+      }
+
       for (var key in rightKeys) {
         var rightNode = rightKeys[key]
         var leftNode = leftKeys[key]
 
         // New Node
         if (!leftNode) {
-          positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
+          positions[rightNode.index] = toNative(
+            entityId,
+            path + '.' + rightNode.index,
+            rightNode
+          )
         }
 
         // Updated
         if (leftNode && rightNode) {
-          diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
-          positions[rightNode.index] = el.childNodes[leftNode.index]
-        }
-      }
-      // Removals
-      for (var key in leftKeys) {
-        var leftNode = leftKeys[key]
-        if (!rightKeys[key]) {
-          removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+          positions[rightNode.index] = diffNode(
+            path + '.' + leftNode.index,
+            entityId,
+            leftNode,
+            rightNode,
+            childNodes[leftNode.index]
+          )
         }
       }
     } else {
+      var maxLength = Math.max(prev.children.length, next.children.length)
+
       // Now diff all of the nodes that don't have keys
-      for (var i = 0; i < next.children.length; i++) {
+      for (var i = 0; i < maxLength; i++) {
         var leftNode = prev.children[i]
         var rightNode = next.children[i]
+
+        // Removals
+        if (rightNode == null) {
+          removeElement(
+            entityId,
+            path + '.' + leftNode.index,
+            childNodes[leftNode.index]
+          )
+        }
 
         // New Node
-        if (leftNode == null && rightNode.key == null) {
-          positions[rightNode.index] = toNative(entityId, path + '.' + rightNode.index, rightNode)
+        if (leftNode == null) {
+          positions[rightNode.index] = toNative(
+            entityId,
+            path + '.' + rightNode.index,
+            rightNode
+          )
         }
-        // Updated
-        if (leftNode && rightNode && leftNode.key == null && rightNode.key == null) {
-          diffNode(path + '.' + leftNode.index, entityId, leftNode, rightNode, childNodes[leftNode.index])
-          positions[leftNode.index] = el.childNodes[leftNode.index]
-        }
-      }
-      // Removals
-      for (var i = 0; i < prev.children.length; i++) {
-        var leftNode = prev.children[i]
-        var rightNode = next.children[i]
 
-        if (rightNode == null && leftNode.key == null) {
-          removeElement(entityId, path + '.' + leftNode.index, childNodes[leftNode.index])
+        // Updated
+        if (leftNode && rightNode) {
+          positions[leftNode.index] = diffNode(
+            path + '.' + leftNode.index,
+            entityId,
+            leftNode,
+            rightNode,
+            childNodes[leftNode.index]
+          )
         }
       }
     }
 
     // Reposition all the elements
-    positions.forEach(function(childEl, newPosition){
+    positions.forEach(function (childEl, newPosition) {
       var target = el.childNodes[newPosition]
       if (childEl !== target) {
         el.insertBefore(childEl, target)
@@ -735,9 +760,10 @@ function render (app, container, opts) {
 
   function diffComponent (path, entityId, prev, next, el) {
     if (next.component !== prev.component) {
-      replaceElement(entityId, path, el, next)
+      return replaceElement(entityId, path, el, next)
     } else {
       updateEntityProps(children[entityId][path], next.props)
+      return el
     }
   }
 
@@ -749,6 +775,7 @@ function render (app, container, opts) {
     if (next.tagName !== prev.tagName) return replaceElement(entityId, path, el, next)
     diffAttributes(prev, next, el, entityId, path)
     diffChildren(path, entityId, prev, next, el)
+    return el
   }
 
   /**
@@ -766,17 +793,18 @@ function render (app, container, opts) {
 
   function removeElement (entityId, path, el) {
     var childrenByPath = children[entityId]
+    var childId = childrenByPath[path]
     var removals = []
 
     // If the path points to a component we should use that
     // components element instead, because it might have moved it.
-    if (childrenByPath[path]) {
-      var childId = childrenByPath[path]
+    if (childId) {
       var child = entities[childId]
       el = child.nativeElement
       unmountEntity(childId)
       removals.push(path)
     } else {
+
       // Just remove the text node
       if (!isElement(el)) return el.parentNode.removeChild(el)
 
@@ -838,11 +866,6 @@ function render (app, container, opts) {
       parent.appendChild(newEl)
     }
 
-    // Update the root node if it's been replaced.
-    if (currentNativeElement === el) {
-      currentNativeElement = newEl
-    }
-
     // update all `entity.nativeElement` references.
     for (var id in entities) {
       var entity = entities[id]
@@ -850,6 +873,8 @@ function render (app, container, opts) {
         entity.nativeElement = newEl
       }
     }
+
+    return newEl
   }
 
   /**
@@ -1296,6 +1321,23 @@ function Entity (component, props) {
 function canPool(tagName) {
   return avoidPooling.indexOf(tagName) < 0;
 }
+
+/**
+ * Get a nested node using a path
+ *
+ * @param {HTMLElement} el   The root node '0'
+ * @param {String} path The path string eg. '0.2.43'
+ */
+
+function getNodeAtPath(el, path) {
+  var parts = path.split('.')
+  parts.shift()
+  while (parts.length) {
+    el = el.childNodes[parts.pop()]
+  }
+  return el
+}
+
 },{"./utils":5,"component-each":8,"component-raf":13,"component-type":14,"dom-pool":15,"dom-walk":16,"get-uid":17,"is-dom":18,"object-assign":19,"object-omit":20,"object-path":24,"per-frame":25}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults

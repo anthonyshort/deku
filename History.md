@@ -1,4 +1,13 @@
 
+0.2.9 / 2015-04-28
+==================
+
+ * Passing tests
+ * The patch returns the updated element
+ * Code style
+ * Removing elements first when diffing
+ * Cleaned up the key diffing
+
 0.2.8 / 2015-04-28
 ==================
 
