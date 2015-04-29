@@ -4,7 +4,7 @@ import assert from 'assert'
 import {dom,deku} from '../../'
 import {mount} from '../helpers'
 
-describe.only('key diffing', function () {
+describe('key diffing', function () {
 
   it('should move elements with keys', function(done){
     var app = deku()
