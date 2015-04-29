@@ -193,7 +193,7 @@ describe('key diffing', function () {
     })
   })
 
-  it.only('should add components with keys', function(done){
+  it('should add components with keys', function(done){
     var app = deku()
     app.mount(
       <ul>
@@ -218,7 +218,6 @@ describe('key diffing', function () {
         </ul>
       )
       assert.equal(Object.keys(renderer.inspect().children.root).length, 6)
-      console.log('second update incoming...')
       app.mount(
         <ul>
           <Item key="6">Six</Item>
