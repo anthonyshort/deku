@@ -803,7 +803,13 @@ function render (app, container, opts) {
     if (next.component !== prev.component) {
       return replaceElement(entityId, path, el, next)
     } else {
-      updateEntityProps(children[entityId][path], next.props)
+      var targetId = children[entityId][path]
+
+      // This is a hack for now
+      if (targetId) {
+        updateEntityProps(targetId, next.props)
+      }
+
       return el
     }
   }
