@@ -7,112 +7,6 @@ import trigger from 'trigger-event'
 
 describe('key diffing', function () {
 
-  it('should move elements with keys', function(done){
-    var app = deku()
-    app.mount(
-      <ul>
-        <li key="0">One</li>
-        <li key="1">Two</li>
-      </ul>
-    )
-    mount(app, function(el, renderer){
-      var lis = el.querySelectorAll('li')
-      var one = lis[0]
-      var two = lis[1]
-      app.mount(
-        <ul>
-          <li key="1">Two</li>
-          <li key="0">One</li>
-        </ul>
-      )
-      var updated = el.querySelectorAll('li')
-      assert(updated[1] === one)
-      assert(updated[0] === two)
-      done()
-    })
-  })
-
-  it('should remove elements with keys', function(done){
-    var app = deku()
-    app.mount(
-      <ul>
-        <li key="0">One</li>
-        <li key="1">Two</li>
-      </ul>
-    )
-    mount(app, function(el, renderer){
-      var lis = el.querySelectorAll('li')
-      var two = lis[1]
-      app.mount(
-        <ul>
-          <li key="1">Two</li>
-        </ul>
-      )
-      var updated = el.querySelectorAll('li')
-      assert(updated[0] === two)
-      done()
-    })
-  })
-
-  it('should update elements with keys', function(done){
-    var app = deku()
-    app.mount(
-      <ul>
-        <li key="0">One</li>
-        <li key="1">Two</li>
-        <li key="2">Three</li>
-      </ul>
-    )
-    mount(app, function(el, renderer){
-      var lis = el.querySelectorAll('li')
-      var one = lis[0]
-      var two = lis[1]
-      var three = lis[2]
-      app.mount(
-        <ul>
-          <li key="0">One</li>
-          <li key="2">Four</li>
-        </ul>
-      )
-      var updated = el.querySelectorAll('li')
-      assert(updated[0] === one)
-      assert(updated[1] === three)
-      assert(updated[1].innerHTML === 'Four')
-      done()
-    })
-  })
-
-  it('should add elements with keys', function(done){
-    var app = deku()
-    app.mount(
-      <ul>
-        <li key="0">One</li>
-        <li key="1">Two</li>
-        <li key="2">Three</li>
-      </ul>
-    )
-    mount(app, function(el, renderer){
-      var lis = el.querySelectorAll('li')
-      var one = lis[0]
-      var two = lis[1]
-      var three = lis[2]
-      app.mount(
-        <ul>
-          <li key="0">One</li>
-          <li key="1">Two</li>
-          <li key="3">Four</li>
-          <li key="2">Three</li>
-        </ul>
-      )
-      var updated = el.querySelectorAll('li')
-      assert(updated[0] === one)
-      assert(updated[1] === two)
-      assert(updated[2].innerHTML === "Four")
-      assert(updated[3] === three)
-      done()
-    })
-  })
-
   var Item = {
     render(component) {
       return <li>{component.props.children}</li>
@@ -233,25 +127,33 @@ describe('key diffing', function () {
     })
   })
 
-  it('should move event handlers', function(done){
+  it('should still fire handlers when components are moved', function(done){
     function click() {
       done()
     }
     var app = deku(
       <ul>
-        <li key="1">I do nothing</li>
-        <li onClick={click} key="0">Click Me!</li>
+        <Item key="1">
+          <span>I do nothing</span>
+        </Item>
+        <Item key="0">
+          <span onClick={click}>Click Me!</span>
+        </Item>
       </ul>
     )
     mount(app, function(el, renderer){
       document.body.appendChild(el)
       app.mount(
         <ul>
-          <li onClick={click} key="0">Click Me!</li>
-          <li key="1">I do nothing</li>
+          <Item key="0">
+            <span onClick={click}>Click Me!</span>
+          </Item>
+          <Item key="1">
+            <span>I do nothing</span>
+          </Item>
         </ul>
       )
-      var li = el.querySelectorAll('li')[0]
+      var li = el.querySelectorAll('span')[0]
       trigger(li, 'click')
       document.body.removeChild(el)
     })

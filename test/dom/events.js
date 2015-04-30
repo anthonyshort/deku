@@ -214,9 +214,13 @@ it('should update events when nested children are removed', function () {
   var ListItem = {
     render: function(component){
       let {props, state} = component
+      function remove(e) {
+        items.splice(props.index, 1)
+        console.log(items)
+      }
       return (
         <li>
-          <Button onClick={(component)=>items.splice(props.index, 1)} />
+          <Button onClick={remove} />
         </li>
       )
     }
