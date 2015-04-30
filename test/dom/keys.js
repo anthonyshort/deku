@@ -3,6 +3,7 @@
 import assert from 'assert'
 import {dom,deku} from '../../'
 import {mount} from '../helpers'
+import trigger from 'trigger-event'
 
 describe('key diffing', function () {
 
@@ -194,8 +195,7 @@ describe('key diffing', function () {
   })
 
   it('should add components with keys', function(done){
-    var app = deku()
-    app.mount(
+    var app = deku(
       <ul>
         <Item key="0">Zero</Item>
         <Item key="1">One</Item>
@@ -203,10 +203,7 @@ describe('key diffing', function () {
       </ul>
     )
     mount(app, function(el, renderer){
-      var lis = el.querySelectorAll('li')
-      var zero = lis[0]
-      var one = lis[1]
-      var two = lis[2]
+      assert.equal(el.innerHTML, `<ul><li>Zero</li><li>One</li><li>Two</li></ul>`)
       app.mount(
         <ul>
           <Item key="5">Five</Item>
@@ -217,7 +214,8 @@ describe('key diffing', function () {
           <Item key="2">Two</Item>
         </ul>
       )
-      assert.equal(Object.keys(renderer.inspect().children.root).length, 6)
+      assert.equal(length(renderer.inspect().children.root), 6)
+      assert.equal(el.innerHTML, `<ul><li>Five</li><li>Four</li><li>Three</li><li>Zero</li><li>One</li><li>Two</li></ul>`)
       app.mount(
         <ul>
           <Item key="6">Six</Item>
@@ -229,15 +227,38 @@ describe('key diffing', function () {
           <Item key="3">Three</Item>
         </ul>
       )
-      // var updated = el.querySelectorAll('li')
-      // assert(updated[3] === zero)
-      // assert(updated[4] === one)
-      // assert(updated[5] === two)
-      // assert(updated[0].innerHTML === "Five")
-      // assert(updated[1].innerHTML === "Four")
-      // assert(updated[2].innerHTML === "Three")
+      assert.equal(length(renderer.inspect().children.root), 7)
+      assert.equal(el.innerHTML, `<ul><li>Six</li><li>Seven</li><li>Eight</li><li>Zero</li><li>One</li><li>Five</li><li>Three</li></ul>`)
       done()
     })
   })
 
+  it('should move event handlers', function(done){
+    function click() {
+      done()
+    }
+    var app = deku(
+      <ul>
+        <li key="1">I do nothing</li>
+        <li onClick={click} key="0">Click Me!</li>
+      </ul>
+    )
+    mount(app, function(el, renderer){
+      document.body.appendChild(el)
+      app.mount(
+        <ul>
+          <li onClick={click} key="0">Click Me!</li>
+          <li key="1">I do nothing</li>
+        </ul>
+      )
+      var li = el.querySelectorAll('li')[0]
+      trigger(li, 'click')
+      document.body.removeChild(el)
+    })
+  })
+
 })
+
+function length(obj) {
+  return Object.keys(obj).length
+}
