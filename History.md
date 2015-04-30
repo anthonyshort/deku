@@ -1,4 +1,14 @@
 
+0.2.12 / 2015-04-29
+==================
+
+ * Merge pull request #83 from segmentio/fix/child-key-diffing
+ * Removed key diffing for elements
+ * Passing tests for the keys with events
+ * Tests passing with janky first version
+ * Added failing test
+ * Only flatten children one level deep
+
 0.2.11 / 2015-04-29
 ==================
 
