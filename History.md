@@ -1,4 +1,17 @@
 
+0.2.15 / 2015-05-04
+==================
+
+ * Merge branch 'soundblogs-master'
+ * Added simple test for SVG
+ * Moved svg to separate file
+ * Merge branch 'master' of https://github.com/soundblogs/deku into soundblogs-master
+ * add svg support
+ * remove unused vars, add editorconfig
+ * Using forEach
+ * Fixed tests
+ * Throw errors for empty types on elements
+
 0.2.14 / 2015-05-03
 ==================
 
