@@ -1,4 +1,10 @@
 
+0.2.15 / 2015-05-04
+==================
+
+ * add svg support
+ * Throw errors for empty types on elements
+
 0.2.14 / 2015-05-03
 ==================
 

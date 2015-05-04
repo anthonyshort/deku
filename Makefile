@@ -36,12 +36,12 @@ index.js: node_modules $(js)
 # Tests.
 #
 
-test: tests.js
+test: build.js
+	@$(BIN)/duo-test browser --commands 'make build.js'
+
+test-phantom: tests.js
 	@mochify
 .PHONY: test
-
-test-browser: build.js
-	@$(BIN)/duo-test browser --commands 'make build.js'
 
 test-cloud: tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js

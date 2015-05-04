@@ -86,7 +86,7 @@ Application.prototype.unmount = function () {
   return this
 }
 
-},{"component-emitter":8}],2:[function(_require,module,exports){
+},{"component-emitter":9}],2:[function(_require,module,exports){
 /**
  * Create the application.
  */
@@ -116,7 +116,7 @@ exports.renderString = _require('./stringify')
 exports.element =
 exports.dom = _require('./virtual')
 
-},{"./application":1,"./render":3,"./stringify":4,"./virtual":6}],3:[function(_require,module,exports){
+},{"./application":1,"./render":3,"./stringify":4,"./virtual":7}],3:[function(_require,module,exports){
 /**
  * Dependencies.
  */
@@ -131,6 +131,7 @@ var keypath = _require('object-path')
 var type = _require('component-type')
 var fast = _require('fast.js')
 var utils = _require('./utils')
+var svg = _require('./svg')
 var defaults = utils.defaults
 var forEach = fast.forEach
 var assign = fast.assign
@@ -557,7 +558,11 @@ function render (app, container, opts) {
 
     // create element either from pool or fresh.
     if (!options.pooling || !canPool(tagName)) {
-      el = document.createElement(tagName)
+      if (svg.isElement(tagName)) {
+        el = document.createElementNS(svg.namespace, tagName)
+      } else {
+        el = document.createElement(tagName)
+      }
     } else {
       var pool = getPool(tagName)
       el = cleanup(pool.pop())
@@ -669,7 +674,6 @@ function render (app, container, opts) {
         // We only want updates for now
         if (leftNode == null) return
 
-        var rightPath = path + '.' + rightNode.index
         var leftPath = path + '.' + leftNode.index
 
         // Updated
@@ -694,13 +698,12 @@ function render (app, container, opts) {
 
         // Update all the child component path positions to match
         // the latest positions if they've changed. This is a bit hacky.
-        for (var childPath in currentChildren) {
-          var childId = currentChildren[childPath]
+        forEach(currentChildren, function (childId, childPath) {
           if (leftPath === childPath) {
             delete children[entityId][childPath]
             children[entityId][rightPath] = childId
           }
-        }
+        })
       })
 
       // Now add all of the new nodes last in case their path
@@ -778,7 +781,6 @@ function render (app, container, opts) {
 
     // add new attrs
     forEach(nextAttrs, function (value, name) {
-      var value = nextAttrs[name]
       if (events[name] || !(name in prevAttrs) || prevAttrs[name] !== value) {
         setAttribute(entityId, path, el, name, value)
       }
@@ -945,6 +947,9 @@ function render (app, container, opts) {
       case 'innerHTML':
         el.innerHTML = value
         break
+      case svg.isAttribute(name):
+        el.setAttributeNS(svg.namespace, name, value)
+        break
       default:
         el.setAttribute(name, value)
         break
@@ -1007,7 +1012,12 @@ function render (app, container, opts) {
 
   function getPool (tagName) {
     var pool = pools[tagName]
-    if (!pool) pool = pools[tagName] = new Pool({ tagName: tagName })
+    if (!pool) {
+      var poolOpts = svg.isElement(tagName) ?
+        { namespace: svg.namespace, tagName: tagName } :
+        { tagName: tagName }
+      pool = pools[tagName] = new Pool(poolOpts)
+    }
     return pool
   }
 
@@ -1134,7 +1144,7 @@ function render (app, container, opts) {
     // add entity to component list
     entities[entity.id] = entity
 
-    // get "class-level" sources.
+    // get 'class-level' sources.
     var sources = component.sources
     if (sources) return
 
@@ -1368,7 +1378,7 @@ function Entity (component, props) {
  */
 
 function canPool(tagName) {
-  return avoidPooling.indexOf(tagName) < 0;
+  return avoidPooling.indexOf(tagName) < 0
 }
 
 /**
@@ -1386,8 +1396,7 @@ function getNodeAtPath(el, path) {
   }
   return el
 }
-
-},{"./utils":5,"component-raf":9,"component-type":10,"dom-pool":11,"dom-walk":12,"fast.js":40,"get-uid":56,"is-dom":57,"object-path":58,"per-frame":59}],4:[function(_require,module,exports){
+},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js":41,"get-uid":57,"is-dom":58,"object-path":59,"per-frame":60}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults
 
@@ -1494,7 +1503,116 @@ function attr (key, val) {
   return ' ' + key + '="' + val + '"'
 }
 
-},{"./utils":5}],5:[function(_require,module,exports){
+},{"./utils":6}],5:[function(_require,module,exports){
+var fast = _require('fast.js')
+var indexOf = fast.indexOf
+
+/**
+ * This file lists the supported SVG elements used by the
+ * renderer. We may add better SVG support in the future
+ * that doesn't require whitelisting elements.
+ */
+
+exports.namespace  = 'http://www.w3.org/2000/svg'
+
+/**
+ * Supported SVG elements
+ *
+ * @type {Array}
+ */
+
+exports.elements = [
+  'circle',
+  'defs',
+  'ellipse',
+  'g',
+  'line',
+  'linearGradient',
+  'mask',
+  'path',
+  'pattern',
+  'polygon',
+  'polyline',
+  'radialGradient',
+  'rect',
+  'stop',
+  'svg',
+  'text',
+  'tspan'
+]
+
+/**
+ * Supported SVG attributes
+ */
+
+exports.attributes = [
+  'cx',
+  'cy',
+  'd',
+  'dx',
+  'dy',
+  'fill',
+  'fillOpacity',
+  'fontFamily',
+  'fontSize',
+  'fx',
+  'fy',
+  'gradientTransform',
+  'gradientUnits',
+  'markerEnd',
+  'markerMid',
+  'markerStart',
+  'offset',
+  'opacity',
+  'patternContentUnits',
+  'patternUnits',
+  'points',
+  'preserveAspectRatio',
+  'r',
+  'rx',
+  'ry',
+  'spreadMethod',
+  'stopColor',
+  'stopOpacity',
+  'stroke',
+  'strokeDasharray',
+  'strokeLinecap',
+  'strokeOpacity',
+  'strokeWidth',
+  'textAnchor',
+  'transform',
+  'version',
+  'viewBox',
+  'x1',
+  'x2',
+  'x',
+  'y1',
+  'y2',
+  'y'
+]
+
+/**
+ * Is element's namespace SVG?
+ *
+ * @param {String} name
+ */
+
+exports.isElement = function (name) {
+  return indexOf(exports.elements, name) !== -1
+}
+
+/**
+ * Are element's attributes SVG?
+ *
+ * @param {String} attr
+ */
+
+exports.isAttribute = function (attr) {
+  return indexOf(exports.attributes, attr) !== -1
+}
+
+
+},{"fast.js":41}],6:[function(_require,module,exports){
 /**
  * The npm 'defaults' module but without clone because
  * it was requiring the 'Buffer' module which is huge.
@@ -1513,14 +1631,14 @@ exports.defaults = function(options, defaults) {
   })
   return options
 }
-},{}],6:[function(_require,module,exports){
+
+},{}],7:[function(_require,module,exports){
 /**
  * Module dependencies.
  */
 
 var type = _require('component-type')
 var slice = _require('sliced')
-var uid = _require('get-uid')
 var flatten = _require('array-flatten')
 
 /**
@@ -1555,7 +1673,7 @@ module.exports = virtual
 function virtual (type, props, children) {
   // Default to div with no args
   if (!type) {
-    type = 'div'
+    throw new Error('Element needs a type. https://gist.github.com/anthonyshort/77ced43b5defe39908af')
   }
 
   // Skipped adding attributes and we're passing
@@ -1763,7 +1881,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":7,"component-type":10,"get-uid":56,"sliced":60}],7:[function(_require,module,exports){
+},{"array-flatten":8,"component-type":11,"sliced":61}],8:[function(_require,module,exports){
 /**
  * Recursive flatten function. Fastest implementation for array flattening.
  *
@@ -1795,7 +1913,7 @@ module.exports = function (array, depth) {
   return flatten(array, [], depth || Infinity);
 };
 
-},{}],8:[function(_require,module,exports){
+},{}],9:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -1958,7 +2076,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],9:[function(_require,module,exports){
+},{}],10:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -1994,7 +2112,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],10:[function(_require,module,exports){
+},{}],11:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -2030,7 +2148,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],11:[function(_require,module,exports){
+},{}],12:[function(_require,module,exports){
 function Pool(params) {
     if (typeof params !== 'object') {
         throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
@@ -2084,7 +2202,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Pool;
 }
 
-},{}],12:[function(_require,module,exports){
+},{}],13:[function(_require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2110,7 +2228,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],13:[function(_require,module,exports){
+},{}],14:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2133,7 +2251,7 @@ module.exports = function fastCloneArray (input) {
   return sliced;
 };
 
-},{}],14:[function(_require,module,exports){
+},{}],15:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2167,7 +2285,7 @@ module.exports = function fastConcat () {
   return arr;
 };
 
-},{}],15:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2194,7 +2312,7 @@ module.exports = function fastEvery (subject, fn, thisContext) {
   return true;
 };
 
-},{"../function/bindInternal3":34}],16:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],17:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2224,7 +2342,7 @@ module.exports = function fastFill (subject, value, start, end) {
   }
   return subject;
 };
-},{}],17:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2252,7 +2370,7 @@ module.exports = function fastFilter (subject, fn, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal3":34}],18:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],19:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2275,7 +2393,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":34}],19:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],20:[function(_require,module,exports){
 'use strict';
 
 exports.clone = _require('./clone');
@@ -2291,7 +2409,7 @@ exports.reduce = _require('./reduce');
 exports.reduceRight = _require('./reduceRight');
 exports.some = _require('./some');
 exports.fill = _require('./fill');
-},{"./clone":13,"./concat":14,"./every":15,"./fill":16,"./filter":17,"./forEach":18,"./indexOf":20,"./lastIndexOf":21,"./map":22,"./pluck":23,"./reduce":24,"./reduceRight":25,"./some":26}],20:[function(_require,module,exports){
+},{"./clone":14,"./concat":15,"./every":16,"./fill":17,"./filter":18,"./forEach":19,"./indexOf":21,"./lastIndexOf":22,"./map":23,"./pluck":24,"./reduce":25,"./reduceRight":26,"./some":27}],21:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2326,7 +2444,7 @@ module.exports = function fastIndexOf (subject, target, fromIndex) {
   return -1;
 };
 
-},{}],21:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2357,7 +2475,7 @@ module.exports = function fastLastIndexOf (subject, target, fromIndex) {
   return -1;
 };
 
-},{}],22:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2383,7 +2501,7 @@ module.exports = function fastMap (subject, fn, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal3":34}],23:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],24:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2408,7 +2526,7 @@ module.exports = function fastPluck (input, field) {
   }
   return plucked;
 };
-},{}],24:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2445,7 +2563,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":35}],25:[function(_require,module,exports){
+},{"../function/bindInternal4":36}],26:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2482,7 +2600,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":35}],26:[function(_require,module,exports){
+},{"../function/bindInternal4":36}],27:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2509,7 +2627,7 @@ module.exports = function fastSome (subject, fn, thisContext) {
   return false;
 };
 
-},{"../function/bindInternal3":34}],27:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],28:[function(_require,module,exports){
 'use strict';
 
 var cloneArray = _require('./array/clone');
@@ -2538,7 +2656,7 @@ module.exports = function clone (input) {
   }
 };
 
-},{"./array/clone":13,"./object/clone":43}],28:[function(_require,module,exports){
+},{"./array/clone":14,"./object/clone":44}],29:[function(_require,module,exports){
 'use strict';
 
 var filterArray = _require('./array/filter'),
@@ -2562,7 +2680,7 @@ module.exports = function fastFilter (subject, fn, thisContext) {
     return filterObject(subject, fn, thisContext);
   }
 };
-},{"./array/filter":17,"./object/filter":44}],29:[function(_require,module,exports){
+},{"./array/filter":18,"./object/filter":45}],30:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2585,7 +2703,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":18,"./object/forEach":45}],30:[function(_require,module,exports){
+},{"./array/forEach":19,"./object/forEach":46}],31:[function(_require,module,exports){
 'use strict';
 
 var applyWithContext = _require('./applyWithContext');
@@ -2606,7 +2724,7 @@ module.exports = function fastApply (subject, thisContext, args) {
   return thisContext !== undefined ? applyWithContext(subject, thisContext, args) : applyNoContext(subject, args);
 };
 
-},{"./applyNoContext":31,"./applyWithContext":32}],31:[function(_require,module,exports){
+},{"./applyNoContext":32,"./applyWithContext":33}],32:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2637,7 +2755,7 @@ module.exports = function applyNoContext (subject, args) {
   }
 };
 
-},{}],32:[function(_require,module,exports){
+},{}],33:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2668,7 +2786,7 @@ module.exports = function applyWithContext (subject, thisContext, args) {
   }
 };
 
-},{}],33:[function(_require,module,exports){
+},{}],34:[function(_require,module,exports){
 'use strict';
 
 var applyWithContext = _require('./applyWithContext');
@@ -2741,7 +2859,7 @@ module.exports = function fastBind (fn, thisContext) {
   }
 };
 
-},{"./applyNoContext":31,"./applyWithContext":32}],34:[function(_require,module,exports){
+},{"./applyNoContext":32,"./applyWithContext":33}],35:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2754,7 +2872,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],35:[function(_require,module,exports){
+},{}],36:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2767,7 +2885,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],36:[function(_require,module,exports){
+},{}],37:[function(_require,module,exports){
 'use strict';
 
 exports.apply = _require('./apply');
@@ -2776,7 +2894,7 @@ exports.partial = _require('./partial');
 exports.partialConstructor = _require('./partialConstructor');
 exports.try = _require('./try');
 
-},{"./apply":30,"./bind":33,"./partial":37,"./partialConstructor":38,"./try":39}],37:[function(_require,module,exports){
+},{"./apply":31,"./bind":34,"./partial":38,"./partialConstructor":39,"./try":40}],38:[function(_require,module,exports){
 'use strict';
 
 var applyWithContext = _require('./applyWithContext');
@@ -2820,7 +2938,7 @@ module.exports = function fastPartial (fn) {
   };
 };
 
-},{"./applyWithContext":32}],38:[function(_require,module,exports){
+},{"./applyWithContext":33}],39:[function(_require,module,exports){
 'use strict';
 
 var applyWithContext = _require('./applyWithContext');
@@ -2867,7 +2985,7 @@ module.exports = function fastPartialConstructor (fn) {
   };
 };
 
-},{"./applyWithContext":32}],39:[function(_require,module,exports){
+},{"./applyWithContext":33}],40:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2904,7 +3022,7 @@ module.exports = function fastTry (fn) {
   }
 };
 
-},{}],40:[function(_require,module,exports){
+},{}],41:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3147,7 +3265,7 @@ Object.defineProperty(Fast.prototype, 'length', {
   }
 });
 
-},{"./array":19,"./clone":27,"./filter":28,"./forEach":29,"./function":36,"./map":41,"./object":46,"./reduce":52,"./reduceRight":53,"./string":54}],41:[function(_require,module,exports){
+},{"./array":20,"./clone":28,"./filter":29,"./forEach":30,"./function":37,"./map":42,"./object":47,"./reduce":53,"./reduceRight":54,"./string":55}],42:[function(_require,module,exports){
 'use strict';
 
 var mapArray = _require('./array/map'),
@@ -3171,7 +3289,7 @@ module.exports = function fastMap (subject, fn, thisContext) {
     return mapObject(subject, fn, thisContext);
   }
 };
-},{"./array/map":22,"./object/map":48}],42:[function(_require,module,exports){
+},{"./array/map":23,"./object/map":49}],43:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3207,7 +3325,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],43:[function(_require,module,exports){
+},{}],44:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3234,7 +3352,7 @@ module.exports = function fastCloneObject (input) {
   return cloned;
 };
 
-},{}],44:[function(_require,module,exports){
+},{}],45:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -3264,7 +3382,7 @@ module.exports = function fastFilterObject (subject, fn, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal3":34}],45:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],46:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -3289,7 +3407,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":34}],46:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],47:[function(_require,module,exports){
 'use strict';
 
 exports.assign = _require('./assign');
@@ -3301,7 +3419,7 @@ exports.reduce = _require('./reduce');
 exports.reduceRight = _require('./reduceRight');
 exports.keys = _require('./keys');
 exports.values = _require('./values');
-},{"./assign":42,"./clone":43,"./filter":44,"./forEach":45,"./keys":47,"./map":48,"./reduce":49,"./reduceRight":50,"./values":51}],47:[function(_require,module,exports){
+},{"./assign":43,"./clone":44,"./filter":45,"./forEach":46,"./keys":48,"./map":49,"./reduce":50,"./reduceRight":51,"./values":52}],48:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3319,7 +3437,7 @@ module.exports = typeof Object.keys === "function" ? Object.keys : /* istanbul i
   }
   return keys;
 };
-},{}],48:[function(_require,module,exports){
+},{}],49:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -3347,7 +3465,7 @@ module.exports = function fastMapObject (subject, fn, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal3":34}],49:[function(_require,module,exports){
+},{"../function/bindInternal3":35}],50:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -3386,7 +3504,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":35}],50:[function(_require,module,exports){
+},{"../function/bindInternal4":36}],51:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -3425,7 +3543,7 @@ module.exports = function fastReduceRightObject (subject, fn, initialValue, this
   return result;
 };
 
-},{"../function/bindInternal4":35}],51:[function(_require,module,exports){
+},{"../function/bindInternal4":36}],52:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3446,7 +3564,7 @@ module.exports = function fastValues (obj) {
   }
   return values;
 };
-},{}],52:[function(_require,module,exports){
+},{}],53:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -3471,7 +3589,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":24,"./object/reduce":49}],53:[function(_require,module,exports){
+},{"./array/reduce":25,"./object/reduce":50}],54:[function(_require,module,exports){
 'use strict';
 
 var reduceRightArray = _require('./array/reduceRight'),
@@ -3496,11 +3614,11 @@ module.exports = function fastReduceRight (subject, fn, initialValue, thisContex
     return reduceRightObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduceRight":25,"./object/reduceRight":50}],54:[function(_require,module,exports){
+},{"./array/reduceRight":26,"./object/reduceRight":51}],55:[function(_require,module,exports){
 'use strict';
 
 exports.intern = _require('./intern');
-},{"./intern":55}],55:[function(_require,module,exports){
+},{"./intern":56}],56:[function(_require,module,exports){
 'use strict';
 
 // Compilers such as V8 use string interning to make string comparison very fast and efficient,
@@ -3557,14 +3675,14 @@ module.exports = function fastIntern (string) {
   delete container[interned];
   return interned;
 };
-},{}],56:[function(_require,module,exports){
+},{}],57:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],57:[function(_require,module,exports){
+},{}],58:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -3581,7 +3699,7 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],58:[function(_require,module,exports){
+},{}],59:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3852,7 +3970,7 @@ module.exports = function isNode(val){
   return objectPath;
 });
 
-},{}],59:[function(_require,module,exports){
+},{}],60:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -3891,10 +4009,10 @@ function throttle(fn) {
   };
 }
 
-},{"raf":9}],60:[function(_require,module,exports){
+},{"raf":10}],61:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":61}],61:[function(_require,module,exports){
+},{"./lib/sliced":62}],62:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
