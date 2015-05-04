@@ -1,8 +1,12 @@
 var assert = require('assert');
 var dom = require('../../lib/virtual');
 
-it('should create divs by default', function(){
-  assert(dom().tagName === 'div');
+it('should throw an error for missing type', function(done){
+  try {
+    dom()
+  } catch (e) {
+    done()
+  }
 });
 
 it('should set the tagName', function(){

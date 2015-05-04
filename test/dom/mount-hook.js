@@ -125,7 +125,7 @@ it('should fire mount events on sub-components created later', function(){
     render: function(component){
       let {props, state} = component
       if (!props.showComponent) {
-        return dom();
+        return dom('div');
       } else {
         return dom(ComponentA);
       }
@@ -154,7 +154,7 @@ it('should fire unmount events on sub-components created later', function(){
     render: function(component){
       let {props, state} = component
       if (!props.showComponent) {
-        return dom();
+        return dom('div');
       } else {
         return dom(ComponentA);
       }
