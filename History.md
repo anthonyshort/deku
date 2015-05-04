@@ -1,8 +1,14 @@
 
+0.2.14 / 2015-05-03
+==================
+
+ * Using fast.js
+ * Added some simple examples
+
 0.2.13 / 2015-04-30
 ==================
 
- * Added workaround
+ * Added workaround for diffChildren bug
 
 0.2.12 / 2015-04-29
 ==================
