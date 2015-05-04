@@ -20,6 +20,7 @@ describe('DOM Renderer', function(){
   require('./dom/validate')
   require('./dom/keys')
   require('./dom/hooks')
+  require('./dom/svg')
 })
 
 describe('String Renderer', function(){
