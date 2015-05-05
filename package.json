@@ -12,6 +12,7 @@
     "bump": "git://github.com/ianstormtaylor/bump.git#0.4.2",
     "component-classes": "^1.2.3",
     "duo-test": "^0.3.13",
+    "memoizee": "^0.3.8",
     "mochify": "^2.1.1",
     "standard": "^3.6.1",
     "trigger-event": "^1.0.0",
