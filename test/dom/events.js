@@ -216,7 +216,6 @@ it('should update events when nested children are removed', function () {
       let {props, state} = component
       function remove(e) {
         items.splice(props.index, 1)
-        console.log(items)
       }
       return (
         <li>
@@ -254,3 +253,41 @@ it('should update events when nested children are removed', function () {
     document.body.removeChild(el);
   })
 });
+
+it('should remove handlers when an element is removed', function (done) {
+  function fn(){}
+  var Toggle = {
+    render: function(component){
+      let {props, state} = component
+      if (!props.showChildren) {
+        return (
+          <div></div>
+        )
+      } else {
+        return (
+          <div>
+            <span onClick={fn}></span>
+          </div>
+        )
+      }
+    }
+  }
+  var app = deku(
+    <div>
+      <Toggle showChildren />
+      <div onClick={fn}></div>
+    </div>
+  )
+  mount(app, function(el, renderer){
+    app.mount(
+      <div>
+        <Toggle />
+      </div>
+    )
+    var state = renderer.inspect()
+    for (var entityId in state.handlers) {
+      assert.equal(Object.keys(state.handlers[entityId]).length, 0)
+    }
+    done()
+  })
+})
