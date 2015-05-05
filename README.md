@@ -15,38 +15,83 @@ npm install deku
 [Components](https://github.com/segmentio/deku/blob/master/docs/guides/components.md) are just plain objects that have a render function instead of using classes or constructors:
 
 ```js
-// button.js
+import {dom,tree,render} from 'segmentio/deku'
+import * as Todos from './todos'
+
+let app = tree(<Todos/>)
+let todos = []
+let id = 0
+app.set('todos', todos)
+app.set('createTodo', function(todo){
+  todo.id = id++
+  todos.push(todo)
+  app.set('todos', todos)
+})
+app.set('updateTodo', function(todo){
+  // ... do the update
+  app.set('todos', todos)
+})
+
+render(app, document.body)
+```
+
+```js
+// todos.js
+import {dom} from 'segmentio/deku'
+import * as Todo from './todo'
+
 export let propTypes = {
-  kind: {
-    type: 'string',
-    expects: ['submit', 'button']
-  }
+  todos: { type: 'array', source: 'todos' },
+  createTodo: { type: 'function', source: 'createTodo' }
 }
 
-export function render (component) {
+export function render (component, setState) {
   let {props, state} = component
-  return <button class="Button" type={props.kind}>{props.children}</button>
-}
+  let {createTodo} = state
+  let {todos} = props
 
-export function afterUpdate (component, prevProps, prevState, setState) {
-  let {props, state} = component
-  if (!state.clicked) {
-    setState({ clicked: true })
+  let todoNodes = todos.map(function(todo){
+    return <Todo todo={todo}/>
+  })
+
+  return (
+    <div class="Todos">
+      <input type="text" placeholder="Add todo" onEnter={onEnter}/>
+      {todoNodes}
+    </div>
+  )
+
+  function onEnter(event) {
+    createTodo({ title: event.target.value })
   }
 }
 ```
 
-Components are then rendered by mounting it in a tree:
-
 ```js
-import * as Button from './button'
-import {tree,render,renderString} from 'deku'
+// todo.js
+import {dom} from 'segmentio/deku'
 
-let app = tree(
-  <Button kind="submit">Hello World!</Button>
-)
+export let propTypes = {
+  todo: { type: 'object' },
+  updateTodo: { type: 'function', source: 'updateTodo' }
+}
 
-render(app, document.body)
+export function render (component) {
+  let {props, state} = component
+  let {updateTodo, todo} = props
+  
+  return (
+    <div class="Todo">
+      <span class="Todo-title">{todo.title}</span>
+      <input type="checkbox" value={todo.completed} onChange={onChange}/>
+    </div>
+  )
+
+  function onChange(event) {
+    todo.completed = !!event.target.value;
+    updateTodo(todo);
+  }
+}
 ```
 
 Trees can be rendered on the server too:
