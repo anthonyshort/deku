@@ -82,12 +82,22 @@ There is no concept of classes or use of `this`. We can import this component us
 import Button from './button'
 ```
 
+[Read more about components](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
+
+## Rendering Components
+
 To render this to the DOM we need to create a `tree`. This is one of the other main differences between React and Deku. The `tree` will manage loading data, communicating between components and allows us to use plugins on the entire application.
 
 ```
 import {element,tree} from 'deku'
 var app = tree(<Button>Hello World</Button>)
 ```
+
+The `app` object has only a couple of methods:
+
+* `.set(name, value)` to set environment data
+* `.option(name, value)` to set rendering options
+* `.mount(vnode)` to change the virtual element currently mounted
 
 You can render this tree anyway you like, you just need a renderer for it. Let's use the DOM renderer for the client:
 
