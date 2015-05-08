@@ -73,7 +73,7 @@ let str = renderString(app)
 
 Each element of your UI can be broken into encapsulated components. These components manage the state for the UI element and tell it how to render. In Deku components are just plain objects:
 
-```
+```js
 function render (component) {
   let {props, state} = component
   return <button class="Button">{props.children}</button>
@@ -84,7 +84,7 @@ export default {render}
 
 There is no concept of classes or use of `this`. We can import this component using the standard module syntax:
 
-```
+```js
 import Button from './button'
 ```
 
@@ -94,7 +94,7 @@ import Button from './button'
 
 To render this to the DOM we need to create a `tree`. This is one of the other main differences between React and Deku. The `tree` will manage loading data, communicating between components and allows us to use plugins on the entire application.
 
-```
+```js
 import {element,tree} from 'deku'
 var app = tree(<Button>Hello World</Button>)
 ```
@@ -107,7 +107,7 @@ The `app` object has only a couple of methods:
 
 You can render this tree anyway you like, you just need a renderer for it. Let's use the DOM renderer for the client:
 
-```
+```js
 import Button from './button'
 import {element,tree,render} from 'deku'
 
@@ -117,7 +117,7 @@ render(app, document.body)
 
 And render the same thing to a string on the server:
 
-```
+```js
 import koa from 'koa'
 import {element,tree,renderString} from 'deku'
 
@@ -132,7 +132,7 @@ app.use(function *() {
 
 You can compose components easily but just requiring them and using them in the render function:
 
-```
+```js
 import Button from './button'
 import Sheet from './sheet'
 
@@ -152,7 +152,7 @@ function render (component) {
 
 Deku doesn't use any form of synthetic events because we can just capture every event in newer browsers. There are special attribute you can add to virtual elements that act as hooks to add event listeners:
 
-```
+```js
 function render (component) {
   let {props, state} = component
   return <button onClick={clicked}>{props.children}</button>
@@ -169,7 +169,7 @@ You can [view all event handlers](https://github.com/segmentio/deku/blob/master/
 
 Just like the `render` function, component lifecycle hooks are just plain functions:
 
-```
+```js
 function afterUpdate (component, prevProps, prevState, setState) {
   let {props, state} = component
   if (!state.clicked) {
