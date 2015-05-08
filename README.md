@@ -16,30 +16,32 @@ npm install deku
 
 ```js
 // button.js
-export let propTypes = {
+let propTypes = {
   kind: {
     type: 'string',
     expects: ['submit', 'button']
   }
 }
 
-export function render (component) {
+function render (component) {
   let {props, state} = component
   return <button class="Button" type={props.kind}>{props.children}</button>
 }
 
-export function afterUpdate (component, prevProps, prevState, setState) {
+function afterUpdate (component, prevProps, prevState, setState) {
   let {props, state} = component
   if (!state.clicked) {
     setState({ clicked: true })
   }
 }
+
+export default {propTypes, render, afterUpdate}
 ```
 
 Components are then rendered by mounting it in a tree:
 
 ```js
-import * as Button from './button'
+import Button from './button'
 import {tree,render,renderString} from 'deku'
 
 let app = tree(
