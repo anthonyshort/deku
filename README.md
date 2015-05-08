@@ -14,7 +14,7 @@ To install:
 
 ```
 npm install deku
-``` 
+```
 
 >  You can also use Duo, Bower or [download the files manually](https://github.com/segmentio/deku/releases).
 
@@ -139,7 +139,7 @@ app.use(api(writeKey))
 
 ## Composition
 
-You can compose components easily but just requiring them and using them in the render function:
+You can compose components easily by just requiring them and using them in the render function:
 
 ```js
 import Button from './button'
@@ -159,7 +159,7 @@ function render (component) {
 
 ## Event handlers
 
-Deku doesn't use any form of synthetic events because we can just capture every event in newer browsers. There are special attribute you can add to virtual elements that act as hooks to add event listeners:
+Deku doesn't use any form of synthetic events because we can just capture every event in newer browsers. There are special attributes you can add to virtual elements that act as hooks to add event listeners:
 
 ```js
 function render (component) {
@@ -216,7 +216,7 @@ app.option('validateProps', true)
 
 This is off by default and we've made it an option so that you can enable it just during development without needing a separate build.
 
-Props can originate from anywhere in the outside world, it's useful to validate them. When validation is enabled you'll only be able to pass in props that are defined and they must conform the the `propTypes` spec.
+Props can originate from anywhere in the outside world, it's useful to validate them. When validation is enabled you'll only be able to pass in props that are defined and they must conform to the `propTypes` spec.
 
 ## External data and communication
 
@@ -286,7 +286,7 @@ At the moment we only support the `key` attribute on components for simplicity. 
 
 ## Developing
 
-Deku is built with Browserify. You can run the tests in a browser by running `make test`. 
+Deku is built with Browserify. You can run the tests in a browser by running `make test`.
 
 ## License
 
