@@ -193,7 +193,7 @@ let propTypes = {
 }
 ```
 
-To enable validate you just need to see an option:
+To enable validation you just need to enable it on the tree:
 
 ```js
 app.option('validateProps', true)
