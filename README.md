@@ -104,6 +104,7 @@ The `app` object has only a couple of methods:
 * `.set(name, value)` to set environment data
 * `.option(name, value)` to set rendering options
 * `.mount(vnode)` to change the virtual element currently mounted
+* `.use(fn)` to use a plugin. The function is called with the `app` object.
 
 You can render this tree anyway you like, you just need a renderer for it. Let's use the DOM renderer for the client:
 
@@ -126,6 +127,14 @@ let app = koa()
 app.use(function *() {
   this.body = renderString(tree(<Button>Hello World</Button>))
 })
+```
+
+And you can isolate functionality by using plugins. These plugins can call `set` to add data to the tree that your components can then access through their props:
+
+```js
+app.use(analytics)
+app.use(router)
+app.use(api(writeKey))
 ```
 
 ## Composition
