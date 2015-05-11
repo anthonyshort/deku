@@ -119,3 +119,6 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
   })
 })
 
+it('should allow a promise in afterMount to update state', function (done) {
+
+});

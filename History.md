@@ -1,4 +1,11 @@
 
+0.2.17 / 2015-05-11
+==================
+
+ * Merge pull request #94 from segmentio/fix/sources
+ * set sources on update
+ * Updated changelog
+
 0.2.16 / 2015-05-11
 ==================
 

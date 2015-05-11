@@ -301,7 +301,7 @@ function render (app, container, opts) {
 
   function mountEntity (entity) {
     register(entity)
-    setDefaults(entity)
+    setSources(entity)
     children[entity.id] = {}
     entities[entity.id] = entity
 
@@ -452,6 +452,8 @@ function render (app, container, opts) {
 
   function updateEntity (entityId) {
     var entity = entities[entityId]
+    setSources(entity)
+
     if (!shouldUpdate(entity)) return updateChildren(entityId)
 
     var currentTree = entity.virtualElement
@@ -1196,7 +1198,7 @@ function render (app, container, opts) {
    * @param {Entity} entity
    */
 
-  function setDefaults (entity) {
+  function setSources (entity) {
     var component = entity.component
     var map = component.sourceToPropertyName
     var sources = component.sources
