@@ -57,7 +57,6 @@ Application.prototype.option = function (name, val) {
  */
 
 Application.prototype.set = function (name, data) {
-  if (this.sources[name] === data) return
   this.sources[name] = data
   this.emit('source', name, data)
   return this
@@ -471,6 +470,11 @@ function render (app, container, opts) {
     // re-render.
     var nextTree = renderEntity(entity)
 
+    // if the tree is the same we can just skip this component
+    // but we should still check the children to see if they're dirty.
+    // This allows us to memoize the render function of components.
+    if (nextTree === currentTree) return updateChildren(entityId)
+
     // apply new virtual tree to native dom.
     entity.nativeElement = patch(entityId, currentTree, nextTree, entity.nativeElement)
     entity.virtualElement = nextTree
@@ -842,6 +846,7 @@ function render (app, container, opts) {
   function removeElement (entityId, path, el) {
     var childrenByPath = children[entityId]
     var childId = childrenByPath[path]
+    var entityHandlers = handlers[entityId] || {}
     var removals = []
 
     // If the path points to a component we should use that
@@ -862,6 +867,13 @@ function render (app, container, opts) {
         if (childPath === path || isWithinPath(path, childPath)) {
           unmountEntity(childId)
           removals.push(childPath)
+        }
+      })
+
+      // Remove all events at this path or below it
+      forEach(entityHandlers, function (fn, handlerPath) {
+        if (handlerPath === path || isWithinPath(path, handlerPath)) {
+          removeEvent(entityId, handlerPath)
         }
       })
     }
@@ -1103,8 +1115,11 @@ function render (app, container, opts) {
    */
 
   function commit (entity) {
-    entity.context.state = entity.pendingState
-    entity.context.props = entity.pendingProps
+    entity.context = {
+      state: entity.pendingState,
+      props: entity.pendingProps,
+      id: entity.id
+    }
     entity.pendingState = assign({}, entity.context.state)
     entity.pendingProps = assign({}, entity.context.props)
     validateProps(entity.context.props, entity.propTypes)
@@ -1262,7 +1277,10 @@ function render (app, container, opts) {
    */
 
   function removeEvent (entityId, path, eventType) {
-    keypath.del(handlers, [entityId, path, eventType])
+    var args = [entityId]
+    if (path) args.push(path)
+    if (eventType) args.push(eventType)
+    keypath.del(handlers, args)
   }
 
   /**
@@ -1396,6 +1414,7 @@ function getNodeAtPath(el, path) {
   }
   return el
 }
+
 },{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js":41,"get-uid":57,"is-dom":58,"object-path":59,"per-frame":60}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults

@@ -1,4 +1,31 @@
 
+0.2.16 / 2015-05-11
+==================
+
+ * Using a different component object each render
+ * Merge branch 'master' of https://github.com/segmentio/deku
+ * Cleaned up tests and build
+ * Merge pull request #91 from chrisbuttery/master
+ * Typos
+ * Update README.md
+ * Update README.md
+ * Merge pull request #90 from segmentio/data-source-set
+ * not checking for equality, all calls to set should be respected
+ * Update README.md
+ * Update README.md
+ * Update README.md
+ * Update README.md
+ * Update README.md
+ * Merge pull request #86 from chrisbuttery/master
+ * Added React comparison examples + fixed sort method
+ * Merge branch 'master' of https://github.com/segmentio/deku
+ * Merge pull request #85 from chrisbuttery/master
+ * Added counter, iteration & like-button examples
+ * Skipping test for now. IE10 can't run it.
+ * Fixed bug where handler references weren't removed
+ * Skip rendering if element is the same
+ * Updated changelog
+
 0.2.15 / 2015-05-04
 ==================
 
