@@ -1,5 +1,6 @@
 /** @jsx dom */
 
+import raf from 'component-raf'
 import assert from 'assert'
 import {dom,deku,render} from '../../'
 import {TwoWords,mount,div,Span} from '../helpers'
@@ -42,7 +43,7 @@ it('should update on the next frame', function(done){
   assert.equal(el.innerHTML, '<span>Hello World</span>')
   app.mount(<TwoWords one="Hello" two="Pluto" />)
   assert.equal(el.innerHTML, '<span>Hello World</span>')
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
     renderer.remove()
     done();
@@ -67,7 +68,7 @@ it('should not update twice when setting props', function(done){
   var renderer = render(app, el)
   app.mount(<IncrementAfterUpdate text="two" />)
   app.mount(<IncrementAfterUpdate text="three" />)
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(i, 1)
     renderer.remove()
     done()

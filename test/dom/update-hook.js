@@ -1,5 +1,6 @@
 /** @jsx dom */
 
+import raf from 'component-raf'
 import {component,deku,render,dom} from '../../';
 import {mount,div} from '../helpers';
 import assert from 'assert';
@@ -108,7 +109,7 @@ it('should only call `beforeUpdate` once', function(done){
   app.mount(<Component text="two" />)
   app.mount(<Component text="three" />)
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert(i === 1)
     renderer.remove()
     done();

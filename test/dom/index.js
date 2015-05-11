@@ -168,7 +168,7 @@ it('should update on the next frame', function(done){
   var renderer = render(app, el)
   app.mount(<Composed planet="Saturn" />)
   assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>')
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(el.innerHTML, '<div><span>Hello Saturn</span></div>')
     renderer.remove();
     done()
@@ -299,7 +299,7 @@ it('should only update ONCE when props/state is changed in different parts of th
   // Update the top-level props
   app.mount(dom(ComponentB, { text: '3x' }))
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(i, 2)
     assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>")
     renderer.remove();

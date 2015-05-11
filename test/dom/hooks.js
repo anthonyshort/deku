@@ -1,5 +1,6 @@
 /** @jsx element */
 
+import raf from 'component-raf'
 import {mount,div} from '../helpers'
 import {render,deku,element} from '../../'
 import assert from 'assert'
@@ -98,7 +99,7 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
   var container = div()
   var renderer = render(app, container)
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.deepEqual(log, [
       'initialState',
       'beforeMount',
