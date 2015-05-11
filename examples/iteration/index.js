@@ -53,8 +53,10 @@ let List = {
 
     function sortItems(){
       let sorted = state.items.sort(function(a, b){
-        if (a.name > b.name) return 1;
-        if (a.name < b.name) return -1;
+        a = a.name.toLowerCase();
+        b = b.name.toLowerCase();
+        if (a > b) return 1;
+        if (a < b) return -1;
         return 0;
       });
       setState({ items: sorted });
