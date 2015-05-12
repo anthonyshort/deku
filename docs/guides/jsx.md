@@ -12,7 +12,7 @@ JSX just makes this easier to write and read by making it read like HTML:
 
 ```js
 export function render (component) {
-  return <a class="button" onClick={this.onClick}>{props.text}</a>;
+  return <a class="button" onClick={onClick}>{props.text}</a>;
 }
 ```
 
@@ -34,7 +34,7 @@ Then make sure you import the `element` function:
 import {element} from 'deku'
 
 export function render (component) {
-  return <a class="button" onClick={this.onClick}>{props.text}</a>
+  return <a class="button" onClick={onClick}>{props.text}</a>
 }
 ```
 
@@ -47,7 +47,7 @@ You can also add a comment to the top of your files that tells babel which funct
 import {element} from 'deku'
 
 export function render (component) {
-  return <a class="button" onClick={this.onClick}>{props.text}</a>;
+  return <a class="button" onClick={onClick}>{props.text}</a>;
 }
 ```
 
