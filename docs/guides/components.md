@@ -4,7 +4,7 @@ Components are re-usable pieces of your UI. You can think of components as custo
 
 For each lifecycle hook you can add a function to your component to either manipulate state or to return something needed by the component. 
 
-Components are just objects functions and properties on them. They don't store any state on themselves or use `this` anywhere. 
+Components are just objects with functions and properties on them. They don't store any state on themselves or use `this` anywhere. 
 
 ```js
 export let Button = {
