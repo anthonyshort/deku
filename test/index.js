@@ -21,6 +21,7 @@ describe('DOM Renderer', function(){
   require('./dom/keys')
   require('./dom/hooks')
   require('./dom/svg')
+  require('./dom/sources')
 })
 
 describe('String Renderer', function(){
