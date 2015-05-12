@@ -1,4 +1,4 @@
-import { tree, render, element } from 'deku';
+import { tree, render } from 'deku';
 
 var ListItem = {
   render (component) {
