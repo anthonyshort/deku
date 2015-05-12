@@ -69,6 +69,8 @@ let str = renderString(app)
 * [Component Spec](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
 * [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
 
+You can quickly get started with Deku using the [khaos-app](https://github.com/stevenmiller888/khaos-app) template.
+
 ## Components
 
 Each element of your UI can be broken into encapsulated components. These components manage the state for the UI element and tell it how to render. In Deku components are just plain objects:
