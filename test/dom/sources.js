@@ -4,7 +4,7 @@ import {mount,div} from '../helpers'
 import {component,render,deku,dom} from '../../'
 import assert from 'assert'
 
-it('should fire mount events on sub-components', function(done){
+it('should set source without property type', function(done){
   const App = {
     propTypes: {
       foo: {
