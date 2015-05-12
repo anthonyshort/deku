@@ -69,7 +69,7 @@ let str = renderString(app)
 * [Component Spec](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
 * [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
 
-You can quickly get started with Deku using the [khaos-app](https://github.com/stevenmiller888/khaos-app) template.
+You can quickly get started with Deku using the [keku](https://github.com/stevenmiller888/keku) template.
 
 ## Components
 
