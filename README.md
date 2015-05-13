@@ -8,7 +8,7 @@
 
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 
-A library for creating UI components using virtual DOM as an alternative to [React](https://github.com/facebook/react). Deku has a smaller footprint (~10kb), a functional API, and doesn't support legacy browsers. Check out [awesome-deku](https://github.com/stevenmiller888/awesome-deku) for a curated list of Deku resources!
+A library for creating UI components using virtual DOM as an alternative to [React](https://github.com/facebook/react). Deku has a smaller footprint (~10kb), a functional API, and doesn't support legacy browsers.
 
 To install:
 
@@ -68,6 +68,7 @@ let str = renderString(app)
 * [Installing](https://github.com/segmentio/deku/blob/master/docs/guides/install.md)
 * [Component Spec](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
 * [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
+* [Community resources](https://github.com/stevenmiller888/awesome-deku)
 
 You can quickly get started with Deku using the [khaos-app](https://github.com/stevenmiller888/khaos-app) template.
 
