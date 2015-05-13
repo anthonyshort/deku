@@ -70,6 +70,7 @@ let str = renderString(app)
 * [Installing](https://github.com/segmentio/deku/blob/master/docs/guides/install.md)
 * [Component Spec](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
 * [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
+* [Community resources](https://github.com/stevenmiller888/awesome-deku)
 
 You can quickly get started with Deku using the [keku](https://github.com/stevenmiller888/keku) template.
 
