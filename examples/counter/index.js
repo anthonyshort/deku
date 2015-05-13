@@ -35,7 +35,7 @@ function doSomething() {
 }
 
 let counter = tree(
-  <Counter onAnEmittedEventFromCounter={ doSomething }></Counter>
+  element(Counter, { onAnEmittedEventFromCounter: doSomething })
 );
 
 render(counter, document.body);
