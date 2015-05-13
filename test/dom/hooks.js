@@ -99,6 +99,8 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
   var container = div()
   var renderer = render(app, container)
 
+  // Wait till the next frame because we triggered an
+  // update in the afterMount hook
   raf(function(){
     assert.deepEqual(log, [
       'initialState',
@@ -117,4 +119,25 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
     renderer.remove()
     done()
   })
+})
+
+it('should exist in the DOM when after mount is called', function (done) {
+  var renderer
+  var container
+
+  var Test = {
+    render({ props, state }) {
+      return <div id='foo'>Hello World</div>
+    },
+    afterMount (component, el) {
+      assert(document.getElementById('foo'))
+      document.body.removeChild(container)
+      renderer.remove()
+      done()
+    }
+  }
+
+  container = document.createElement('div')
+  document.body.appendChild(container)
+  renderer = render(deku(<Test />), container)
 })
