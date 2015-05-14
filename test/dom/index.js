@@ -1,11 +1,12 @@
 /** @jsx dom */
 
-import trigger from 'trigger-event';
-import Emitter from 'component-emitter';
-import raf from 'component-raf';
-import assert from 'assert';
-import {component,deku,dom,render} from '../../';
-import {HelloWorld,Span,TwoWords,mount,div} from '../helpers';
+import trigger from 'trigger-event'
+import Emitter from 'component-emitter'
+import raf from 'component-raf'
+import assert from 'assert'
+import {component,deku,dom,render} from '../../'
+import {HelloWorld,Span,TwoWords,mount,div} from '../helpers'
+import memoize from 'memoizee'
 
 it('should render and remove an element', function(){
   var app = deku();
@@ -167,7 +168,7 @@ it('should update on the next frame', function(done){
   var renderer = render(app, el)
   app.mount(<Composed planet="Saturn" />)
   assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>')
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(el.innerHTML, '<div><span>Hello Saturn</span></div>')
     renderer.remove();
     done()
@@ -298,7 +299,7 @@ it('should only update ONCE when props/state is changed in different parts of th
   // Update the top-level props
   app.mount(dom(ComponentB, { text: '3x' }))
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(i, 2)
     assert.equal(el.innerHTML, "<div><div>3x Mirror Shield</div></div>")
     renderer.remove();
@@ -341,3 +342,51 @@ it.skip('should not allow setting the state during render', function (done) {
   app.mount(<Impure />)
   mount(app)
 });
+
+describe('memoization', function () {
+
+  it('should skip rendering if the same virtual element is returned', function (done) {
+    var i = 0
+    var el = <div>Hello World</div>
+    var Component = {
+      render(component){
+        i += 1
+        return el
+      },
+      afterUpdate() {
+        throw new Error('Should not update')
+      }
+    };
+    var app = deku(<Component count={0} />)
+    mount(app, function(){
+      app.mount(<Component count={1} />)
+      assert.equal(i, 2)
+      done()
+    })
+  });
+
+  // Test is failing in IE10 because of memoizee
+  it.skip('should allow memoization of the render function', function (done) {
+    var i = 0
+    var Component = {
+      initialState: function() {
+        return { open: false }
+      },
+      render: memoize(function (component) {
+        let {props,state} = component
+        i += 1
+        return <div>Hello World</div>
+      }),
+      afterUpdate() {
+        throw new Error('Should not update')
+      }
+    };
+    var app = deku(<Component count={0} />)
+    mount(app, function(){
+      app.mount(<Component count={0} />)
+      assert.equal(i, 1)
+      done()
+    })
+  });
+
+})

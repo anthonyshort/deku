@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku} from '../../'
+import {dom,deku,render} from '../../'
 import {mount,Span,div} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
@@ -216,7 +216,6 @@ it('should update events when nested children are removed', function () {
       let {props, state} = component
       function remove(e) {
         items.splice(props.index, 1)
-        console.log(items)
       }
       return (
         <li>
@@ -252,5 +251,80 @@ it('should update events when nested children are removed', function () {
     app.mount(<List items={items} />)
     assert.equal(el.innerHTML, '<ul></ul>')
     document.body.removeChild(el);
+  })
+});
+
+it('should remove handlers when an element is removed', function (done) {
+  function fn(){}
+  var Toggle = {
+    render: function(component){
+      let {props, state} = component
+      if (!props.showChildren) {
+        return (
+          <div></div>
+        )
+      } else {
+        return (
+          <div>
+            <span onClick={fn}></span>
+          </div>
+        )
+      }
+    }
+  }
+  var app = deku(
+    <div>
+      <Toggle showChildren />
+      <div onClick={fn}></div>
+    </div>
+  )
+  mount(app, function(el, renderer){
+    app.mount(
+      <div>
+        <Toggle />
+      </div>
+    )
+    var state = renderer.inspect()
+    for (var entityId in state.handlers) {
+      assert.equal(Object.keys(state.handlers[entityId]).length, 0)
+    }
+    done()
+  })
+})
+
+it.skip('should keep focus on elements', function () {
+  var App = {
+    render: function(comp, next) {
+      var state = comp.state;
+      var a = state.a;
+      var b = state.b;
+
+      function one(e) {
+        next({one: e.target.value});
+      }
+
+      function two(e) {
+        next({two: e.target.value});
+      }
+
+      return dom('div', [
+        dom('input', {onChange: one, value: a}),
+        dom('input', {onChange: two, value: b})
+      ]);
+    }
+  };
+
+
+  var app = deku(dom(App));
+  mount(app, function(el, renderer){
+    document.body.appendChild(el)
+    var inputs = el.querySelectorAll('input')
+    var one = inputs[0]
+    var two = inputs[1]
+    one.focus()
+    assert(document.activeElement === one)
+    trigger(two, 'click')
+    assert(document.activeElement === two)
+    document.body.removeChild(el)
   })
 });

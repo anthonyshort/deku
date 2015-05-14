@@ -1,4 +1,19 @@
 
+0.2.17 / 2015-05-11
+==================
+
+ * set sources on update
+
+0.2.16 / 2015-05-11
+==================
+
+ * Using a different component object each render
+ * Cleaned up tests and build
+ * Calling .set will always trigger an update instead of checking equality with the previous data value.
+ * Added React comparison examples
+ * Fixed bug where handler references weren't removed
+ * Skip rendering if element is the same
+
 0.2.15 / 2015-05-04
 ==================
 

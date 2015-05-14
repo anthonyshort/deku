@@ -39,27 +39,27 @@ index.js: node_modules $(js)
 test: build.js
 	@$(BIN)/duo-test browser --commands 'make build.js'
 
-test-phantom: tests.js
-	@mochify
+test-phantom:
+	@$(BIN)/mochify --transform babelify --ui bdd ./test/index.js
 .PHONY: test
 
 test-cloud: tests.js
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
 
 test-lint: $(lib)
-	@./node_modules/.bin/standard lib/*
+	@$(BIN)/standard lib/*
 .PHONY: test-lint
 
 test-watch:
-	@mochify --watch
+	@$(BIN)/mochify --watch
 .PHONY: watch
 
 test-coverage:
-	@mochify --cover
+	@$(BIN)/mochify --cover
 .PHONY: coverage
 
 test-size: index.js
-	minify index.js | gzip -9 | wc -c
+	$(BIN)/minify index.js | gzip -9 | wc -c
 .PHONY: test-size
 
 #

@@ -1,5 +1,6 @@
 /** @jsx dom */
 
+import raf from 'component-raf'
 import assert from 'assert'
 import {component,dom,deku,render} from '../../'
 import {mount,Span,div} from '../helpers'
@@ -36,7 +37,7 @@ it('should update components when state changes', function(done){
 
   assert.equal(container.innerHTML, '<span>foo</span>');
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(container.innerHTML, '<span>bar</span>')
     rendered.remove()
     done()
@@ -52,7 +53,7 @@ it('should update composed components when state changes', function(done){
 
   assert.equal(container.innerHTML, '<div><span>foo</span></div>')
 
-  requestAnimationFrame(function(){
+  raf(function(){
     assert.equal(container.innerHTML, '<div><span>bar</span></div>')
     rendered.remove()
     done()
