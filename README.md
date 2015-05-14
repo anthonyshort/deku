@@ -72,8 +72,6 @@ let str = renderString(app)
 * [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
 * [Community resources](https://github.com/stevenmiller888/awesome-deku)
 
-You can quickly get started with Deku using the [keku](https://github.com/stevenmiller888/keku) template.
-
 ## Components
 
 Each element of your UI can be broken into encapsulated components. These components manage the state for the UI element and tell it how to render. In Deku components are just plain objects:
