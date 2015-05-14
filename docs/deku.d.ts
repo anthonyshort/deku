@@ -29,11 +29,21 @@ declare module "deku" {
    * Builds either "raw" DOM-like elements or "component-like" elements. 
    */
   function element(tag: string): VirtualNode<{}, {}>;
-  function element(tag: string, props: EventedAndKeyed): VirtualNode<{}, {}>;
-  function element(tag: string, props: EventedAndKeyed, children: Child[]): VirtualNode<{}, {}>;
-  function element<P extends EventedAndKeyed, S>(tag: Spec<P, S>, props: P): VirtualNode<P, S>;
-  function element<P extends EventedAndKeyed, S>(tag: Spec<P, S>, props: P, children: Child[]): VirtualNode<P, S>;
-  interface EventedAndKeyed extends Evented, Keyed {}
+  function element(tag: string, props: PropLike): VirtualNode<{}, {}>;
+  function element(tag: string, props: PropLike, children: Child[]): VirtualNode<{}, {}>;
+  function element<P extends PropLike, S>(spec: Spec<P, S>, props: P): VirtualNode<P, S>;
+  function element<P extends PropLike, S>(spec: Spec<P, S>, props: P, children: Child[]): VirtualNode<P, S>;
+  
+  /**
+   * Prop types are constrained and informed by three interfaces: HasChildren, 
+   * Evented, and Keyed.
+   * 
+   * In practice, what this implies is two-fold. First, prop types will have "children"
+   * appended in all circumstances once the component is mounted to the DOM. Custom Prop
+   * types should therefore properly inherit this slot. Second, props may include both
+   * event listener declarations and keys used for controlling tree diffing.
+   */
+  interface PropLike extends HasChildren, Evented, Keyed {}
   
   /**
    * VirtualNodes are abstract types that form a "skeletonized" DOM tree that
@@ -49,7 +59,7 @@ declare module "deku" {
     attributes: any;
     key: string;
   }
-  class ComponentNode<P, S> extends VirtualNode<P, S> {
+  class ComponentNode<P extends HasChildren, S> extends VirtualNode<P, S> {
     component: Component<P, S>;
     props: P;
     key: string;
@@ -105,7 +115,7 @@ declare module "deku" {
    * Users do not construct Components directly but instead create component 
    * Specs which 
    */
-  interface Component<P, S> {
+  interface Component<P extends HasChildren, S> {
     props: P;
     state: S;
     id: string;
@@ -135,7 +145,7 @@ declare module "deku" {
    * static properties. A value of type Spec<P, S> specifies a component of
    * type Component<P, S> with properties in type P and local state in type S.
    */
-  interface Spec<P, S> {
+  interface Spec<P extends HasChildren, S> {
    
     /** Define a name for the component that can be used in debugging */
     name?: string;
@@ -257,8 +267,13 @@ declare module "deku" {
   // ANCILARY PROPERTY INTERFACES
   // -------------------------------------------------------------------- 
   
+  /**
+   * Prop types are assigned a slot to hold the children assigned to a component
+   * after it has been built into the virtual tree; therefore, all Prop types
+   * should recognize that they may also include a children slot.
+   */
   interface HasChildren {
-    children: Array<VirtualNode<any, any>>;
+    children?: Array<VirtualNode<any, any>>;
   }
   
   /**
