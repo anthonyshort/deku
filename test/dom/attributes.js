@@ -163,3 +163,51 @@ it('should render a selected option properly', function () {
     assert(!option.hasAttribute('selected'));
   })
 })
+
+it('should render a defaultValue input properly', function () {
+  var Input = {
+    render: function ({ props }) {
+      return dom('input', { defaultValue: props.defaultValue });
+    }
+  }
+
+  var app = deku();
+  app.mount(<Input defaultValue='hello world' />);
+
+  mount(app, function (el) {
+    var input = el.querySelector('input');
+
+    // initially should be disabled
+    assert.equal(input.defaultValue, 'hello world');
+    assert(!input.hasAttribute('defaultValue'));
+
+    // should now be enabled
+    app.mount(<Input defaultValue={false} />);
+    assert(!input.defaultValue);
+    assert(!input.hasAttribute('defaultValue'));
+  })
+})
+
+it('should render a defaultChecked checkbox properly', function () {
+  var Input = {
+    render: function ({ props }) {
+      return dom('input', { type: 'checkbox', defaultChecked: props.defaultChecked });
+    }
+  }
+
+  var app = deku();
+  app.mount(<Input defaultChecked={true} />);
+
+  mount(app, function (el) {
+    var input = el.querySelector('input');
+
+    // initially should be disabled
+    assert(input.defaultChecked);
+    assert(!input.hasAttribute('defaultChecked'));
+
+    // should now be enabled
+    app.mount(<Input defaultChecked={false} />);
+    assert(!input.defaultChecked);
+    assert(!input.hasAttribute('defaultChecked'));
+  })
+})
