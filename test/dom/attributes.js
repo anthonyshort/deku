@@ -86,8 +86,56 @@ it('should render and update innerHTML', function () {
   app.mount(<Test content="Hello <strong>deku</strong>" />)
 
   mount(app, function(el){
-    assert.equal(el.innerHTML,'<div>Hello <strong>deku</strong></div>');
+    assert.equal(el.innerHTML,'<div>Hello <strong>deku</strong></div>')
     app.mount(<Test content="Hello <strong>Pluto</strong>" />)
-    assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>');
+    assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>')
+  })
+})
+
+it('should render a checked checkbox properly', function () {
+  var Input = {
+    render: function ({ props }) {
+      return dom('input', { type: 'checkbox', checked: props.checked })
+    }
+  }
+
+  var app = deku();
+  app.mount(<Input checked={true} />);
+
+  mount(app, function (el) {
+    var checkbox = el.querySelector('input');
+
+    // initially should be checked
+    assert(checkbox.checked)
+    assert.equal(checkbox.getAttribute('checked'), 'checked');
+
+    // should now be unchecked
+    app.mount(<Input checked={false} />);
+    assert(!checkbox.checked);
+    assert(!checkbox.hasAttribute('checked'));
+  })
+})
+
+it('should render a disabled input properly', function () {
+  var Input = {
+    render: function ({ props }) {
+      return dom('input', { disabled: props.disabled });
+    }
+  }
+
+  var app = deku();
+  app.mount(<Input disabled={true} />);
+
+  mount(app, function (el) {
+    var checkbox = el.querySelector('input');
+
+    // initially should be disabled
+    assert(checkbox.disabled);
+    assert.equal(checkbox.getAttribute('disabled'), 'disabled');
+
+    // should now be enabled
+    app.mount(<Input disabled={false} />);
+    assert(!checkbox.disabled);
+    assert(!checkbox.hasAttribute('disabled'));
   })
 })
