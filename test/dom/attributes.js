@@ -139,3 +139,27 @@ it('should render a disabled input properly', function () {
     assert(!checkbox.hasAttribute('disabled'));
   })
 })
+
+it('should render a selected option properly', function () {
+  var Option = {
+    render: function ({ props }) {
+      return dom('option', { selected: props.selected });
+    }
+  }
+
+  var app = deku();
+  app.mount(<Option selected={true} />);
+
+  mount(app, function (el) {
+    var option = el.querySelector('option');
+
+    // initially should be disabled
+    assert(option.selected);
+    assert.equal(option.getAttribute('selected'), 'selected');
+
+    // should now be enabled
+    app.mount(<Option selected={false} />);
+    assert(!option.selected);
+    assert(!option.hasAttribute('selected'));
+  })
+})
