@@ -6,9 +6,9 @@
 	<br>
 </h1>
 
-[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/segmentio/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard) 
+[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/dekujs/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard) 
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/segmentio/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dekujs/deku?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A library for creating UI components using virtual DOM as an alternative to [React](https://github.com/facebook/react). Deku has a smaller footprint (~10kb), a functional API, and doesn't support legacy browsers.
 
@@ -18,9 +18,9 @@ To install:
 npm install deku
 ```
 
->  You can also use Duo, Bower or [download the files manually](https://github.com/segmentio/deku/releases).
+>  You can also use Duo, Bower or [download the files manually](https://github.com/dekujs/deku/releases).
 
-[Components](https://github.com/segmentio/deku/blob/master/docs/guides/components.md) are just plain objects that have a render function instead of using classes or constructors:
+[Components](https://github.com/dekujs/deku/blob/master/docs/guides/components.md) are just plain objects that have a render function instead of using classes or constructors:
 
 ```js
 // button.js
@@ -67,9 +67,9 @@ let str = renderString(app)
 
 ## Docs
 
-* [Installing](https://github.com/segmentio/deku/blob/master/docs/guides/install.md)
-* [Component Spec](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
-* [Using JSX](https://github.com/segmentio/deku/blob/master/docs/guides/jsx.md)
+* [Installing](https://github.com/dekujs/deku/blob/master/docs/guides/install.md)
+* [Component Spec](https://github.com/dekujs/deku/blob/master/docs/guides/components.md)
+* [Using JSX](https://github.com/dekujs/deku/blob/master/docs/guides/jsx.md)
 * [Community resources](https://github.com/stevenmiller888/awesome-deku)
 
 ## Components
@@ -91,7 +91,7 @@ There is no concept of classes or use of `this`. We can import this component us
 import Button from './button'
 ```
 
-[Read more about components](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
+[Read more about components](https://github.com/dekujs/deku/blob/master/docs/guides/components.md)
 
 ## Rendering Components
 
@@ -175,7 +175,7 @@ function clicked () {
 }
 ```
 
-You can [view all event handlers](https://github.com/segmentio/deku/blob/master/lib/render.js#L25) in code.
+You can [view all event handlers](https://github.com/dekujs/deku/blob/master/lib/render.js#L25) in code.
 
 ## Lifecycle hooks
 
@@ -192,7 +192,7 @@ function afterUpdate (component, prevProps, prevState, setState) {
 
 We have hooks for `beforeMount`, `afterMount`, `beforeUpdate`, `afterUpdate`, `beforeUnmount` and two new hooks - `beforeRender` and `afterRender` that are called on every pass, unlike the update hooks. We've found that these extra hooks have allowed us to write cleaner code and worry less about the state of the component.
 
-[Learn more about the lifecycle hooks](https://github.com/segmentio/deku/blob/master/docs/guides/components.md)
+[Learn more about the lifecycle hooks](https://github.com/dekujs/deku/blob/master/docs/guides/components.md)
 
 ## Validation
 
@@ -293,4 +293,4 @@ Deku is built with Browserify. You can run the tests in a browser by running `ma
 
 ## License
 
-MIT. See [LICENSE.md](http://github.com/segmentio/deku/blob/master/LICENSE.md)
+MIT. See [LICENSE.md](http://github.com/dekujs/deku/blob/master/LICENSE.md)
