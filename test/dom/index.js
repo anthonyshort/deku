@@ -390,3 +390,18 @@ describe('memoization', function () {
   });
 
 })
+
+it('should empty the container before initial render', function () {
+  var Component = {
+    render: function () {
+      return dom('div', [ 'b' ]);
+    }
+  };
+
+  var el = div();
+  el.innerHTML = 'a';
+
+  var app = deku(<Component />);
+  render(app, el, { emptyContainer: true });
+  assert.equal(el.innerText, 'b');
+})
