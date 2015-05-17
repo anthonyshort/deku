@@ -141,14 +141,16 @@ it('should render a disabled input properly', function () {
 })
 
 it('should render a selected option properly', function () {
-  var Option = {
+  var Select = {
     render: function ({ props }) {
-      return dom('option', { selected: props.selected });
+      return dom('select', [
+        dom('option', { selected: props.selected })
+      ]);
     }
   }
 
   var app = deku();
-  app.mount(<Option selected={true} />);
+  app.mount(<Select selected={true} />);
 
   mount(app, function (el) {
     var option = el.querySelector('option');
@@ -158,7 +160,7 @@ it('should render a selected option properly', function () {
     assert.equal(option.getAttribute('selected'), 'selected');
 
     // should now be enabled
-    app.mount(<Option selected={false} />);
+    app.mount(<Select selected={false} />);
     assert(!option.selected);
     assert(!option.hasAttribute('selected'));
   })
