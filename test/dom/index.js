@@ -403,5 +403,5 @@ it('should empty the container before initial render', function () {
 
   var app = deku(<Component />);
   render(app, el, { emptyContainer: true });
-  assert.equal(el.innerText, 'b');
+  assert.equal(el.innerHTML, 'b');
 })
