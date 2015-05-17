@@ -144,26 +144,36 @@ it('should render a selected option properly', function () {
   var Select = {
     render: function ({ props }) {
       return dom('select', [
-        dom('option', { selected: props.selected })
+        dom('option', { selected: props.selected === 0 }),
+        dom('option', { selected: props.selected === 1 })
       ]);
     }
   }
 
   var app = deku();
-  app.mount(<Select selected={true} />);
+  app.mount(<Select selected={0} />);
 
   mount(app, function (el) {
-    var option = el.querySelector('option');
+    var options = el.querySelectorAll('option');
 
-    // initially should be disabled
-    assert(option.selected);
-    assert.equal(option.getAttribute('selected'), 'selected');
+    selected(options[0])
+    unselected(options[1]);
 
     // should now be enabled
-    app.mount(<Select selected={false} />);
-    assert(!option.selected);
-    assert(!option.hasAttribute('selected'));
+    app.mount(<Select selected={1} />);
+    unselected(options[0]);
+    selected(options[1]);
   })
+
+  function selected(option) {
+    assert(option.selected, 'selected DOM property should be true');
+    assert.equal(option.getAttribute('selected'), 'selected');
+  }
+
+  function unselected(option) {
+    assert(!option.selected, 'selected DOM property should be false');
+    assert(!option.hasAttribute('selected'));
+  }
 })
 
 it('should render a defaultValue input properly', function () {
