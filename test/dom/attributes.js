@@ -155,12 +155,12 @@ it('should render a selected option properly', function () {
 
   mount(app, function (el) {
     var options = el.querySelectorAll('option');
-
     selected(options[0])
     unselected(options[1]);
 
     // should now be enabled
     app.mount(<Select selected={1} />);
+    options = el.querySelectorAll('option');
     unselected(options[0]);
     selected(options[1]);
   })
