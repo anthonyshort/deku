@@ -2,54 +2,12 @@
 0.3.0 / 2015-05-18
 ==================
 
- * Reduced warning to an info
- * Linked to docs in the errors
- * Added some hints for errors
- * Merge pull request #122 from dekujs/empty-container-option
- * adding warning messages for non-empty containers and document.body usage
- * Always emptying the container
- * Update README.md
- * Updated example
- * Merge pull request #117 from dekujs/checked-disabled-props
- * Removed the default values
- * removing console logs and re-querying for option elements for safari compat
- * using innerText and textContent (fallback) for better x-browser support
- * using innerHTML to be x-browser
- * fixing selected option tests
- * adding wrapper select to hopefully fix IE
- * adding defaultChecked and defaultValue support
- * adding selected attribute
- * adding support for checked/disabled properties
- * Updating readme after repo move
- * adding emptyContainer option to dom renderer
- * Merge pull request #119 from Artesonraju/multiple-components-depending-on-same-source
- * Fix: Update multiple components depending on the same source
- * Merge pull request #115 from tel/feat-add-d-ts-file
- * Updated Deku d.ts to ensure prop types include children
- * Updated Deku.d.ts file
- * Update README.md
- * Added a TypeScript definitions file to the docs
- * Merge pull request #106 from segmentio/add/awesome-deku
- * moved to docs
- * fixed typo
- * Merge pull request #112 from chrisbuttery/master
- * Updating counter example to not use JSX
- * Update README.md
- * updated readme.md
- * added awesome-deku to readme
- * Merge pull request #104 from segmentio/fix/source
- * named test
- * added test fixing connections[name] error
- * Merge pull request #103 from segmentio/add/template
- * added khaos template link to readme
- * Merge pull request #102 from staygrimm/patch-1
- * fix typo
- * Merge pull request #100 from boopathi/fix/docs
- * Removes usage of this in jsx
- * Removed empty test
- * Merge pull request #96 from olivierlacan/patch-1
- * Use consistent Shields badges
- * Updated changelog
+ * Added: warnings and nicer error messages
+ * Added: Always emptying the container when rendering
+ * Added: Deku.d.ts file
+ * Removed: the `defaultX` attributes from checkboxes, selects and inputs
+ * Fixed: rendering for `checked`, `selected` and `disabled` attributes
+ * Fixed: multiple components depending on the same `source`
 
 0.2.17 / 2015-05-11
 ==================
