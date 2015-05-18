@@ -70,6 +70,7 @@ let str = renderString(app)
 * [Installing](https://github.com/dekujs/deku/blob/master/docs/guides/install.md)
 * [Component Spec](https://github.com/dekujs/deku/blob/master/docs/guides/components.md)
 * [Using JSX](https://github.com/dekujs/deku/blob/master/docs/guides/jsx.md)
+* [Client + Server Rendering Example](https://github.com/dekujs/todomvc)
 * [Community resources](https://github.com/stevenmiller888/awesome-deku)
 
 ## Components
