@@ -289,7 +289,10 @@ function render (app, container, opts) {
    */
 
   function onupdate (name, data) {
-    connections[name](data)
+    if (!connections[name]) return;
+    connections[name].forEach(function(update) {
+      update(data)
+    })
   }
 
   /**
@@ -419,6 +422,13 @@ function render (app, container, opts) {
     if (!currentNativeElement) {
       currentElement = app.element
       currentNativeElement = toNative(rootId, '0', currentElement)
+      if (container.children.length > 0) {
+        console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
+      }
+      if (container === document.body) {
+        console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
+      }
+      removeAllChildren(container);
       container.appendChild(currentNativeElement)
     } else if (currentElement !== app.element) {
       currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
@@ -612,7 +622,7 @@ function render (app, container, opts) {
   }
 
   /**
-   * Create a diff between two tress of nodes.
+   * Create a diff between two trees of nodes.
    */
 
   function diffNode (path, entityId, prev, next, el) {
@@ -955,11 +965,14 @@ function render (app, container, opts) {
       return
     }
     switch (name) {
-      case 'value':
-        el.value = value
+      case 'checked':
+      case 'disabled':
+      case 'selected':
+        el[name] = true
         break
       case 'innerHTML':
-        el.innerHTML = value
+      case 'value':
+        el[name] = value
         break
       case svg.isAttribute(name):
         el.setAttributeNS(svg.namespace, name, value)
@@ -983,7 +996,20 @@ function render (app, container, opts) {
       removeEvent(entityId, path, events[name])
       return
     }
-    el.removeAttribute(name)
+    switch (name) {
+      case 'checked':
+      case 'disabled':
+      case 'selected':
+        el[name] = false
+        break
+      case 'innerHTML':
+      case 'value':
+        el[name] = ""
+        break
+      default:
+        el.removeAttribute(name)
+        break
+    }
   }
 
   /**
@@ -1178,7 +1204,8 @@ function render (app, container, opts) {
 
     // send value updates to all component instances.
     sources.forEach(function (source) {
-      connections[source] = update
+      connections[source] = connections[source] || []
+      connections[source].push(update)
 
       function update (data) {
         var prop = map[source]
@@ -1694,7 +1721,7 @@ module.exports = virtual
 function virtual (type, props, children) {
   // Default to div with no args
   if (!type) {
-    throw new Error('Element needs a type. https://gist.github.com/anthonyshort/77ced43b5defe39908af')
+    throw new Error('deku: Element needs a type. Read more: http://cl.ly/b0KZ')
   }
 
   // Skipped adding attributes and we're passing
@@ -1904,23 +1931,46 @@ function parseClass (value) {
 
 },{"array-flatten":8,"component-type":11,"sliced":61}],8:[function(_require,module,exports){
 /**
- * Recursive flatten function. Fastest implementation for array flattening.
+ * Recursive flatten function with depth.
  *
  * @param  {Array}  array
  * @param  {Array}  result
  * @param  {Number} depth
  * @return {Array}
  */
-function flatten (array, result, depth) {
+function flattenDepth (array, result, depth) {
   for (var i = 0; i < array.length; i++) {
-    if (depth > 0 && Array.isArray(array[i])) {
-      flatten(array[i], result, depth - 1);
+    var value = array[i]
+
+    if (depth > 0 && Array.isArray(value)) {
+      flattenDepth(value, result, depth - 1)
     } else {
-      result.push(array[i]);
+      result.push(value)
     }
   }
 
-  return result;
+  return result
+}
+
+/**
+ * Recursive flatten function. Omitting depth is slightly faster.
+ *
+ * @param  {Array} array
+ * @param  {Array} result
+ * @return {Array}
+ */
+function flattenForever (array, result) {
+  for (var i = 0; i < array.length; i++) {
+    var value = array[i]
+
+    if (Array.isArray(value)) {
+      flattenForever(value, result)
+    } else {
+      result.push(value)
+    }
+  }
+
+  return result
 }
 
 /**
@@ -1931,8 +1981,12 @@ function flatten (array, result, depth) {
  * @return {Array}
  */
 module.exports = function (array, depth) {
-  return flatten(array, [], depth || Infinity);
-};
+  if (depth == null) {
+    return flattenForever(array, [])
+  }
+
+  return flattenDepth(array, [], depth)
+}
 
 },{}],9:[function(_require,module,exports){
 
