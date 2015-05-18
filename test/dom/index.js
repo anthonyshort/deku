@@ -399,9 +399,10 @@ it('should empty the container before initial render', function () {
   };
 
   var el = div();
-  el.innerHTML = 'a';
+  el.innerHTML = '<div>a</div>';
 
   var app = deku(<Component />);
-  render(app, el, { emptyContainer: true });
-  assert.equal(el.innerText || el.textContent, 'b');
+  var renderer = render(app, el);
+  assert.equal(el.innerHTML, '<div>b</div>');
+  renderer.remove()
 })
