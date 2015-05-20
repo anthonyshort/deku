@@ -36,10 +36,10 @@ function render (component) {
   return <button class="Button" type={props.kind}>{props.children}</button>
 }
 
-function afterUpdate (component, prevProps, prevState, setState) {
+function afterUpdate (component, prevProps, prevState, updateState) {
   let {props, state} = component
   if (!state.clicked) {
-    setState({ clicked: true })
+    updateState({ clicked: true })
   }
 }
 
@@ -183,10 +183,10 @@ You can [view all event handlers](https://github.com/dekujs/deku/blob/master/lib
 Just like the `render` function, component lifecycle hooks are just plain functions:
 
 ```js
-function afterUpdate (component, prevProps, prevState, setState) {
+function afterUpdate (component, prevProps, prevState, updateState) {
   let {props, state} = component
   if (!state.clicked) {
-    setState({ clicked: true })
+    updateState({ clicked: true })
   }
 }
 ```
