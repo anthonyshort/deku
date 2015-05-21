@@ -203,6 +203,7 @@ function render (app, container, opts) {
   var currentElement
   var currentNativeElement
   var connections = {}
+  var components = {}
   var entities = {}
   var pools = {}
   var handlers = {}
@@ -342,6 +343,9 @@ function render (app, container, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
+    var componentEntities = components[entityId].entities;
+    delete componentEntities[entityId]
+    delete components[entityId]
     delete entities[entityId]
     delete children[entityId]
   }
@@ -1186,6 +1190,8 @@ function render (app, container, opts) {
     var entities = component.entities = component.entities || {}
     // add entity to component list
     entities[entity.id] = entity
+    // map to component so you can remove later.
+    components[entity.id] = component;
 
     // get 'class-level' sources.
     var sources = component.sources
@@ -1931,46 +1937,23 @@ function parseClass (value) {
 
 },{"array-flatten":8,"component-type":11,"sliced":61}],8:[function(_require,module,exports){
 /**
- * Recursive flatten function with depth.
+ * Recursive flatten function. Fastest implementation for array flattening.
  *
  * @param  {Array}  array
  * @param  {Array}  result
  * @param  {Number} depth
  * @return {Array}
  */
-function flattenDepth (array, result, depth) {
+function flatten (array, result, depth) {
   for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (depth > 0 && Array.isArray(value)) {
-      flattenDepth(value, result, depth - 1)
+    if (depth > 0 && Array.isArray(array[i])) {
+      flatten(array[i], result, depth - 1);
     } else {
-      result.push(value)
+      result.push(array[i]);
     }
   }
 
-  return result
-}
-
-/**
- * Recursive flatten function. Omitting depth is slightly faster.
- *
- * @param  {Array} array
- * @param  {Array} result
- * @return {Array}
- */
-function flattenForever (array, result) {
-  for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (Array.isArray(value)) {
-      flattenForever(value, result)
-    } else {
-      result.push(value)
-    }
-  }
-
-  return result
+  return result;
 }
 
 /**
@@ -1981,12 +1964,8 @@ function flattenForever (array, result) {
  * @return {Array}
  */
 module.exports = function (array, depth) {
-  if (depth == null) {
-    return flattenForever(array, [])
-  }
-
-  return flattenDepth(array, [], depth)
-}
+  return flatten(array, [], depth || Infinity);
+};
 
 },{}],9:[function(_require,module,exports){
 
