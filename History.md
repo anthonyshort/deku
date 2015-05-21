@@ -1,4 +1,9 @@
 
+0.3.1 / 2015-05-21
+==================
+
+  * fixed error with swapping component using sources
+
 0.3.0 / 2015-05-18
 ==================
 
