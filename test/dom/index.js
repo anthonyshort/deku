@@ -62,20 +62,21 @@ it('should render and remove a component', function(){
 
 it('should have initial state', function(){
   var DefaultState = {
-    initialState: function(){
+    initialState: function(props){
       return {
-        text: 'Hello World'
+        text: 'Hello World',
+        count: props.initialCount
       };
     },
     render: function(component){
       let {props, state} = component
-      return dom('span', null, state.text);
+      return <span count={state.count}>{state.text}</span>;
     }
   };
   var app = deku();
-  app.mount(dom(DefaultState));
+  app.mount(<DefaultState initialCount={2} />);
   mount(app, function(el){
-    assert.equal(el.innerHTML, '<span>Hello World</span>')
+    assert.equal(el.innerHTML, '<span count="2">Hello World</span>')
   })
 })
 

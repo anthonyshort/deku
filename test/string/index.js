@@ -101,17 +101,17 @@ it('should render with props', function(){
 
 it('should render with initial state', function(){
   var Component = {
-    initialState: function(){
-      return { text: 'foo' }
+    initialState: function(props){
+      return { text: 'foo', count: props.initialCount }
     },
     render: function(component){
       let {props, state} = component
-      return <div>{state.text}</div>
+      return <div count={state.count}>{state.text}</div>
     }
   };
   var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div>foo</div>')
+  app.mount(<Component initialCount={0} />)
+  assert.equal(renderString(app), '<div count="0">foo</div>')
 });
 
 it('should have initial props', function(){
