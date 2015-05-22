@@ -163,3 +163,42 @@ it('should fire mount events top-down', function () {
     'child:afterMount'
   ])
 });
+
+
+it('should return a promise from afterMount to update state', function (done) {
+  var fetch = function(){
+    return new Promise(function(resolve){
+      setTimeout(function(){
+        resolve('two')
+      }, 10)
+    })
+  }
+
+  var Test = {
+    initialState () {
+      return {
+        text: 'one',
+        id: 'one'
+      }
+    },
+    render ({ state }) {
+      return <div id={state.id}>{state.text}</div>
+    },
+    afterMount: async function (component, el) {
+      var text = await fetch()
+      return {
+        text: text
+      }
+    },
+    afterUpdate () {
+      assert.equal(container.innerHTML, '<div id="one">two</div>')
+      document.body.removeChild(container)
+      renderer.remove()
+      done()
+    }
+  }
+  var container = document.createElement('div')
+  document.body.appendChild(container)
+  var renderer = render(deku(<Test />), container, { batching: false })
+  assert.equal(container.innerHTML, '<div id="one">one</div>')
+});
