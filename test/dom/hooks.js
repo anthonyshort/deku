@@ -138,3 +138,28 @@ it('should exist in the DOM when after mount is called', function (done) {
   document.body.removeChild(container)
   renderer.remove()
 })
+
+it('should fire mount events top-down', function () {
+  var order = []
+
+  var Child = {
+    render() { return <div /> },
+    afterMount() { order.push('child:afterMount') },
+    afterRender() { order.push('child:afterRender') }
+  }
+
+  var Parent = {
+    render() { return <Child /> },
+    afterMount() { order.push('parent:afterMount') },
+    afterRender() { order.push('parent:afterRender') }
+  }
+
+  var app = deku(<Parent />)
+  mount(app)
+  assert.deepEqual(order, [
+    'parent:afterRender',
+    'parent:afterMount',
+    'child:afterRender',
+    'child:afterMount'
+  ])
+});
