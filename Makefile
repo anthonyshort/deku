@@ -24,10 +24,10 @@ default: index.js
 #
 
 build.js: node_modules $(js)
-	@browserify test/index.js -t babelify > build.js
+	@browserify -d -e test/index.js -t [ babelify --optional es7.asyncFunctions ] > build.js
 
 tests.js: node_modules $(js)
-	@browserify test/index.js -t babelify | bfc > tests.js
+	@browserify -d -e test/index.js -t [ babelify --optional es7.asyncFunctions ] | bfc > tests.js
 
 index.js: node_modules $(js)
 	@browserify -s deku lib/index.js | bfc > index.js

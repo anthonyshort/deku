@@ -165,23 +165,33 @@ it('should fire mount events top-down', function () {
 });
 
 
-it('should return a promise from afterMount to update state', function (done) {
+it.only('should return a promise from afterMount to update state', function (done) {
+  var fetch = function(){
+    return new Promise(function(resolve){
+      setTimeout(function(){
+        resolve('two')
+      }, 10)
+    })
+  }
+
   var Test = {
     initialState () {
-      return { text: 'foo' }
+      return {
+        text: 'one',
+        id: 'one'
+      }
     },
     render ({ state }) {
-      return <div>{state.text}</div>
+      return <div id={state.id}>{state.text}</div>
     },
-    afterMount (component, el) {
-      return new Promise(function(resolve){
-        setTimeout(function(){
-          resolve({ text: 'hello world' })
-        }, 10)
-      })
+    afterMount: async function (component, el) {
+      var text = await fetch()
+      return {
+        text: text
+      }
     },
     afterUpdate () {
-      assert.equal(container.innerHTML, '<div>hello world</div>')
+      assert.equal(container.innerHTML, '<div id="one">two</div>')
       document.body.removeChild(container)
       renderer.remove()
       done()
@@ -190,5 +200,5 @@ it('should return a promise from afterMount to update state', function (done) {
   var container = document.createElement('div')
   document.body.appendChild(container)
   var renderer = render(deku(<Test />), container, { batching: false })
-  assert.equal(container.innerHTML, '<div>foo</div>')
+  assert.equal(container.innerHTML, '<div id="one">one</div>')
 });

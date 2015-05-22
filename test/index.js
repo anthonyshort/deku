@@ -1,4 +1,5 @@
 require('es6-promise').polyfill()
+require("babelify/polyfill")
 
 describe('virtual', function(){
   require('./virtual')
