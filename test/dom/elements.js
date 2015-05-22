@@ -226,6 +226,57 @@ it('should change sub-component tag names', function(){
   })
 })
 
+it('should update sub-components with the same element', function () {
+  let AComponent = {
+    render({ props }) {
+      return <div>{props.children}</div>
+    }
+  }
+  let Page1 = {
+    render({ props }) {
+      return (
+        <AComponent>
+          <AComponent>
+            <AComponent>
+              {
+                props.show ?
+                  <div>
+                    <label/>
+                    <input/>
+                  </div>
+                :
+                  <span>
+                    Hello
+                  </span>
+              }
+            </AComponent>
+          </AComponent>
+        </AComponent>
+      )
+    }
+  }
+  let Page2 = {
+    render({props}) {
+      return <div>
+        <span>{props.title}</span>
+      </div>
+    }
+  }
+  let App = {
+    render({props}) {
+      return props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
+    }
+  }
+  var app = deku()
+  app.mount(<App page={1} show={true} />)
+  mount(app, function(el){
+    app.mount(<App page={1} show={false} />)
+    app.mount(<App page={2} title="Hello World" />)
+    app.mount(<App page={2} title="foo" />)
+    assert.equal(el.innerHTML, '<div><span>foo</span></div>');
+  })
+});
+
 /**
  * It should be able to render new components when re-rendering
  */
