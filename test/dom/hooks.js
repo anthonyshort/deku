@@ -165,7 +165,7 @@ it('should fire mount events top-down', function () {
 });
 
 
-it.only('should return a promise from afterMount to update state', function (done) {
+it('should return a promise from afterMount to update state', function (done) {
   var fetch = function(){
     return new Promise(function(resolve){
       setTimeout(function(){
