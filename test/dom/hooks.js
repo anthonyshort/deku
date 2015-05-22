@@ -122,22 +122,19 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
 })
 
 it('should exist in the DOM when after mount is called', function (done) {
-  var renderer
-  var container
-
   var Test = {
     render({ props, state }) {
       return <div id='foo'>Hello World</div>
     },
     afterMount (component, el) {
       assert(document.getElementById('foo'))
-      document.body.removeChild(container)
-      renderer.remove()
       done()
     }
   }
 
-  container = document.createElement('div')
+  var container = document.createElement('div')
   document.body.appendChild(container)
-  renderer = render(deku(<Test />), container)
+  var renderer = render(deku(<Test />), container)
+  document.body.removeChild(container)
+  renderer.remove()
 })
