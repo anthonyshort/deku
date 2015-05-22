@@ -12,6 +12,7 @@
     "bump": "git://github.com/ianstormtaylor/bump.git#0.4.2",
     "component-classes": "^1.2.3",
     "duo-test": "^0.3.13",
+    "es6-promise": "^2.1.1",
     "memoizee": "^0.3.8",
     "minify": "^1.4.11",
     "mochify": "^2.1.1",
@@ -30,6 +31,7 @@
     "fast.js": "^0.1.1",
     "get-uid": "^1.0.1",
     "is-dom": "^1.0.5",
+    "is-promise": "^2.0.0",
     "object-path": "^0.8.1",
     "per-frame": "^3.0.0",
     "sliced": "0.0.5"

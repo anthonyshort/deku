@@ -1,3 +1,4 @@
+require('es6-promise').polyfill()
 
 describe('virtual', function(){
   require('./virtual')
