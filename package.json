@@ -15,6 +15,7 @@
     "memoizee": "^0.3.8",
     "minify": "^1.4.11",
     "mochify": "^2.1.1",
+    "phantomjs": "^1.9.17",
     "standard": "^3.6.1",
     "trigger-event": "^1.0.0",
     "zuul": "~1.16.4"
