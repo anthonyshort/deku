@@ -1,4 +1,14 @@
 
+0.4.0 / 2015-05-22
+==================
+
+ * Fixed: Fixed issue with components rendered as root nodes. 
+ * New: initialState now takes the props as a param
+ * New: afterMount, afterRender and event handlers can now return a promise. This means you can use ES7 async functions to have pure lifecycle functions too.
+ * New: You can nest propTypes now. Just set the `type` field to be another propTypes object.
+ * Fixed: `afterRender` and `afterMount` are now called when the element is in the DOM.
+ * Updated: Added phantomjs to the dev deps
+
 0.3.3 / 2015-05-22
 ==================
 
