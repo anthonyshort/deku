@@ -1,4 +1,11 @@
 
+0.3.3 / 2015-05-22
+==================
+
+ * Added mouseenter/mouseleave
+ * Merge pull request #137 from Frikki/issue-134/modular-fastjs
+ *  Replaced fast.js require with modular requirement.
+
 0.3.2 / 2015-05-20
 ==================
 
