@@ -40,7 +40,7 @@ test: build.js
 	@$(BIN)/duo-test browser --commands 'make build.js'
 
 test-phantom:
-	@$(BIN)/mochify --transform babelify --ui bdd ./test/index.js
+	@$(BIN)/mochify --transform babelify --phantomjs ./node_modules/.bin/phantomjs --ui bdd ./test/index.js
 .PHONY: test
 
 test-cloud: tests.js
