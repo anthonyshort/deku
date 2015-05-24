@@ -46,6 +46,42 @@ describe('validation', function () {
     })
   })
 
+  it('should validate props types when type is validate function', function(done){
+    var Component = {
+      render: div,
+      propTypes: {
+        'text': { type: function (value) { return value === 'value'; } }
+      }
+    }
+
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component text="not-value" />);
+
+    mount(app, null, function(e){
+      assert.equal(e.message, 'Invalid property type: text');
+      done();
+    })
+  })
+
+  it('should validate props types when type is array of possible types', function(done){
+    var Component = {
+      render: div,
+      propTypes: {
+        'text': { type: ['boolean', 'number'] }
+      }
+    }
+
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component text="string" />);
+
+    mount(app, null, function(e){
+      assert.equal(e.message, 'Invalid property type: text');
+      done();
+    })
+  })
+
   it('should validate unexpected prop values when first rendered', function (done) {
     var Component = {
       render: div,
