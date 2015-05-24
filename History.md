@@ -1,4 +1,41 @@
 
+0.4.0 / 2015-05-22
+==================
+
+ * Fixed: Fixed issue with components rendered as root nodes. 
+ * New: initialState now takes the props as a param
+ * New: afterMount, afterRender and event handlers can now return a promise. This means you can use ES7 async functions to have pure lifecycle functions too.
+ * New: You can nest propTypes now. Just set the `type` field to be another propTypes object.
+ * Fixed: `afterRender` and `afterMount` are now called when the element is in the DOM.
+ * Updated: Added phantomjs to the dev deps
+
+0.3.3 / 2015-05-22
+==================
+
+ * Added mouseenter/mouseleave
+ * Merge pull request #137 from Frikki/issue-134/modular-fastjs
+ *  Replaced fast.js require with modular requirement.
+
+0.3.2 / 2015-05-20
+==================
+
+
+
+0.3.1 / 2015-05-21
+==================
+
+  * fixed error with swapping component using sources
+
+0.3.0 / 2015-05-18
+==================
+
+ * Added: warnings and nicer error messages
+ * Added: Always emptying the container when rendering
+ * Added: Deku.d.ts file
+ * Removed: the `defaultX` attributes from checkboxes, selects and inputs
+ * Fixed: rendering for `checked`, `selected` and `disabled` attributes
+ * Fixed: multiple components depending on the same `source`
+
 0.2.17 / 2015-05-11
 ==================
 

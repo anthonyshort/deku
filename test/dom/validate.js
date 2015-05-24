@@ -23,7 +23,7 @@ describe('validation', function () {
     app.mount(<Component />);
 
     mount(app, null, function(e){
-      assert.equal(e.message, 'Missing prop named: text');
+      assert.equal(e.message, 'Missing property: text');
       done();
     })
   })
@@ -41,7 +41,7 @@ describe('validation', function () {
     app.mount(<Component text={true} />);
 
     mount(app, null, function(e){
-      assert.equal(e.message, 'Invalid type for prop named: text');
+      assert.equal(e.message, 'Invalid property type: text');
       done();
     })
   })
@@ -57,7 +57,7 @@ describe('validation', function () {
     app.option('validateProps', true)
     app.mount(<Component text="raz" />);
     mount(app, null, function(e){
-      assert.equal(e.message, 'Invalid value for prop named: text. Must be one of foo,bar,baz');
+      assert.equal(e.message, 'Invalid property value: text');
       done();
     })
   });
@@ -96,7 +96,7 @@ describe('validation', function () {
       .option('validateProps', true)
       .mount(<Component text="foo" />);
     mount(app, null, function(e){
-      assert.equal(e.message, 'Unexpected prop named: text');
+      assert.equal(e.message, 'Unexpected property: text');
       done();
     })
   })
@@ -108,6 +108,63 @@ describe('validation', function () {
     var app = deku()
       .option('validateProps', false)
       .mount(<Component text="foo" />);
+    mount(app)
+  });
+
+  it('should validate nested types', function (done) {
+    var Component = {
+      render: div,
+      propTypes: {
+        'data': {
+          type: {
+            'text': { type: 'string' }
+          }
+        }
+      }
+    }
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component data={{ text: true }} />);
+    mount(app, null, function(e){
+      assert.equal(e.message, 'Invalid property type: data.text');
+      done();
+    })
+  });
+
+  it('should validate missing nested types', function (done) {
+    var Component = {
+      render: div,
+      propTypes: {
+        'data': {
+          type: {
+            'text': { type: 'string' }
+          }
+        }
+      }
+    }
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component />);
+    mount(app, null, function(e){
+      assert.equal(e.message, 'Missing property: data');
+      done();
+    })
+  });
+
+  it('should allow optional nested types', function () {
+    var Component = {
+      render: div,
+      propTypes: {
+        'data': {
+          type: {
+            'text': { type: 'string', optional: true }
+          }
+        }
+      }
+    }
+    var app = deku()
+    app.option('validateProps', true)
+    app.mount(<Component data={{}} />);
     mount(app)
   });
 

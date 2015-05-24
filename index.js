@@ -128,13 +128,12 @@ var uid = _require('get-uid')
 var throttle = _require('per-frame')
 var keypath = _require('object-path')
 var type = _require('component-type')
-var fast = _require('fast.js')
 var utils = _require('./utils')
 var svg = _require('./svg')
 var defaults = utils.defaults
-var forEach = fast.forEach
-var assign = fast.assign
-var reduce = fast.reduce
+var forEach = _require('fast.js/forEach')
+var assign = _require('fast.js/object/assign')
+var reduce = _require('fast.js/reduce')
 
 /**
  * All of the events can bind to
@@ -161,6 +160,8 @@ var events = {
   onKeyDown: 'keydown',
   onKeyUp: 'keyup',
   onMouseDown: 'mousedown',
+  onMouseEnter: 'mouseenter',
+  onMouseLeave: 'mouseleave',
   onMouseMove: 'mousemove',
   onMouseOut: 'mouseout',
   onMouseOver: 'mouseover',
@@ -203,6 +204,7 @@ function render (app, container, opts) {
   var currentElement
   var currentNativeElement
   var connections = {}
+  var components = {}
   var entities = {}
   var pools = {}
   var handlers = {}
@@ -289,7 +291,10 @@ function render (app, container, opts) {
    */
 
   function onupdate (name, data) {
-    connections[name](data)
+    if (!connections[name]) return;
+    connections[name].forEach(function(update) {
+      update(data)
+    })
   }
 
   /**
@@ -339,6 +344,9 @@ function render (app, container, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
+    var componentEntities = components[entityId].entities;
+    delete componentEntities[entityId]
+    delete components[entityId]
     delete entities[entityId]
     delete children[entityId]
   }
@@ -419,6 +427,13 @@ function render (app, container, opts) {
     if (!currentNativeElement) {
       currentElement = app.element
       currentNativeElement = toNative(rootId, '0', currentElement)
+      if (container.children.length > 0) {
+        console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
+      }
+      if (container === document.body) {
+        console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
+      }
+      removeAllChildren(container);
       container.appendChild(currentNativeElement)
     } else if (currentElement !== app.element) {
       currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
@@ -612,7 +627,7 @@ function render (app, container, opts) {
   }
 
   /**
-   * Create a diff between two tress of nodes.
+   * Create a diff between two trees of nodes.
    */
 
   function diffNode (path, entityId, prev, next, el) {
@@ -955,11 +970,14 @@ function render (app, container, opts) {
       return
     }
     switch (name) {
-      case 'value':
-        el.value = value
+      case 'checked':
+      case 'disabled':
+      case 'selected':
+        el[name] = true
         break
       case 'innerHTML':
-        el.innerHTML = value
+      case 'value':
+        el[name] = value
         break
       case svg.isAttribute(name):
         el.setAttributeNS(svg.namespace, name, value)
@@ -983,7 +1001,20 @@ function render (app, container, opts) {
       removeEvent(entityId, path, events[name])
       return
     }
-    el.removeAttribute(name)
+    switch (name) {
+      case 'checked':
+      case 'disabled':
+      case 'selected':
+        el[name] = false
+        break
+      case 'innerHTML':
+      case 'value':
+        el[name] = ""
+        break
+      default:
+        el.removeAttribute(name)
+        break
+    }
   }
 
   /**
@@ -1160,6 +1191,8 @@ function render (app, container, opts) {
     var entities = component.entities = component.entities || {}
     // add entity to component list
     entities[entity.id] = entity
+    // map to component so you can remove later.
+    components[entity.id] = component;
 
     // get 'class-level' sources.
     var sources = component.sources
@@ -1178,7 +1211,8 @@ function render (app, container, opts) {
 
     // send value updates to all component instances.
     sources.forEach(function (source) {
-      connections[source] = update
+      connections[source] = connections[source] || []
+      connections[source].push(update)
 
       function update (data) {
         var prop = map[source]
@@ -1417,7 +1451,7 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js":41,"get-uid":57,"is-dom":58,"object-path":59,"per-frame":60}],4:[function(_require,module,exports){
+},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js/forEach":17,"fast.js/object/assign":20,"fast.js/reduce":23,"get-uid":24,"is-dom":25,"object-path":26,"per-frame":27}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults
 
@@ -1525,8 +1559,7 @@ function attr (key, val) {
 }
 
 },{"./utils":6}],5:[function(_require,module,exports){
-var fast = _require('fast.js')
-var indexOf = fast.indexOf
+var indexOf = _require('fast.js/array/indexOf')
 
 /**
  * This file lists the supported SVG elements used by the
@@ -1633,7 +1666,7 @@ exports.isAttribute = function (attr) {
 }
 
 
-},{"fast.js":41}],6:[function(_require,module,exports){
+},{"fast.js/array/indexOf":15}],6:[function(_require,module,exports){
 /**
  * The npm 'defaults' module but without clone because
  * it was requiring the 'Buffer' module which is huge.
@@ -1694,7 +1727,7 @@ module.exports = virtual
 function virtual (type, props, children) {
   // Default to div with no args
   if (!type) {
-    throw new Error('Element needs a type. https://gist.github.com/anthonyshort/77ced43b5defe39908af')
+    throw new Error('deku: Element needs a type. Read more: http://cl.ly/b0KZ')
   }
 
   // Skipped adding attributes and we're passing
@@ -1902,25 +1935,48 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":8,"component-type":11,"sliced":61}],8:[function(_require,module,exports){
+},{"array-flatten":8,"component-type":11,"sliced":28}],8:[function(_require,module,exports){
 /**
- * Recursive flatten function. Fastest implementation for array flattening.
+ * Recursive flatten function with depth.
  *
  * @param  {Array}  array
  * @param  {Array}  result
  * @param  {Number} depth
  * @return {Array}
  */
-function flatten (array, result, depth) {
+function flattenDepth (array, result, depth) {
   for (var i = 0; i < array.length; i++) {
-    if (depth > 0 && Array.isArray(array[i])) {
-      flatten(array[i], result, depth - 1);
+    var value = array[i]
+
+    if (depth > 0 && Array.isArray(value)) {
+      flattenDepth(value, result, depth - 1)
     } else {
-      result.push(array[i]);
+      result.push(value)
     }
   }
 
-  return result;
+  return result
+}
+
+/**
+ * Recursive flatten function. Omitting depth is slightly faster.
+ *
+ * @param  {Array} array
+ * @param  {Array} result
+ * @return {Array}
+ */
+function flattenForever (array, result) {
+  for (var i = 0; i < array.length; i++) {
+    var value = array[i]
+
+    if (Array.isArray(value)) {
+      flattenForever(value, result)
+    } else {
+      result.push(value)
+    }
+  }
+
+  return result
 }
 
 /**
@@ -1931,8 +1987,12 @@ function flatten (array, result, depth) {
  * @return {Array}
  */
 module.exports = function (array, depth) {
-  return flatten(array, [], depth || Infinity);
-};
+  if (depth == null) {
+    return flattenForever(array, [])
+  }
+
+  return flattenDepth(array, [], depth)
+}
 
 },{}],9:[function(_require,module,exports){
 
@@ -2252,148 +2312,6 @@ function iterativelyWalk(nodes, cb) {
 },{}],14:[function(_require,module,exports){
 'use strict';
 
-/**
- * # Clone Array
- *
- * Clone an array or array like object (e.g. `arguments`).
- * This is the equivalent of calling `Array.prototype.slice.call(arguments)`, but
- * significantly faster.
- *
- * @param  {Array} input The array or array-like object to clone.
- * @return {Array}       The cloned array.
- */
-module.exports = function fastCloneArray (input) {
-  var length = input.length,
-      sliced = new Array(length),
-      i;
-  for (i = 0; i < length; i++) {
-    sliced[i] = input[i];
-  }
-  return sliced;
-};
-
-},{}],15:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Concat
- *
- * Concatenate multiple arrays.
- *
- * > Note: This function is effectively identical to `Array.prototype.concat()`.
- *
- *
- * @param  {Array|mixed} item, ... The item(s) to concatenate.
- * @return {Array}                 The array containing the concatenated items.
- */
-module.exports = function fastConcat () {
-  var length = arguments.length,
-      arr = [],
-      i, item, childLength, j;
-
-  for (i = 0; i < length; i++) {
-    item = arguments[i];
-    if (Array.isArray(item)) {
-      childLength = item.length;
-      for (j = 0; j < childLength; j++) {
-        arr.push(item[j]);
-      }
-    }
-    else {
-      arr.push(item);
-    }
-  }
-  return arr;
-};
-
-},{}],16:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Every
- *
- * A fast `.every()` implementation.
- *
- * @param  {Array}    subject     The array (or array-like) to iterate over.
- * @param  {Function} fn          The visitor function.
- * @param  {Object}   thisContext The context for the visitor.
- * @return {Boolean}              true if all items in the array passes the truth test.
- */
-module.exports = function fastEvery (subject, fn, thisContext) {
-  var length = subject.length,
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i;
-  for (i = 0; i < length; i++) {
-    if (!iterator(subject[i], i, subject)) {
-      return false;
-    }
-  }
-  return true;
-};
-
-},{"../function/bindInternal3":35}],17:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Fill
- * Fill an array with values, optionally starting and stopping at a given index.
- *
- * > Note: unlike the specced Array.prototype.fill(), this version does not support
- * > negative start / end arguments.
- *
- * @param  {Array}   subject The array to fill.
- * @param  {mixed}   value   The value to insert.
- * @param  {Integer} start   The start position, defaults to 0.
- * @param  {Integer} end     The end position, defaults to subject.length
- * @return {Array}           The now filled subject.
- */
-module.exports = function fastFill (subject, value, start, end) {
-  var length = subject.length,
-      i;
-  if (start === undefined) {
-    start = 0;
-  }
-  if (end === undefined) {
-    end = length;
-  }
-  for (i = start; i < end; i++) {
-    subject[i] = value;
-  }
-  return subject;
-};
-},{}],18:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Filter
- *
- * A fast `.filter()` implementation.
- *
- * @param  {Array}    subject     The array (or array-like) to filter.
- * @param  {Function} fn          The filter function.
- * @param  {Object}   thisContext The context for the filter.
- * @return {Array}                The array containing the results.
- */
-module.exports = function fastFilter (subject, fn, thisContext) {
-  var length = subject.length,
-      result = [],
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i;
-  for (i = 0; i < length; i++) {
-    if (iterator(subject[i], i, subject)) {
-      result.push(subject[i]);
-    }
-  }
-  return result;
-};
-
-},{"../function/bindInternal3":35}],19:[function(_require,module,exports){
-'use strict';
-
 var bindInternal3 = _require('../function/bindInternal3');
 
 /**
@@ -2414,23 +2332,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":35}],20:[function(_require,module,exports){
-'use strict';
-
-exports.clone = _require('./clone');
-exports.concat = _require('./concat');
-exports.every = _require('./every');
-exports.filter = _require('./filter');
-exports.forEach = _require('./forEach');
-exports.indexOf = _require('./indexOf');
-exports.lastIndexOf = _require('./lastIndexOf');
-exports.map = _require('./map');
-exports.pluck = _require('./pluck');
-exports.reduce = _require('./reduce');
-exports.reduceRight = _require('./reduceRight');
-exports.some = _require('./some');
-exports.fill = _require('./fill');
-},{"./clone":14,"./concat":15,"./every":16,"./fill":17,"./filter":18,"./forEach":19,"./indexOf":21,"./lastIndexOf":22,"./map":23,"./pluck":24,"./reduce":25,"./reduceRight":26,"./some":27}],21:[function(_require,module,exports){
+},{"../function/bindInternal3":18}],15:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2465,89 +2367,7 @@ module.exports = function fastIndexOf (subject, target, fromIndex) {
   return -1;
 };
 
-},{}],22:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Last Index Of
- *
- * A faster `Array.prototype.lastIndexOf()` implementation.
- *
- * @param  {Array}  subject The array (or array-like) to search within.
- * @param  {mixed}  target  The target item to search for.
- * @param  {Number} fromIndex The position to start searching backwards from, if known.
- * @return {Number}         The last position of the target in the subject, or -1 if it does not exist.
- */
-module.exports = function fastLastIndexOf (subject, target, fromIndex) {
-  var length = subject.length,
-      i = length - 1;
-
-  if (typeof fromIndex === 'number') {
-    i = fromIndex;
-    if (i < 0) {
-      i += length;
-    }
-  }
-  for (; i >= 0; i--) {
-    if (subject[i] === target) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-},{}],23:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Map
- *
- * A fast `.map()` implementation.
- *
- * @param  {Array}    subject     The array (or array-like) to map over.
- * @param  {Function} fn          The mapper function.
- * @param  {Object}   thisContext The context for the mapper.
- * @return {Array}                The array containing the results.
- */
-module.exports = function fastMap (subject, fn, thisContext) {
-  var length = subject.length,
-      result = new Array(length),
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i;
-  for (i = 0; i < length; i++) {
-    result[i] = iterator(subject[i], i, subject);
-  }
-  return result;
-};
-
-},{"../function/bindInternal3":35}],24:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Pluck
- * Pluck the property with the given name from an array of objects.
- *
- * @param  {Array}  input The values to pluck from.
- * @param  {String} field The name of the field to pluck.
- * @return {Array}        The plucked array of values.
- */
-module.exports = function fastPluck (input, field) {
-  var length = input.length,
-      plucked = [],
-      count = 0,
-      value, i;
-
-  for (i = 0; i < length; i++) {
-    value = input[i];
-    if (value != null && value[field] !== undefined) {
-      plucked[count++] = value[field];
-    }
-  }
-  return plucked;
-};
-},{}],25:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2584,124 +2404,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":36}],26:[function(_require,module,exports){
-'use strict';
-
-var bindInternal4 = _require('../function/bindInternal4');
-
-/**
- * # Reduce Right
- *
- * A fast `.reduceRight()` implementation.
- *
- * @param  {Array}    subject      The array (or array-like) to reduce.
- * @param  {Function} fn           The reducer function.
- * @param  {mixed}    initialValue The initial value for the reducer, defaults to subject[0].
- * @param  {Object}   thisContext  The context for the reducer.
- * @return {mixed}                 The final result.
- */
-module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
-  var length = subject.length,
-      iterator = thisContext !== undefined ? bindInternal4(fn, thisContext) : fn,
-      i, result;
-
-  if (initialValue === undefined) {
-    i = length - 2;
-    result = subject[length - 1];
-  }
-  else {
-    i = length - 1;
-    result = initialValue;
-  }
-
-  for (; i >= 0; i--) {
-    result = iterator(result, subject[i], i, subject);
-  }
-
-  return result;
-};
-
-},{"../function/bindInternal4":36}],27:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Some
- *
- * A fast `.some()` implementation.
- *
- * @param  {Array}    subject     The array (or array-like) to iterate over.
- * @param  {Function} fn          The visitor function.
- * @param  {Object}   thisContext The context for the visitor.
- * @return {Boolean}              true if at least one item in the array passes the truth test.
- */
-module.exports = function fastSome (subject, fn, thisContext) {
-  var length = subject.length,
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i;
-  for (i = 0; i < length; i++) {
-    if (iterator(subject[i], i, subject)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-},{"../function/bindInternal3":35}],28:[function(_require,module,exports){
-'use strict';
-
-var cloneArray = _require('./array/clone');
-var cloneObject = _require('./object/clone');
-
-/**
- * # Clone
- *
- * Clone an item. Primitive values will be returned directly,
- * arrays and objects will be shallow cloned. If you know the
- * type of input you're dealing with, call `.cloneArray()` or `.cloneObject()`
- * instead.
- *
- * @param  {mixed} input The input to clone.
- * @return {mixed}       The cloned input.
- */
-module.exports = function clone (input) {
-  if (!input || typeof input !== 'object') {
-    return input;
-  }
-  else if (Array.isArray(input)) {
-    return cloneArray(input);
-  }
-  else {
-    return cloneObject(input);
-  }
-};
-
-},{"./array/clone":14,"./object/clone":44}],29:[function(_require,module,exports){
-'use strict';
-
-var filterArray = _require('./array/filter'),
-    filterObject = _require('./object/filter');
-
-/**
- * # Filter
- *
- * A fast `.filter()` implementation.
- *
- * @param  {Array|Object} subject     The array or object to filter.
- * @param  {Function}     fn          The filter function.
- * @param  {Object}       thisContext The context for the filter.
- * @return {Array|Object}             The array or object containing the filtered results.
- */
-module.exports = function fastFilter (subject, fn, thisContext) {
-  if (subject instanceof Array) {
-    return filterArray(subject, fn, thisContext);
-  }
-  else {
-    return filterObject(subject, fn, thisContext);
-  }
-};
-},{"./array/filter":18,"./object/filter":45}],30:[function(_require,module,exports){
+},{"../function/bindInternal4":19}],17:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2724,163 +2427,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":19,"./object/forEach":46}],31:[function(_require,module,exports){
-'use strict';
-
-var applyWithContext = _require('./applyWithContext');
-var applyNoContext = _require('./applyNoContext');
-
-/**
- * # Apply
- *
- * Faster version of `Function::apply()`, optimised for 8 arguments or fewer.
- *
- *
- * @param  {Function} subject   The function to apply.
- * @param  {Object} thisContext The context for the function, set to undefined or null if no context is required.
- * @param  {Array} args         The arguments for the function.
- * @return {mixed}              The result of the function invocation.
- */
-module.exports = function fastApply (subject, thisContext, args) {
-  return thisContext !== undefined ? applyWithContext(subject, thisContext, args) : applyNoContext(subject, args);
-};
-
-},{"./applyNoContext":32,"./applyWithContext":33}],32:[function(_require,module,exports){
-'use strict';
-
-/**
- * Internal helper for applying a function without a context.
- */
-module.exports = function applyNoContext (subject, args) {
-  switch (args.length) {
-    case 0:
-      return subject();
-    case 1:
-      return subject(args[0]);
-    case 2:
-      return subject(args[0], args[1]);
-    case 3:
-      return subject(args[0], args[1], args[2]);
-    case 4:
-      return subject(args[0], args[1], args[2], args[3]);
-    case 5:
-      return subject(args[0], args[1], args[2], args[3], args[4]);
-    case 6:
-      return subject(args[0], args[1], args[2], args[3], args[4], args[5]);
-    case 7:
-      return subject(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-    case 8:
-      return subject(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
-    default:
-      return subject.apply(undefined, args);
-  }
-};
-
-},{}],33:[function(_require,module,exports){
-'use strict';
-
-/**
- * Internal helper for applying a function with a context.
- */
-module.exports = function applyWithContext (subject, thisContext, args) {
-  switch (args.length) {
-    case 0:
-      return subject.call(thisContext);
-    case 1:
-      return subject.call(thisContext, args[0]);
-    case 2:
-      return subject.call(thisContext, args[0], args[1]);
-    case 3:
-      return subject.call(thisContext, args[0], args[1], args[2]);
-    case 4:
-      return subject.call(thisContext, args[0], args[1], args[2], args[3]);
-    case 5:
-      return subject.call(thisContext, args[0], args[1], args[2], args[3], args[4]);
-    case 6:
-      return subject.call(thisContext, args[0], args[1], args[2], args[3], args[4], args[5]);
-    case 7:
-      return subject.call(thisContext, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-    case 8:
-      return subject.call(thisContext, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
-    default:
-      return subject.apply(thisContext, args);
-  }
-};
-
-},{}],34:[function(_require,module,exports){
-'use strict';
-
-var applyWithContext = _require('./applyWithContext');
-var applyNoContext = _require('./applyNoContext');
-
-/**
- * # Bind
- * Analogue of `Function::bind()`.
- *
- * ```js
- * var bind = require('fast.js').bind;
- * var bound = bind(myfunc, this, 1, 2, 3);
- *
- * bound(4);
- * ```
- *
- *
- * @param  {Function} fn          The function which should be bound.
- * @param  {Object}   thisContext The context to bind the function to.
- * @param  {mixed}    args, ...   Additional arguments to pre-bind.
- * @return {Function}             The bound function.
- */
-module.exports = function fastBind (fn, thisContext) {
-  var boundLength = arguments.length - 2,
-      boundArgs;
-
-  if (boundLength > 0) {
-    boundArgs = new Array(boundLength);
-    for (var i = 0; i < boundLength; i++) {
-      boundArgs[i] = arguments[i + 2];
-    }
-    if (thisContext !== undefined) {
-      return function () {
-        var length = arguments.length,
-            args = new Array(boundLength + length),
-            i;
-        for (i = 0; i < boundLength; i++) {
-          args[i] = boundArgs[i];
-        }
-        for (i = 0; i < length; i++) {
-          args[boundLength + i] = arguments[i];
-        }
-        return applyWithContext(fn, thisContext, args);
-      };
-    }
-    else {
-      return function () {
-        var length = arguments.length,
-            args = new Array(boundLength + length),
-            i;
-        for (i = 0; i < boundLength; i++) {
-          args[i] = boundArgs[i];
-        }
-        for (i = 0; i < length; i++) {
-          args[boundLength + i] = arguments[i];
-        }
-        return applyNoContext(fn, args);
-      };
-    }
-  }
-  if (thisContext !== undefined) {
-    return function () {
-      return applyWithContext(fn, thisContext, arguments);
-    };
-  }
-  else {
-    return function () {
-      return applyNoContext(fn, arguments);
-    };
-  }
-};
-
-},{"./applyNoContext":32,"./applyWithContext":33}],35:[function(_require,module,exports){
+},{"./array/forEach":14,"./object/forEach":21}],18:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2893,7 +2440,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],36:[function(_require,module,exports){
+},{}],19:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2906,411 +2453,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],37:[function(_require,module,exports){
-'use strict';
-
-exports.apply = _require('./apply');
-exports.bind = _require('./bind');
-exports.partial = _require('./partial');
-exports.partialConstructor = _require('./partialConstructor');
-exports.try = _require('./try');
-
-},{"./apply":31,"./bind":34,"./partial":38,"./partialConstructor":39,"./try":40}],38:[function(_require,module,exports){
-'use strict';
-
-var applyWithContext = _require('./applyWithContext');
-
-/**
- * # Partial Application
- *
- * Partially apply a function. This is similar to `.bind()`,
- * but with one important difference - the returned function is not bound
- * to a particular context. This makes it easy to add partially
- * applied methods to objects. If you need to bind to a context,
- * use `.bind()` instead.
- *
- * > Note: This function does not support partial application for
- * constructors, for that see `partialConstructor()`
- *
- *
- * @param  {Function} fn          The function to partially apply.
- * @param  {mixed}    args, ...   Arguments to pre-bind.
- * @return {Function}             The partially applied function.
- */
-module.exports = function fastPartial (fn) {
-  var boundLength = arguments.length - 1,
-      boundArgs;
-
-  boundArgs = new Array(boundLength);
-  for (var i = 0; i < boundLength; i++) {
-    boundArgs[i] = arguments[i + 1];
-  }
-  return function () {
-    var length = arguments.length,
-        args = new Array(boundLength + length),
-        i;
-    for (i = 0; i < boundLength; i++) {
-      args[i] = boundArgs[i];
-    }
-    for (i = 0; i < length; i++) {
-      args[boundLength + i] = arguments[i];
-    }
-    return applyWithContext(fn, this, args);
-  };
-};
-
-},{"./applyWithContext":33}],39:[function(_require,module,exports){
-'use strict';
-
-var applyWithContext = _require('./applyWithContext');
-
-/**
- * # Partial Constructor
- *
- * Partially apply a constructor function. The returned function
- * will work with or without the `new` keyword.
- *
- *
- * @param  {Function} fn          The constructor function to partially apply.
- * @param  {mixed}    args, ...   Arguments to pre-bind.
- * @return {Function}             The partially applied constructor.
- */
-module.exports = function fastPartialConstructor (fn) {
-  var boundLength = arguments.length - 1,
-      boundArgs;
-
-  boundArgs = new Array(boundLength);
-  for (var i = 0; i < boundLength; i++) {
-    boundArgs[i] = arguments[i + 1];
-  }
-  return function partialed () {
-    var length = arguments.length,
-        args = new Array(boundLength + length),
-        i;
-    for (i = 0; i < boundLength; i++) {
-      args[i] = boundArgs[i];
-    }
-    for (i = 0; i < length; i++) {
-      args[boundLength + i] = arguments[i];
-    }
-
-    var thisContext = Object.create(fn.prototype),
-        result = applyWithContext(fn, thisContext, args);
-
-    if (result != null && (typeof result === 'object' || typeof result === 'function')) {
-      return result;
-    }
-    else {
-      return thisContext;
-    }
-  };
-};
-
-},{"./applyWithContext":33}],40:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Try
- *
- * Allows functions to be optimised by isolating `try {} catch (e) {}` blocks
- * outside the function declaration. Returns either the result of the function or an Error
- * object if one was thrown. The caller should then check for `result instanceof Error`.
- *
- * ```js
- * var result = fast.try(myFunction);
- * if (result instanceof Error) {
- *    console.log('something went wrong');
- * }
- * else {
- *   console.log('result:', result);
- * }
- * ```
- *
- * @param  {Function} fn The function to invoke.
- * @return {mixed}       The result of the function, or an `Error` object.
- */
-module.exports = function fastTry (fn) {
-  try {
-    return fn();
-  }
-  catch (e) {
-    if (!(e instanceof Error)) {
-      return new Error(e);
-    }
-    else {
-      return e;
-    }
-  }
-};
-
-},{}],41:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Constructor
- *
- * Provided as a convenient wrapper around Fast functions.
- *
- * ```js
- * var arr = fast([1,2,3,4,5,6]);
- *
- * var result = arr.filter(function (item) {
- *   return item % 2 === 0;
- * });
- *
- * result instanceof Fast; // true
- * result.length; // 3
- * ```
- *
- *
- * @param {Array} value The value to wrap.
- */
-function Fast (value) {
-  if (!(this instanceof Fast)) {
-    return new Fast(value);
-  }
-  this.value = value || [];
-}
-
-module.exports = exports = Fast;
-
-Fast.array = _require('./array');
-Fast['function'] = Fast.fn = _require('./function');
-Fast.object = _require('./object');
-Fast.string = _require('./string');
-
-
-Fast.apply = Fast['function'].apply;
-Fast.bind = Fast['function'].bind;
-Fast.partial = Fast['function'].partial;
-Fast.partialConstructor = Fast['function'].partialConstructor;
-Fast['try'] = Fast.attempt = Fast['function']['try'];
-
-Fast.assign = Fast.object.assign;
-Fast.cloneObject = Fast.object.clone; // @deprecated use fast.object.clone()
-Fast.keys = Fast.object.keys;
-Fast.values = Fast.object.values;
-
-
-Fast.clone = _require('./clone');
-Fast.map = _require('./map');
-Fast.filter = _require('./filter');
-Fast.forEach = _require('./forEach');
-Fast.reduce = _require('./reduce');
-Fast.reduceRight = _require('./reduceRight');
-
-
-Fast.cloneArray = Fast.array.clone; // @deprecated use fast.array.clone()
-
-Fast.concat = Fast.array.concat;
-Fast.some = Fast.array.some;
-Fast.every = Fast.array.every;
-Fast.indexOf = Fast.array.indexOf;
-Fast.lastIndexOf = Fast.array.lastIndexOf;
-Fast.pluck = Fast.array.pluck;
-Fast.fill = Fast.array.fill;
-
-Fast.intern = Fast.string.intern;
-
-
-/**
- * # Concat
- *
- * Concatenate multiple arrays.
- *
- * @param  {Array|mixed} item, ... The item(s) to concatenate.
- * @return {Fast}                  A new Fast object, containing the results.
- */
-Fast.prototype.concat = function Fast$concat () {
-  var length = this.value.length,
-      arr = new Array(length),
-      i, item, childLength, j;
-
-  for (i = 0; i < length; i++) {
-    arr[i] = this.value[i];
-  }
-
-  length = arguments.length;
-  for (i = 0; i < length; i++) {
-    item = arguments[i];
-    if (Array.isArray(item)) {
-      childLength = item.length;
-      for (j = 0; j < childLength; j++) {
-        arr.push(item[j]);
-      }
-    }
-    else {
-      arr.push(item);
-    }
-  }
-  return new Fast(arr);
-};
-
-/**
- * Fast Map
- *
- * @param  {Function} fn          The visitor function.
- * @param  {Object}   thisContext The context for the visitor, if any.
- * @return {Fast}                 A new Fast object, containing the results.
- */
-Fast.prototype.map = function Fast$map (fn, thisContext) {
-  return new Fast(Fast.map(this.value, fn, thisContext));
-};
-
-/**
- * Fast Filter
- *
- * @param  {Function} fn          The filter function.
- * @param  {Object}   thisContext The context for the filter function, if any.
- * @return {Fast}                 A new Fast object, containing the results.
- */
-Fast.prototype.filter = function Fast$filter (fn, thisContext) {
-  return new Fast(Fast.filter(this.value, fn, thisContext));
-};
-
-/**
- * Fast Reduce
- *
- * @param  {Function} fn           The reducer function.
- * @param  {mixed}    initialValue The initial value, if any.
- * @param  {Object}   thisContext  The context for the reducer, if any.
- * @return {mixed}                 The final result.
- */
-Fast.prototype.reduce = function Fast$reduce (fn, initialValue, thisContext) {
-  return Fast.reduce(this.value, fn, initialValue, thisContext);
-};
-
-
-/**
- * Fast Reduce Right
- *
- * @param  {Function} fn           The reducer function.
- * @param  {mixed}    initialValue The initial value, if any.
- * @param  {Object}   thisContext  The context for the reducer, if any.
- * @return {mixed}                 The final result.
- */
-Fast.prototype.reduceRight = function Fast$reduceRight (fn, initialValue, thisContext) {
-  return Fast.reduceRight(this.value, fn, initialValue, thisContext);
-};
-
-/**
- * Fast For Each
- *
- * @param  {Function} fn          The visitor function.
- * @param  {Object}   thisContext The context for the visitor, if any.
- * @return {Fast}                 The Fast instance.
- */
-Fast.prototype.forEach = function Fast$forEach (fn, thisContext) {
-  Fast.forEach(this.value, fn, thisContext);
-  return this;
-};
-
-/**
- * Fast Some
- *
- * @param  {Function} fn          The matcher predicate.
- * @param  {Object}   thisContext The context for the matcher, if any.
- * @return {Boolean}              True if at least one element matches.
- */
-Fast.prototype.some = function Fast$some (fn, thisContext) {
-  return Fast.some(this.value, fn, thisContext);
-};
-
-/**
- * Fast Every
- *
- * @param  {Function} fn          The matcher predicate.
- * @param  {Object}   thisContext The context for the matcher, if any.
- * @return {Boolean}              True if at all elements match.
- */
-Fast.prototype.every = function Fast$every (fn, thisContext) {
-  return Fast.some(this.value, fn, thisContext);
-};
-
-/**
- * Fast Index Of
- *
- * @param  {mixed}  target    The target to lookup.
- * @param  {Number} fromIndex The index to start searching from, if known.
- * @return {Number}           The index of the item, or -1 if no match found.
- */
-Fast.prototype.indexOf = function Fast$indexOf (target, fromIndex) {
-  return Fast.indexOf(this.value, target, fromIndex);
-};
-
-
-/**
- * Fast Last Index Of
- *
- * @param  {mixed}  target    The target to lookup.
- * @param  {Number} fromIndex The index to start searching from, if known.
- * @return {Number}           The last index of the item, or -1 if no match found.
- */
-Fast.prototype.lastIndexOf = function Fast$lastIndexOf (target, fromIndex) {
-  return Fast.lastIndexOf(this.value, target, fromIndex);
-};
-
-/**
- * Reverse
- *
- * @return {Fast} A new Fast instance, with the contents reversed.
- */
-Fast.prototype.reverse = function Fast$reverse () {
-  return new Fast(this.value.reverse());
-};
-
-/**
- * Value Of
- *
- * @return {Array} The wrapped value.
- */
-Fast.prototype.valueOf = function Fast$valueOf () {
-  return this.value;
-};
-
-/**
- * To JSON
- *
- * @return {Array} The wrapped value.
- */
-Fast.prototype.toJSON = function Fast$toJSON () {
-  return this.value;
-};
-
-/**
- * Item Length
- */
-Object.defineProperty(Fast.prototype, 'length', {
-  get: function () {
-    return this.value.length;
-  }
-});
-
-},{"./array":20,"./clone":28,"./filter":29,"./forEach":30,"./function":37,"./map":42,"./object":47,"./reduce":53,"./reduceRight":54,"./string":55}],42:[function(_require,module,exports){
-'use strict';
-
-var mapArray = _require('./array/map'),
-    mapObject = _require('./object/map');
-
-/**
- * # Map
- *
- * A fast `.map()` implementation.
- *
- * @param  {Array|Object} subject     The array or object to map over.
- * @param  {Function}     fn          The mapper function.
- * @param  {Object}       thisContext The context for the mapper.
- * @return {Array|Object}             The array or object containing the results.
- */
-module.exports = function fastMap (subject, fn, thisContext) {
-  if (subject instanceof Array) {
-    return mapArray(subject, fn, thisContext);
-  }
-  else {
-    return mapObject(subject, fn, thisContext);
-  }
-};
-},{"./array/map":23,"./object/map":49}],43:[function(_require,module,exports){
+},{}],20:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -3346,64 +2489,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],44:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Clone Object
- *
- * Shallow clone a simple object.
- *
- * > Note: Prototypes and non-enumerable properties will not be copied!
- *
- * @param  {Object} input The object to clone.
- * @return {Object}       The cloned object.
- */
-module.exports = function fastCloneObject (input) {
-  var keys = Object.keys(input),
-      total = keys.length,
-      cloned = {},
-      i, key;
-
-  for (i = 0; i < total; i++) {
-    key = keys[i];
-    cloned[key] = input[key];
-  }
-
-  return cloned;
-};
-
-},{}],45:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Filter
- *
- * A fast object `.filter()` implementation.
- *
- * @param  {Object}   subject     The object to filter.
- * @param  {Function} fn          The filter function.
- * @param  {Object}   thisContext The context for the filter.
- * @return {Object}               The new object containing the filtered results.
- */
-module.exports = function fastFilterObject (subject, fn, thisContext) {
-  var keys = Object.keys(subject),
-      length = keys.length,
-      result = {},
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i, key;
-  for (i = 0; i < length; i++) {
-    key = keys[i];
-    if (iterator(subject[key], key, subject)) {
-      result[key] = subject[key];
-    }
-  }
-  return result;
-};
-
-},{"../function/bindInternal3":35}],46:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -3428,65 +2514,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":35}],47:[function(_require,module,exports){
-'use strict';
-
-exports.assign = _require('./assign');
-exports.clone = _require('./clone');
-exports.filter = _require('./filter');
-exports.forEach = _require('./forEach');
-exports.map = _require('./map');
-exports.reduce = _require('./reduce');
-exports.reduceRight = _require('./reduceRight');
-exports.keys = _require('./keys');
-exports.values = _require('./values');
-},{"./assign":43,"./clone":44,"./filter":45,"./forEach":46,"./keys":48,"./map":49,"./reduce":50,"./reduceRight":51,"./values":52}],48:[function(_require,module,exports){
-'use strict';
-
-/**
- * Object.keys() shim for ES3 environments.
- *
- * @param  {Object} obj The object to get keys for.
- * @return {Array}      The array of keys.
- */
-module.exports = typeof Object.keys === "function" ? Object.keys : /* istanbul ignore next */ function fastKeys (obj) {
-  var keys = [];
-  for (var key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      keys.push(key);
-    }
-  }
-  return keys;
-};
-},{}],49:[function(_require,module,exports){
-'use strict';
-
-var bindInternal3 = _require('../function/bindInternal3');
-
-/**
- * # Map
- *
- * A fast object `.map()` implementation.
- *
- * @param  {Object}   subject     The object to map over.
- * @param  {Function} fn          The mapper function.
- * @param  {Object}   thisContext The context for the mapper.
- * @return {Object}               The new object containing the results.
- */
-module.exports = function fastMapObject (subject, fn, thisContext) {
-  var keys = Object.keys(subject),
-      length = keys.length,
-      result = {},
-      iterator = thisContext !== undefined ? bindInternal3(fn, thisContext) : fn,
-      i, key;
-  for (i = 0; i < length; i++) {
-    key = keys[i];
-    result[key] = iterator(subject[key], key, subject);
-  }
-  return result;
-};
-
-},{"../function/bindInternal3":35}],50:[function(_require,module,exports){
+},{"../function/bindInternal3":18}],22:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -3525,67 +2553,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":36}],51:[function(_require,module,exports){
-'use strict';
-
-var bindInternal4 = _require('../function/bindInternal4');
-
-/**
- * # Reduce
- *
- * A fast object `.reduce()` implementation.
- *
- * @param  {Object}   subject      The object to reduce over.
- * @param  {Function} fn           The reducer function.
- * @param  {mixed}    initialValue The initial value for the reducer, defaults to subject[0].
- * @param  {Object}   thisContext  The context for the reducer.
- * @return {mixed}                 The final result.
- */
-module.exports = function fastReduceRightObject (subject, fn, initialValue, thisContext) {
-  var keys = Object.keys(subject),
-      length = keys.length,
-      iterator = thisContext !== undefined ? bindInternal4(fn, thisContext) : fn,
-      i, key, result;
-
-  if (initialValue === undefined) {
-    i = length - 2;
-    result = subject[keys[length - 1]];
-  }
-  else {
-    i = length - 1;
-    result = initialValue;
-  }
-
-  for (; i >= 0; i--) {
-    key = keys[i];
-    result = iterator(result, subject[key], key, subject);
-  }
-
-  return result;
-};
-
-},{"../function/bindInternal4":36}],52:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Values
- * Return all the (enumerable) property values for an object.
- * Like Object.keys() but for values.
- *
- * @param  {Object} obj The object to retrieve values from.
- * @return {Array}      An array containing property values.
- */
-module.exports = function fastValues (obj) {
-  var keys = Object.keys(obj),
-      length = keys.length,
-      values = new Array(length);
-
-  for (var i = 0; i < length; i++) {
-    values[i] = obj[keys[i]];
-  }
-  return values;
-};
-},{}],53:[function(_require,module,exports){
+},{"../function/bindInternal4":19}],23:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -3610,100 +2578,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":25,"./object/reduce":50}],54:[function(_require,module,exports){
-'use strict';
-
-var reduceRightArray = _require('./array/reduceRight'),
-    reduceRightObject = _require('./object/reduceRight');
-
-/**
- * # Reduce Right
- *
- * A fast `.reduceRight()` implementation.
- *
- * @param  {Array|Object} subject      The array or object to reduce over.
- * @param  {Function}     fn           The reducer function.
- * @param  {mixed}        initialValue The initial value for the reducer, defaults to subject[0].
- * @param  {Object}       thisContext  The context for the reducer.
- * @return {Array|Object}              The array or object containing the results.
- */
-module.exports = function fastReduceRight (subject, fn, initialValue, thisContext) {
-  if (subject instanceof Array) {
-    return reduceRightArray(subject, fn, initialValue, thisContext);
-  }
-  else {
-    return reduceRightObject(subject, fn, initialValue, thisContext);
-  }
-};
-},{"./array/reduceRight":26,"./object/reduceRight":51}],55:[function(_require,module,exports){
-'use strict';
-
-exports.intern = _require('./intern');
-},{"./intern":56}],56:[function(_require,module,exports){
-'use strict';
-
-// Compilers such as V8 use string interning to make string comparison very fast and efficient,
-// as efficient as comparing two references to the same object.
-//
-//
-// V8 does its best to intern strings automatically where it can, for instance:
-// ```js
-//   var greeting = "hello world";
-// ```
-// With this, comparison will be very fast:
-// ```js
-//   if (greeting === "hello world") {}
-// ```
-// However, there are several cases where V8 cannot intern the string, and instead
-// must resort to byte-wise comparison. This can be signficantly slower for long strings.
-// The most common example is string concatenation:
-// ```js
-//   function subject () { return "world"; };
-//   var greeting = "hello " + subject();
-// ```
-// In this case, V8 cannot intern the string. So this comparison is *much* slower:
-// ```js
-//  if (greeting === "hello world") {}
-// ```
-
-
-
-// At the moment, the fastest, safe way of interning a string is to
-// use it as a key in an object, and then use that key.
-//
-// Note: This technique comes courtesy of Petka Antonov - http://jsperf.com/istrn/11
-//
-// We create a container object in hash mode.
-// Most strings being interned will not be valid fast property names,
-// so we ensure hash mode now to avoid transitioning the object mode at runtime.
-var container = {'- ': true};
-delete container['- '];
-
-
-/**
- * Intern a string to make comparisons faster.
- *
- * > Note: This is a relatively expensive operation, you
- * shouldn't usually do the actual interning at runtime, instead
- * use this at compile time to make future work faster.
- *
- * @param  {String} string The string to intern.
- * @return {String}        The interned string.
- */
-module.exports = function fastIntern (string) {
-  container[string] = true;
-  var interned = Object.keys(container)[0];
-  delete container[interned];
-  return interned;
-};
-},{}],57:[function(_require,module,exports){
+},{"./array/reduce":16,"./object/reduce":22}],24:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],58:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -3720,7 +2602,7 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],59:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3991,7 +2873,7 @@ module.exports = function isNode(val){
   return objectPath;
 });
 
-},{}],60:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -4030,10 +2912,10 @@ function throttle(fn) {
   };
 }
 
-},{"raf":10}],61:[function(_require,module,exports){
+},{"raf":10}],28:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":62}],62:[function(_require,module,exports){
+},{"./lib/sliced":29}],29:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative

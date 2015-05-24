@@ -99,6 +99,8 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
   var container = div()
   var renderer = render(app, container)
 
+  // Wait till the next frame because we triggered an
+  // update in the afterMount hook
   raf(function(){
     assert.deepEqual(log, [
       'initialState',
@@ -118,3 +120,85 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
     done()
   })
 })
+
+it('should exist in the DOM when after mount is called', function (done) {
+  var Test = {
+    render({ props, state }) {
+      return <div id='foo'>Hello World</div>
+    },
+    afterMount (component, el) {
+      assert(document.getElementById('foo'))
+      done()
+    }
+  }
+
+  var container = document.createElement('div')
+  document.body.appendChild(container)
+  var renderer = render(deku(<Test />), container)
+  document.body.removeChild(container)
+  renderer.remove()
+})
+
+it('should fire mount events top-down', function () {
+  var order = []
+
+  var Child = {
+    render() { return <div /> },
+    afterMount() { order.push('child:afterMount') },
+    afterRender() { order.push('child:afterRender') }
+  }
+
+  var Parent = {
+    render() { return <Child /> },
+    afterMount() { order.push('parent:afterMount') },
+    afterRender() { order.push('parent:afterRender') }
+  }
+
+  var app = deku(<Parent />)
+  mount(app)
+  assert.deepEqual(order, [
+    'parent:afterRender',
+    'parent:afterMount',
+    'child:afterRender',
+    'child:afterMount'
+  ])
+});
+
+
+it('should return a promise from afterMount to update state', function (done) {
+  var fetch = function(){
+    return new Promise(function(resolve){
+      setTimeout(function(){
+        resolve('two')
+      }, 10)
+    })
+  }
+
+  var Test = {
+    initialState () {
+      return {
+        text: 'one',
+        id: 'one'
+      }
+    },
+    render ({ state }) {
+      return <div id={state.id}>{state.text}</div>
+    },
+    afterMount: async function (component, el) {
+      var text = await fetch()
+      return {
+        text: text
+      }
+    },
+    afterUpdate () {
+      assert.equal(container.innerHTML, '<div id="one">two</div>')
+      document.body.removeChild(container)
+      renderer.remove()
+      done()
+    }
+  }
+  var container = document.createElement('div')
+  document.body.appendChild(container)
+  var renderer = render(deku(<Test />), container, { batching: false })
+  assert.equal(container.innerHTML, '<div id="one">one</div>')
+});

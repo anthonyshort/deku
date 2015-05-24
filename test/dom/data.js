@@ -79,4 +79,48 @@ it('should handle two-way updating', function(){
     assert.equal(el.innerHTML, '<div>Hello Pluto</div>');
     document.body.removeChild(el);
   })
+})
+
+it('should handle two-way updating with multiple components depending on the same source', function(){
+  var TestA = {
+    propTypes: {
+      'text': { source: 'title' },
+      'updateTitle': { source: 'setTitle' }
+    },
+    render: function(component) {
+      let {props, state} = component
+      return dom('span', { onClick: onClick }, props.text);
+
+      function onClick() {
+        props.updateTitle('Hello Pluto');
+      }
+    }
+  }
+
+  var TestB = {
+    propTypes: {
+      'text': { source: 'title' },
+    },
+    render: function(component) {
+      let {props, state} = component
+      return dom('span', null, props.text);
+    }
+  }  
+  
+  function setTitle(string) {
+    app.set('title', string);
+  }
+
+  var app = deku()
+    .set('title', 'Hello World')
+    .set('setTitle', setTitle)
+    .mount(<div><TestA /><TestB /></div>)
+
+  mount(app, function(el, renderer){
+    document.body.appendChild(el);
+    assert.equal(el.innerHTML, '<div><span>Hello World</span><span>Hello World</span></div>');
+    trigger(el.querySelector('span'), 'click');
+    assert.equal(el.innerHTML, '<div><span>Hello Pluto</span><span>Hello Pluto</span></div>');
+    document.body.removeChild(el);
+  })
 });

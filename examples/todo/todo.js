@@ -1,4 +1,4 @@
-export let propTypes = {
+let propTypes = {
   'item': {
     'type': 'object'
   },
@@ -7,7 +7,7 @@ export let propTypes = {
   }
 }
 
-export function render (component) {
+function render (component) {
   let {props,state} = component
   let {item,remove} = props
 
@@ -22,3 +22,5 @@ export function render (component) {
     </div>
   )
 }
+
+export default {propTypes,render}

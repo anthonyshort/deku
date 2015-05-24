@@ -2,14 +2,14 @@ import List from './list'
 
 // Optionally set prop types that will validate
 // whenever props are changed
-export let propTypes = {
+let propTypes = {
   items: {
     type: 'array'
   }
 }
 
 // Render the list
-export function render (component) {
+function render (component) {
   let {props,state} = component
 
   return (
@@ -19,3 +19,5 @@ export function render (component) {
     </div>
   )
 }
+
+export default {propTypes,render}
