@@ -330,6 +330,16 @@ function afterMount ({ props }, el) {
 }
 ```
 
+## innerHTML
+
+You can set a string of html to be set as `innerHTML` using the `innerHTML` attribute on your virtual elements:
+
+```
+<div innerHTML="<span>hi</span>" />
+```
+
+**Deku doesn't do any sanitizing of the HTML string so you'll want to do that yourself to prevent XSS attacks.**
+
 ## Tests
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
