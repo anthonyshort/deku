@@ -134,6 +134,7 @@ var defaults = utils.defaults
 var forEach = _require('fast.js/forEach')
 var assign = _require('fast.js/object/assign')
 var reduce = _require('fast.js/reduce')
+var isPromise = _require('is-promise')
 
 /**
  * All of the events can bind to
@@ -208,6 +209,7 @@ function render (app, container, opts) {
   var entities = {}
   var pools = {}
   var handlers = {}
+  var mountQueue = []
   var children = {}
   children[rootId] = {}
 
@@ -325,9 +327,9 @@ function render (app, container, opts) {
     entity.virtualElement = virtualElement
     entity.nativeElement = nativeElement
 
-    // callback after mounting.
-    trigger('afterRender', entity, [entity.context, nativeElement])
-    trigger('afterMount', entity, [entity.context, nativeElement, setState(entity)])
+    // Fire afterRender and afterMount hooks at the end
+    // of the render cycle
+    mountQueue.push(entity.id)
 
     return nativeElement
   }
@@ -379,7 +381,7 @@ function render (app, container, opts) {
 
   function setState (entity) {
     return function (nextState) {
-      updateEntityState(entity, nextState)
+      updateEntityStateAsync(entity, nextState)
     }
   }
 
@@ -443,8 +445,25 @@ function render (app, container, opts) {
       updateChildren(rootId)
     }
 
+    // Call mount events on all new entities
+    flushMountQueue()
+
     // Allow rendering again.
     isRendering = false
+  }
+
+  /**
+   * Call hooks for all new entities that have been created in
+   * the last render from the bottom up.
+   */
+
+  function flushMountQueue () {
+    var entityId
+    while (entityId = mountQueue.pop()) {
+      var entity = entities[entityId]
+      trigger('afterRender', entity, [entity.context, entity.nativeElement])
+      triggerUpdate('afterMount', entity, [entity.context, entity.nativeElement, setState(entity)])
+    }
   }
 
   /**
@@ -501,7 +520,7 @@ function render (app, container, opts) {
     trigger('afterRender', entity, [entity.context, entity.nativeElement])
 
     // trigger afterUpdate after all children have updated.
-    trigger('afterUpdate', entity, [entity.context, previousProps, previousState, setState(entity)])
+    triggerUpdate('afterUpdate', entity, [entity.context, previousProps, previousState])
   }
 
   /**
@@ -613,7 +632,7 @@ function render (app, container, opts) {
    */
 
   function toNativeComponent (entityId, path, vnode) {
-    var child = new Entity(vnode.component, vnode.props)
+    var child = new Entity(vnode.component, vnode.props, entityId)
     children[entityId][path] = child.id
     return mountEntity(child)
   }
@@ -945,14 +964,31 @@ function render (app, container, opts) {
       parent.appendChild(newEl)
     }
 
-    // update all `entity.nativeElement` references.
-    forEach(entities, function (entity) {
-      if (entity.nativeElement === el) {
-        entity.nativeElement = newEl
-      }
-    })
+    // walk up the tree and update all `entity.nativeElement` references.
+    if (entityId !== 'root' && path === '0') {
+      updateNativeElement(entityId, newEl)
+    }
 
     return newEl
+  }
+
+  /**
+   * Update all entities in a branch that have the same nativeElement. This
+   * happens when a component has another component as it's root node.
+   *
+   * @param {String} entityId
+   * @param {HTMLElement} newEl
+   *
+   * @return {void}
+   */
+
+  function updateNativeElement (entityId, newEl) {
+    var target = entities[entityId]
+    if (target.ownerId === 'root') return
+    if (children[target.ownerId]['0'] === entityId) {
+      entities[target.ownerId].nativeElement = newEl
+      updateNativeElement(target.ownerId, newEl)
+    }
   }
 
   /**
@@ -1111,7 +1147,44 @@ function render (app, container, opts) {
 
   function trigger (name, entity, args) {
     if (typeof entity.component[name] !== 'function') return
-    entity.component[name].apply(null, args)
+    return entity.component[name].apply(null, args)
+  }
+
+  /**
+   * Trigger a hook on the component and allow state to be
+   * updated too.
+   *
+   * @param {String} name
+   * @param {Object} entity
+   * @param {Array} args
+   *
+   * @return {void}
+   */
+
+  function triggerUpdate (name, entity, args) {
+    var update = setState(entity)
+    args.push(update)
+    var result = trigger(name, entity, args)
+    if (result) {
+      updateEntityStateAsync(entity, result)
+    }
+  }
+
+  /**
+   * Update the entity state using a promise
+   *
+   * @param {Entity} entity
+   * @param {Promise} promise
+   */
+
+  function updateEntityStateAsync (entity, value) {
+    if (isPromise(value)) {
+      value.then(function (newState) {
+        updateEntityState(entity, newState)
+      })
+    } else {
+      updateEntityState(entity, value)
+    }
   }
 
   /**
@@ -1299,7 +1372,11 @@ function render (app, container, opts) {
     keypath.set(handlers, [entityId, path, eventType], throttle(function (e) {
       var entity = entities[entityId]
       if (entity) {
-        fn.call(null, e, entity.context, setState(entity))
+        var update = setState(entity)
+        var result = fn.call(null, e, entity.context, update)
+        if (result) {
+          updateEntityStateAsync(entity, result)
+        }
       } else {
         fn.call(null, e)
       }
@@ -1335,37 +1412,69 @@ function render (app, container, opts) {
    *
    * Available rules include:
    *
-   * type: string | array | object | boolean | number | date | function
+   * type: {String} string | array | object | boolean | number | date | function
+   *       {Array} An array of types mentioned above
+   *       {Function} fn(value) should return `true` to pass in
    * expects: [] An array of values this prop could equal
    * optional: Boolean
    */
 
-  function validateProps (props, rules) {
+  function validateProps (props, rules, optPrefix) {
+    var prefix = optPrefix || ''
     if (!options.validateProps) return
-
-    // TODO: Only validate in dev mode
     forEach(rules, function (options, name) {
-      if (name === 'children') return
-      var value = props[name]
+      if (!options) {
+        throw new Error('deku: propTypes should have an options object for each type')
+      }
+
+      var propName = prefix ? prefix + '.' + name : name
+      var value = keypath.get(props, name)
+      var valueType = type(value)
+      var typeFormat = type(options.type)
       var optional = (options.optional === true)
+
+      // If it's optional and doesn't exist
       if (optional && value == null) {
         return
       }
+
+      // If it's required and doesn't exist
       if (!optional && value == null) {
-        throw new Error('Missing prop named: ' + name)
+        throw new TypeError('Missing property: ' + propName)
       }
-      if (options.type && type(value) !== options.type) {
-        throw new Error('Invalid type for prop named: ' + name)
+
+      // It's a nested type
+      if (typeFormat === 'object') {
+        validateProps(value, options.type, propName)
+        return
       }
+
+      // If it's the incorrect type
+      if (typeFormat === 'string' && valueType !== options.type) {
+        throw new TypeError('Invalid property type: ' + propName)
+      }
+
+      // If type is validate function
+      if (typeFormat === 'function' && !options.type(value)) {
+        throw new TypeError('Invalid property type: ' + propName)
+      }
+
+      // if type is array of possible types
+      if (typeFormat === 'array' && options.type.indexOf(valueType) < 0) {
+        throw new TypeError('Invalid property type: ' + propName)
+      }
+
+      // If it's an invalid value
       if (options.expects && options.expects.indexOf(value) < 0) {
-        throw new Error('Invalid value for prop named: ' + name + '. Must be one of ' + options.expects.toString())
+        throw new TypeError('Invalid property value: ' + propName)
       }
     })
 
     // Now check for props that haven't been defined
     forEach(props, function (value, key) {
+      // props.children is always passed in, even if it's not defined
       if (key === 'children') return
-      if (!rules[key]) throw new Error('Unexpected prop named: ' + key)
+      if (!rules[key]) throw new Error('Unexpected property: ' + key)
     })
   }
 
@@ -1411,14 +1520,15 @@ function render (app, container, opts) {
  * @param {Object} props
  */
 
-function Entity (component, props) {
+function Entity (component, props, ownerId) {
   this.id = uid()
+  this.ownerId = ownerId
   this.component = component
   this.propTypes = component.propTypes || {}
   this.context = {}
   this.context.id = this.id;
   this.context.props = defaults(props || {}, component.defaultProps || {})
-  this.context.state = this.component.initialState ? this.component.initialState() : {}
+  this.context.state = this.component.initialState ? this.component.initialState(this.context.props) : {}
   this.pendingProps = assign({}, this.context.props)
   this.pendingState = assign({}, this.context.state)
   this.dirty = false
@@ -1451,7 +1561,7 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js/forEach":17,"fast.js/object/assign":20,"fast.js/reduce":23,"get-uid":24,"is-dom":25,"object-path":26,"per-frame":27}],4:[function(_require,module,exports){
+},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js/forEach":17,"fast.js/object/assign":20,"fast.js/reduce":23,"get-uid":24,"is-dom":25,"is-promise":26,"object-path":27,"per-frame":28}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var defaults = utils.defaults
 
@@ -1474,8 +1584,8 @@ module.exports = function (app) {
 
   function stringify (component, optProps) {
     var propTypes = component.propTypes || {}
-    var state = component.initialState ? component.initialState() : {}
-    var props = defaults(optProps, component.defaultProps || {})
+    var props = defaults(optProps || {}, component.defaultProps || {})
+    var state = component.initialState ? component.initialState(props) : {}
 
     for (var name in propTypes) {
       var options = propTypes[name]
@@ -1567,7 +1677,7 @@ var indexOf = _require('fast.js/array/indexOf')
  * that doesn't require whitelisting elements.
  */
 
-exports.namespace  = 'http://www.w3.org/2000/svg'
+exports.namespace = 'http://www.w3.org/2000/svg'
 
 /**
  * Supported SVG elements
@@ -1935,7 +2045,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":8,"component-type":11,"sliced":28}],8:[function(_require,module,exports){
+},{"array-flatten":8,"component-type":11,"sliced":29}],8:[function(_require,module,exports){
 /**
  * Recursive flatten function with depth.
  *
@@ -2603,6 +2713,13 @@ module.exports = function isNode(val){
 }
 
 },{}],26:[function(_require,module,exports){
+module.exports = isPromise;
+
+function isPromise(obj) {
+  return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}
+
+},{}],27:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2873,7 +2990,7 @@ module.exports = function isNode(val){
   return objectPath;
 });
 
-},{}],27:[function(_require,module,exports){
+},{}],28:[function(_require,module,exports){
 /**
  * Module Dependencies.
  */
@@ -2912,10 +3029,10 @@ function throttle(fn) {
   };
 }
 
-},{"raf":10}],28:[function(_require,module,exports){
+},{"raf":10}],29:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":29}],29:[function(_require,module,exports){
+},{"./lib/sliced":30}],30:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
