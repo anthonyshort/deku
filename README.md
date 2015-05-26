@@ -171,12 +171,22 @@ function render (component) {
   return <button onClick={clicked}>{props.children}</button>
 }
 
-function clicked () {
+function clicked (event, component, updateState) {
   alert('You clicked it')
 }
 ```
 
 You can [view all event handlers](https://github.com/dekujs/deku/blob/master/lib/render.js#L25) in code.
+
+You can access the event, the component and update the state in event handlers:
+
+```js
+function clicked (event, component, updateState) {
+  let {props,state} = component
+}
+```
+
+To access the element you'll usually want to `event.target`. This is the element the event was triggered on. We also set `event.delegateTarget` that will always be set to the element that owns the handler if it was a deeper element that triggered the event. 
 
 ## Lifecycle hooks
 
