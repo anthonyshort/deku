@@ -2,16 +2,7 @@
 0.4.1 / 2015-05-26
 ==================
 
- * Update README.md
- * Update README.md
- * Merge pull request #150 from soundblogs/master
  * propTypes validation - support for array of types, type as function
- * Merge github.com:dekujs/deku
- * Merge github.com:segmentio/deku
- * remove space
- * Merge github.com:segmentio/deku
- * Revert "missed correct namespace"
- * missed correct namespace
 
 0.4.0 / 2015-05-22
 ==================
