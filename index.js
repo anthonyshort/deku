@@ -1344,13 +1344,12 @@ function render (app, container, opts) {
 
   function handleEvent (event) {
     var target = event.target
-    var entityId = target.__entity__
     var eventType = event.type
 
     // Walk up the DOM tree and see if there is a handler
     // for this event type higher up.
-    while (target && target.__entity__ === entityId) {
-      var fn = keypath.get(handlers, [entityId, target.__path__, eventType])
+    while (target) {
+      var fn = keypath.get(handlers, [target.__entity__, target.__path__, eventType])
       if (fn) {
         event.delegateTarget = target
         fn(event)

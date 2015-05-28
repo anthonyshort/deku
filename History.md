@@ -1,4 +1,11 @@
 
+0.4.2 / 2015-05-28
+==================
+
+ * Merge pull request #151 from dekujs/fix/events
+ * fixed event handling so events bubble to parent handlers
+ * Updated changelog
+
 0.4.1 / 2015-05-26
 ==================
 
