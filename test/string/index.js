@@ -193,3 +193,14 @@ it('should render data sources', function(){
     .mount(<Component />)
   assert.equal(renderString(app), '<div>Hello World</div>')
 })
+
+it('should not render event handlers as attributes', function () {
+  var Component = {
+    render: function() {
+      return <div onClick={foo} />
+    }
+  }
+  function foo() { return 'blah' }
+  var app = deku(<Component />)
+  assert.equal(renderString(app), '<div></div>')
+});
