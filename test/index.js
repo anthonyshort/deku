@@ -24,6 +24,7 @@ describe('DOM Renderer', function(){
   require('./dom/hooks')
   require('./dom/svg')
   require('./dom/sources')
+  require('./dom/register')
 })
 
 describe('String Renderer', function(){
