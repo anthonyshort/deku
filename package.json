@@ -33,7 +33,6 @@
     "is-dom": "^1.0.5",
     "is-promise": "^2.0.0",
     "object-path": "^0.8.1",
-    "per-frame": "^3.0.0",
     "sliced": "0.0.5"
   }
 }
