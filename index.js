@@ -85,7 +85,49 @@ Application.prototype.unmount = function () {
   return this
 }
 
-},{"component-emitter":9}],2:[function(_require,module,exports){
+},{"component-emitter":10}],2:[function(_require,module,exports){
+/**
+ * All of the events can bind to
+ */
+
+module.exports = {
+  onBlur: 'blur',
+  onChange: 'change',
+  onClick: 'click',
+  onContextMenu: 'contextmenu',
+  onCopy: 'copy',
+  onCut: 'cut',
+  onDoubleClick: 'dblclick',
+  onDrag: 'drag',
+  onDragEnd: 'dragend',
+  onDragEnter: 'dragenter',
+  onDragExit: 'dragexit',
+  onDragLeave: 'dragleave',
+  onDragOver: 'dragover',
+  onDragStart: 'dragstart',
+  onDrop: 'drop',
+  onFocus: 'focus',
+  onInput: 'input',
+  onKeyDown: 'keydown',
+  onKeyPress: 'keypress',
+  onKeyUp: 'keyup',
+  onMouseDown: 'mousedown',
+  onMouseEnter: 'mouseenter',
+  onMouseLeave: 'mouseleave',
+  onMouseMove: 'mousemove',
+  onMouseOut: 'mouseout',
+  onMouseOver: 'mouseover',
+  onMouseUp: 'mouseup',
+  onPaste: 'paste',
+  onScroll: 'scroll',
+  onSubmit: 'submit',
+  onTouchCancel: 'touchcancel',
+  onTouchEnd: 'touchend',
+  onTouchMove: 'touchmove',
+  onTouchStart: 'touchstart'
+}
+
+},{}],3:[function(_require,module,exports){
 /**
  * Create the application.
  */
@@ -115,7 +157,7 @@ exports.renderString = _require('./stringify')
 exports.element =
 exports.dom = _require('./virtual')
 
-},{"./application":1,"./render":3,"./stringify":4,"./virtual":7}],3:[function(_require,module,exports){
+},{"./application":1,"./render":4,"./stringify":5,"./virtual":8}],4:[function(_require,module,exports){
 /**
  * Dependencies.
  */
@@ -125,56 +167,16 @@ var Pool = _require('dom-pool')
 var walk = _require('dom-walk')
 var isDom = _require('is-dom')
 var uid = _require('get-uid')
-var throttle = _require('per-frame')
 var keypath = _require('object-path')
 var type = _require('component-type')
 var utils = _require('./utils')
 var svg = _require('./svg')
+var events = _require('./events')
 var defaults = utils.defaults
 var forEach = _require('fast.js/forEach')
 var assign = _require('fast.js/object/assign')
 var reduce = _require('fast.js/reduce')
 var isPromise = _require('is-promise')
-
-/**
- * All of the events can bind to
- */
-
-var events = {
-  onBlur: 'blur',
-  onChange: 'change',
-  onClick: 'click',
-  onContextMenu: 'contextmenu',
-  onCopy: 'copy',
-  onCut: 'cut',
-  onDoubleClick: 'dblclick',
-  onDrag: 'drag',
-  onDragEnd: 'dragend',
-  onDragEnter: 'dragenter',
-  onDragExit: 'dragexit',
-  onDragLeave: 'dragleave',
-  onDragOver: 'dragover',
-  onDragStart: 'dragstart',
-  onDrop: 'drop',
-  onFocus: 'focus',
-  onInput: 'input',
-  onKeyDown: 'keydown',
-  onKeyUp: 'keyup',
-  onMouseDown: 'mousedown',
-  onMouseEnter: 'mouseenter',
-  onMouseLeave: 'mouseleave',
-  onMouseMove: 'mousemove',
-  onMouseOut: 'mouseout',
-  onMouseOver: 'mouseover',
-  onMouseUp: 'mouseup',
-  onPaste: 'paste',
-  onScroll: 'scroll',
-  onSubmit: 'submit',
-  onTouchCancel: 'touchcancel',
-  onTouchEnd: 'touchend',
-  onTouchMove: 'touchmove',
-  onTouchStart: 'touchstart'
-}
 
 /**
  * These elements won't be pooled
@@ -1259,18 +1261,46 @@ function render (app, container, opts) {
    */
 
   function register (entity) {
+    registerEntity(entity)
+    var component = entity.component
+    if (component.registered) return
+
+    // initialize sources once for a component type.
+    registerSources(entity)
+    component.registered = true
+  }
+
+  /**
+   * Add entity to data-structures related to components/entities.
+   *
+   * @param {Entity} entity
+   */
+
+  function registerEntity(entity) {
     var component = entity.component
     // all entities for this component type.
     var entities = component.entities = component.entities || {}
     // add entity to component list
     entities[entity.id] = entity
     // map to component so you can remove later.
-    components[entity.id] = component;
+    components[entity.id] = component
+  }
 
+  /**
+   * Initialize sources for a component by type.
+   *
+   * @param {Entity} entity
+   */
+
+  function registerSources(entity) {
+    var component = components[entity.id]
     // get 'class-level' sources.
+    // if we've already hooked it up, then we're good.
     var sources = component.sources
     if (sources) return
+    var entities = component.entities
 
+    // hook up sources.
     var map = component.sourceToPropertyName = {}
     component.sources = sources = []
     var propTypes = component.propTypes
@@ -1368,7 +1398,7 @@ function render (app, container, opts) {
    */
 
   function addEvent (entityId, path, eventType, fn) {
-    keypath.set(handlers, [entityId, path, eventType], throttle(function (e) {
+    keypath.set(handlers, [entityId, path, eventType], function (e) {
       var entity = entities[entityId]
       if (entity) {
         var update = setState(entity)
@@ -1379,7 +1409,7 @@ function render (app, container, opts) {
       } else {
         fn.call(null, e)
       }
-    }))
+    })
   }
 
   /**
@@ -1560,8 +1590,9 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./svg":5,"./utils":6,"component-raf":10,"component-type":11,"dom-pool":12,"dom-walk":13,"fast.js/forEach":17,"fast.js/object/assign":20,"fast.js/reduce":23,"get-uid":24,"is-dom":25,"is-promise":26,"object-path":27,"per-frame":28}],4:[function(_require,module,exports){
+},{"./events":2,"./svg":6,"./utils":7,"component-raf":11,"component-type":12,"dom-pool":13,"dom-walk":14,"fast.js/forEach":18,"fast.js/object/assign":21,"fast.js/reduce":24,"get-uid":25,"is-dom":26,"is-promise":27,"object-path":28}],5:[function(_require,module,exports){
 var utils = _require('./utils')
+var events = _require('./events')
 var defaults = utils.defaults
 
 /**
@@ -1649,6 +1680,7 @@ function attrs (attributes) {
   var str = ''
   for (var key in attributes) {
     if (key === 'innerHTML') continue
+    if (events[key]) continue
     str += attr(key, attributes[key])
   }
   return str
@@ -1667,7 +1699,7 @@ function attr (key, val) {
   return ' ' + key + '="' + val + '"'
 }
 
-},{"./utils":6}],5:[function(_require,module,exports){
+},{"./events":2,"./utils":7}],6:[function(_require,module,exports){
 var indexOf = _require('fast.js/array/indexOf')
 
 /**
@@ -1775,7 +1807,7 @@ exports.isAttribute = function (attr) {
 }
 
 
-},{"fast.js/array/indexOf":15}],6:[function(_require,module,exports){
+},{"fast.js/array/indexOf":16}],7:[function(_require,module,exports){
 /**
  * The npm 'defaults' module but without clone because
  * it was requiring the 'Buffer' module which is huge.
@@ -1795,7 +1827,7 @@ exports.defaults = function(options, defaults) {
   return options
 }
 
-},{}],7:[function(_require,module,exports){
+},{}],8:[function(_require,module,exports){
 /**
  * Module dependencies.
  */
@@ -2044,7 +2076,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":8,"component-type":11,"sliced":29}],8:[function(_require,module,exports){
+},{"array-flatten":9,"component-type":12,"sliced":29}],9:[function(_require,module,exports){
 /**
  * Recursive flatten function with depth.
  *
@@ -2103,7 +2135,7 @@ module.exports = function (array, depth) {
   return flattenDepth(array, [], depth)
 }
 
-},{}],9:[function(_require,module,exports){
+},{}],10:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2266,7 +2298,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],10:[function(_require,module,exports){
+},{}],11:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2302,7 +2334,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],11:[function(_require,module,exports){
+},{}],12:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -2338,7 +2370,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],12:[function(_require,module,exports){
+},{}],13:[function(_require,module,exports){
 function Pool(params) {
     if (typeof params !== 'object') {
         throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
@@ -2392,7 +2424,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Pool;
 }
 
-},{}],13:[function(_require,module,exports){
+},{}],14:[function(_require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2418,7 +2450,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],14:[function(_require,module,exports){
+},{}],15:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2441,7 +2473,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":18}],15:[function(_require,module,exports){
+},{"../function/bindInternal3":19}],16:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2476,7 +2508,7 @@ module.exports = function fastIndexOf (subject, target, fromIndex) {
   return -1;
 };
 
-},{}],16:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2513,7 +2545,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":19}],17:[function(_require,module,exports){
+},{"../function/bindInternal4":20}],18:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2536,7 +2568,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":14,"./object/forEach":21}],18:[function(_require,module,exports){
+},{"./array/forEach":15,"./object/forEach":22}],19:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2549,7 +2581,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],19:[function(_require,module,exports){
+},{}],20:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2562,7 +2594,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],20:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2598,7 +2630,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],21:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2623,7 +2655,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":18}],22:[function(_require,module,exports){
+},{"../function/bindInternal3":19}],23:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2662,7 +2694,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":19}],23:[function(_require,module,exports){
+},{"../function/bindInternal4":20}],24:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -2687,14 +2719,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":16,"./object/reduce":22}],24:[function(_require,module,exports){
+},{"./array/reduce":17,"./object/reduce":23}],25:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],25:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2711,14 +2743,14 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],26:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 module.exports = isPromise;
 
 function isPromise(obj) {
   return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
 
-},{}],27:[function(_require,module,exports){
+},{}],28:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2989,46 +3021,7 @@ function isPromise(obj) {
   return objectPath;
 });
 
-},{}],28:[function(_require,module,exports){
-/**
- * Module Dependencies.
- */
-
-var raf = _require('raf');
-
-/**
- * Export `throttle`.
- */
-
-module.exports = throttle;
-
-/**
- * Executes a function at most once per animation frame. Kind of like
- * throttle, but it throttles at ~60Hz.
- *
- * @param {Function} fn - the Function to throttle once per animation frame
- * @return {Function}
- * @public
- */
-
-function throttle(fn) {
-  var rtn;
-  var ignoring = false;
-
-  return function queue() {
-    if (ignoring) return rtn;
-    ignoring = true;
-
-    raf(function() {
-      ignoring = false;
-    });
-
-    rtn = fn.apply(this, arguments);
-    return rtn;
-  };
-}
-
-},{"raf":10}],29:[function(_require,module,exports){
+},{}],29:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
 },{"./lib/sliced":30}],30:[function(_require,module,exports){
@@ -3066,5 +3059,5 @@ module.exports = function (args, slice, sliceEnd) {
 }
 
 
-},{}]},{},[2])(2)
+},{}]},{},[3])(3)
 });

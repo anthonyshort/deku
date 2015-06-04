@@ -1,4 +1,18 @@
 
+0.4.3 / 2015-06-04
+==================
+
+ * Merge pull request #160 from xdissent/remove-event-throttling
+ * Remove event throttling. Fixes #159
+ * Merge pull request #152 from dekujs/add/hooks
+ * Merge pull request #153 from bcinman/master
+ * added keypress event
+ * removed `register` support, but kept test and cleaned up code
+ * added test demonstrating a pattern for local2global communication
+ * Fixed issue with rendering event handlers when using renderString
+ * Updated changelog
+ * add `action` hook on components
+
 0.4.2 / 2015-05-28
 ==================
 
