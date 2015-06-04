@@ -38,7 +38,7 @@ export let name = 'My Component'
  
 // Get the initial state for the component. We don't pass props in here like 
 // React does because the state should just be computed in the render function.
-export function initialState () {
+export function initialState (props) {
   return {
     open: true
   }
