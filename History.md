@@ -1,4 +1,11 @@
 
+0.4.4 / 2015-06-05
+==================
+
+ * Added `createElement` alias for `element`
+ * Update components.md
+ * Updated changelog
+
 0.4.3 / 2015-06-04
 ==================
 

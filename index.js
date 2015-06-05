@@ -155,6 +155,7 @@ exports.renderString = _require('./stringify')
  */
 
 exports.element =
+exports.createElement =
 exports.dom = _require('./virtual')
 
 },{"./application":1,"./render":4,"./stringify":5,"./virtual":8}],4:[function(_require,module,exports){
