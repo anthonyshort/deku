@@ -4,6 +4,7 @@ Without JSX, you'll use the `element` function to build up virtual elements that
 
 ```js
 export function render (component) {
+  let {props, state, id} = component;
   return element('a', { class: "button", onClick: onClick }, [props.text])
 }
 ```
@@ -12,6 +13,7 @@ JSX just makes this easier to write and read by making it read like HTML:
 
 ```js
 export function render (component) {
+  let {props, state, id} = component;
   return <a class="button" onClick={onClick}>{props.text}</a>;
 }
 ```
@@ -34,6 +36,7 @@ Then make sure you import the `element` function:
 import {element} from 'deku'
 
 export function render (component) {
+  let {props, state, id} = component;
   return <a class="button" onClick={onClick}>{props.text}</a>
 }
 ```
@@ -47,6 +50,7 @@ You can also add a comment to the top of your files that tells babel which funct
 import {element} from 'deku'
 
 export function render (component) {
+  let {props, state, id} = component;
   return <a class="button" onClick={onClick}>{props.text}</a>;
 }
 ```
