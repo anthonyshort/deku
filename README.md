@@ -1,10 +1,4 @@
-<h1 align="center">
-	<br>
-	<img width="237" src="http://f.cl.ly/items/1s0T2Z3F2z190M1x1x1Y/deku-logo.png" alt="got">
-	<br>
-	<br>
-	<br>
-</h1>
+# Deku
 
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/dekujs/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard) 
 
