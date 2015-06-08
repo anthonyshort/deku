@@ -176,7 +176,7 @@ function clicked (event, component, updateState) {
 }
 ```
 
-You can [view all event handlers](https://github.com/dekujs/deku/blob/master/lib/render.js#L25) in code.
+You can [view all event handlers](https://github.com/dekujs/deku/blob/master/lib/events.js) in code.
 
 You can access the event, the component and update the state in event handlers:
 
