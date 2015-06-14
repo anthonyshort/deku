@@ -1,4 +1,17 @@
 
+0.4.5 / 2015-06-13
+==================
+
+ * We made it smaller!
+ * Merge pull request #173 from foray1010/master
+ * Added wheel event
+ * Update README.md
+ * Update README.md
+ * Merge pull request #166 from xdissent/patch-1
+ * Merge pull request #167 from DylanPiercey/patch-1
+ * Update jsx.md
+ * Update events link in README
+
 0.4.4 / 2015-06-05
 ==================
 

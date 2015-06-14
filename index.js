@@ -124,7 +124,8 @@ module.exports = {
   onTouchCancel: 'touchcancel',
   onTouchEnd: 'touchend',
   onTouchMove: 'touchmove',
-  onTouchStart: 'touchstart'
+  onTouchStart: 'touchstart',
+  onWheel: 'wheel'
 }
 
 },{}],3:[function(_require,module,exports){
