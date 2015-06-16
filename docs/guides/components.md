@@ -36,8 +36,7 @@ Here is a full list of all of the available component properties:
 // Define a name for the component that can be used in debugging
 export let name = 'My Component'
  
-// Get the initial state for the component. We don't pass props in here like 
-// React does because the state should just be computed in the render function.
+// Get the initial state for the component.
 export function initialState (props) {
   return {
     open: true
