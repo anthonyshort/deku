@@ -3,7 +3,6 @@ require("babelify/polyfill")
 
 describe('virtual', function(){
   require('./virtual')
-  // require('./virtual/jsx')
 });
 
 describe('DOM Renderer', function(){
@@ -17,13 +16,11 @@ describe('DOM Renderer', function(){
   require('./dom/replace')
   require('./dom/events')
   require('./dom/state')
+  require('./dom/statics')
   require('./dom/pool')
-  require('./dom/data')
   require('./dom/keys')
   require('./dom/hooks')
   require('./dom/svg')
-  require('./dom/sources')
-  require('./dom/register')
 })
 
 describe('String Renderer', function(){

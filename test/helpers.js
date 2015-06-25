@@ -1,4 +1,4 @@
-import {render,deku,dom} from '../'
+import {render,dom} from '../'
 import assert from 'assert'
 
 /**
@@ -9,11 +9,11 @@ import assert from 'assert'
  * @param {Function} fn
  */
 
-exports.mount = function(app, fn, errorHandler) {
+exports.mount = function(component, fn, errorHandler) {
   var el = document.createElement('div');
 
   try {
-    var renderer = render(app, el, { batching: false });
+    var renderer = render(component, el, { batching: false });
     if (fn) fn(el, renderer);
   }
   catch(e) {

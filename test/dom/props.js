@@ -2,15 +2,14 @@
 
 import raf from 'component-raf'
 import assert from 'assert'
-import {dom,deku,render} from '../../'
+import {dom,render} from '../../'
 import {TwoWords,mount,div,Span} from '../helpers'
 
 it('should replace props on the app', function(){
-  var app = deku()
-  app.mount(<TwoWords one="Hello" two="deku" />)
+  var app = (<TwoWords one="Hello" two="deku" />)
 
-  mount(app, function(el){
-    app.mount(<TwoWords two="Pluto" />)
+  mount(app, function(el, renderer){
+    renderer.mount(<TwoWords two="Pluto" />)
     assert.equal(el.innerHTML, '<span>undefined Pluto</span>')
   })
 })
@@ -28,8 +27,7 @@ it('should have initial props', function(){
       text: 'Hello!'
     }
   }
-  var app = deku()
-  app.mount(<Component />)
+  var app = (<Component />)
   mount(app, function(el){
     assert.equal(el.innerHTML, '<div>Hello!</div>')
   })
@@ -37,11 +35,10 @@ it('should have initial props', function(){
 
 it('should update on the next frame', function(done){
   var el = div();
-  var app = deku();
-  app.mount(<TwoWords one="Hello" two="World" />)
+  var app = (<TwoWords one="Hello" two="World" />)
   var renderer = render(app, el)
   assert.equal(el.innerHTML, '<span>Hello World</span>')
-  app.mount(<TwoWords one="Hello" two="Pluto" />)
+  renderer.mount(<TwoWords one="Hello" two="Pluto" />)
   assert.equal(el.innerHTML, '<span>Hello World</span>')
   raf(function(){
     assert.equal(el.innerHTML, '<span>Hello Pluto</span>')
@@ -63,11 +60,10 @@ it('should not update twice when setting props', function(done){
   }
 
   var el = document.createElement('div')
-  var app = deku()
-  app.mount(<IncrementAfterUpdate text="one" />)
+  var app = (<IncrementAfterUpdate text="one" />)
   var renderer = render(app, el)
-  app.mount(<IncrementAfterUpdate text="two" />)
-  app.mount(<IncrementAfterUpdate text="three" />)
+  renderer.mount(<IncrementAfterUpdate text="two" />)
+  renderer.mount(<IncrementAfterUpdate text="three" />)
   raf(function(){
     assert.equal(i, 1)
     renderer.remove()
@@ -97,11 +93,10 @@ it(`should update child even when the props haven't changed`, function () {
     }
   }
 
-  var app = deku()
-  app.mount(<Parent character="Link" />)
+  var app = (<Parent character="Link" />)
 
-  mount(app, function(){
-    app.mount(<Parent character="Zelda" />)
+  mount(app, function(el, renderer){
+    renderer.mount(<Parent character="Zelda" />)
     assert.equal(calls, 2)
   })
 })

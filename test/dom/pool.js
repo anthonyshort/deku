@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {component,dom,deku,render} from '../../'
+import {component,dom,render} from '../../'
 import {mount,div} from '../helpers'
 
 // Helpers.
@@ -24,16 +24,15 @@ var Component = {
 // Tests.
 
 it('should pool dom nodes', function(){
-  var app = deku()
-  app.mount(<Component type="div" attr="foo" value="bar" />)
+  var app = (<Component type="div" attr="foo" value="bar" />)
 
   mount(app, function(el, renderer){
     // Switch the nodes back and forth to trigger the pooling
     var target = el.querySelector('#foo div')
     var deepTarget = el.querySelector('strong')
 
-    app.mount(<Component type="span" attr={null} value={null} />)
-    app.mount(<Component type="div" attr={null} value={null} />)
+    renderer.mount(<Component type="span" attr={null} value={null} />)
+    renderer.mount(<Component type="div" attr={null} value={null} />)
 
     var next = el.querySelector('#foo div')
     var deepNext = el.querySelector('strong')
@@ -61,8 +60,7 @@ it('should pool dom nodes', function(){
 it('should disable pooling', function(){
   var el = div()
 
-  var app = deku()
-  app.mount(<Component type="div" attr="foo" value="bar" />)
+  var app = (<Component type="div" attr="foo" value="bar" />)
 
   var renderer = render(app, el, {
     pooling: false,
@@ -73,8 +71,8 @@ it('should disable pooling', function(){
   var target = el.querySelector('#foo div')
   var deepTarget = el.querySelector('strong')
 
-  app.mount(<Component type="span" attr={null} value={null} />)
-  app.mount(<Component type="div" attr={null} value={null} />)
+  renderer.mount(<Component type="span" attr={null} value={null} />)
+  renderer.mount(<Component type="div" attr={null} value={null} />)
 
   var next = el.querySelector('#foo div')
   var deepNext = el.querySelector('strong')
@@ -93,9 +91,8 @@ it('should disable pooling', function(){
 
 it.skip(`should'nt pool certain elements`, function(){
   var el = div()
-  var app = deku()
 
-  app.mount(
+  var app = (
     <div>
       <input />
       <textarea></textarea>
@@ -109,7 +106,7 @@ it.skip(`should'nt pool certain elements`, function(){
   var input = el.querySelector('input')
   var textarea = el.querySelector('textarea')
 
-  app.mount(
+  renderer.mount(
     <div>
       <input />
       <textarea></textarea>

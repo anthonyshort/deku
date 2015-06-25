@@ -4,13 +4,12 @@ import trigger from 'trigger-event'
 import Emitter from 'component-emitter'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,deku,dom,render} from '../../'
+import {component,dom,render} from '../../'
 import {HelloWorld,Span,TwoWords,mount,div} from '../helpers'
 import memoize from 'memoizee'
 
 it('should render and remove an element', function(){
-  var app = deku();
-  app.mount(<span>Hello World</span>);
+  var app = (<span>Hello World</span>);
   var el = div();
   var renderer = render(app, el, { batching: false });
   assert.equal(el.innerHTML, '<span>Hello World</span>');
@@ -19,25 +18,23 @@ it('should render and remove an element', function(){
 })
 
 it('should replace a mounted element', function(){
-  var app = deku();
-  app.mount(<span>Hello World</span>);
+  var app = (<span>Hello World</span>);
   var el = div();
   var renderer = render(app, el, { batching: false });
-  app.mount(<div>Foo!</div>);
+  renderer.mount(<div>Foo!</div>);
   assert.equal(el.innerHTML, '<div>Foo!</div>');
   renderer.remove();
   assert.equal(el.innerHTML, '');
 })
 
 it('should remove the mounted element when unmounted', function(){
-  var app = deku();
-  app.mount(<span>Hello World</span>);
+  var app = (<span>Hello World</span>);
   var el = div();
   var renderer = render(app, el, { batching: false });
   assert.equal(el.innerHTML, '<span>Hello World</span>');
-  app.unmount();
+  renderer.unmount();
   assert.equal(el.innerHTML, '');
-  app.mount(<div>Hello World</div>);
+  renderer.mount(<div>Hello World</div>);
   assert.equal(el.innerHTML, '<div>Hello World</div>');
   renderer.remove();
   assert.equal(el.innerHTML, '');
@@ -49,10 +46,7 @@ it('should render and remove a component', function(){
       return dom('span', null, 'Hello World');
     }
   };
-  var app = deku();
-  app.mount(
-    dom(Test)
-  );
+  var app = dom(Test);
   var el = div();
   var renderer = render(app, el, { batching: false });
   assert.equal(el.innerHTML, '<span>Hello World</span>');
@@ -73,8 +67,7 @@ it('should have initial state', function(){
       return <span count={state.count}>{state.text}</span>;
     }
   };
-  var app = deku();
-  app.mount(<DefaultState initialCount={2} />);
+  var app = (<DefaultState initialCount={2} />);
   mount(app, function(el){
     assert.equal(el.innerHTML, '<span count="2">Hello World</span>')
   })
@@ -87,8 +80,7 @@ it('should create a component with properties', function(){
       return dom('span', null, [props.text])
     }
   }
-  var app = deku()
-  app.mount(dom(Test, { text: 'Hello World' }))
+  var app = (dom(Test, { text: 'Hello World' }))
   mount(app, function(el){
     assert.equal(el.innerHTML, '<span>Hello World</span>')
   })
@@ -100,8 +92,7 @@ it('should compose components', function(){
       return dom(HelloWorld);
     }
   };
-  var app = deku();
-  app.mount(dom(Composed));
+  var app = dom(Composed);
   mount(app, function(el){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   })
@@ -113,8 +104,7 @@ it('should render a component using jsx', function(){
       return <span class="yup">Hello World</span>
     }
   };
-  var app = deku()
-  app.mount(<Test />)
+  var app = (<Test />)
   mount(app, function(el){
     assert.equal(el.innerHTML, '<span class="yup">Hello World</span>');
   })
@@ -127,8 +117,8 @@ it('should compose components and pass in props', function(){
       return dom(TwoWords, { one: 'Hello', two: 'World' });
     }
   };
-  var app = deku()
-  app.mount(<Composed />)
+
+  var app = (<Composed />)
   mount(app, function(el){
     assert.equal(el.innerHTML, '<span>Hello World</span>');
   })
@@ -145,8 +135,8 @@ it('should update sub-components', function(){
       );
     }
   };
-  var app = deku()
-  app.mount(<Composed app="Pluto" />)
+
+  var app = (<Composed app="Pluto" />)
   mount(app, function(el){
     assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>')
   })
@@ -163,11 +153,11 @@ it('should update on the next frame', function(done){
       );
     }
   };
-  var app = deku()
-  app.mount(<Composed planet="Pluto" />)
+
+  var app = (<Composed planet="Pluto" />)
   var el = div()
   var renderer = render(app, el)
-  app.mount(<Composed planet="Saturn" />)
+  renderer.mount(<Composed planet="Saturn" />)
   assert.equal(el.innerHTML, '<div><span>Hello Pluto</span></div>')
   raf(function(){
     assert.equal(el.innerHTML, '<div><span>Hello Saturn</span></div>')
@@ -191,8 +181,8 @@ it('should allow components to have child nodes', function(){
       ]);
     }
   };
-  var app = deku()
-  app.mount(dom(ComponentB));
+
+  var app = dom(ComponentB);
   mount(app, function(el){
     assert.equal(el.innerHTML, '<div><span>Hello World!</span></div>');
   })
@@ -213,10 +203,10 @@ it('should update component child nodes', function(){
       ]);
     }
   };
-  var app = deku()
-  app.mount(dom(ComponentB, { text: 'Hello world!' }));
-  mount(app, function(el){
-    app.mount(dom(ComponentB, { text: 'Hello Pluto!' }));
+
+  var app = dom(ComponentB, { text: 'Hello world!' });
+  mount(app, function(el, renderer){
+    renderer.mount(dom(ComponentB, { text: 'Hello Pluto!' }));
     assert.equal(el.innerHTML, '<div><span>Hello Pluto!</span></div>');
   })
 });
@@ -246,8 +236,8 @@ it('should allow components to have other components as child nodes', function()
       ]);
     }
   };
-  var app = deku()
-  app.mount(dom(ComponentB, { text: 'Hello World!' }))
+
+  var app = dom(ComponentB, { text: 'Hello World!' })
   mount(app, function(el){
     assert.equal(el.innerHTML, '<div name="ComponentB"><div name="ComponentA"><div name="ComponentC"><span>Hello Pluto!</span></div></div></div>')
   })
@@ -286,8 +276,7 @@ it('should only update ONCE when props/state is changed in different parts of th
     }
   };
 
-  var app = deku();
-  app.mount(dom(ComponentB, { text: '2x' }))
+  var app = dom(ComponentB, { text: '2x' })
 
   var el = div();
   var renderer = render(app, el)
@@ -298,7 +287,7 @@ it('should only update ONCE when props/state is changed in different parts of th
   emitter.emit('data', 'Mirror Shield');
 
   // Update the top-level props
-  app.mount(dom(ComponentB, { text: '3x' }))
+  renderer.mount(dom(ComponentB, { text: '3x' }))
 
   raf(function(){
     assert.equal(i, 2)
@@ -321,11 +310,11 @@ it('should only update if shouldUpdate returns true', function(){
       return dom('div')
     }
   };
-  var app = deku()
-  app.mount(<Component foo="bar" />)
+
+  var app = (<Component foo="bar" />)
   assert.equal(i, 0);
-  mount(app, function(el){
-    app.mount(<Component foo="baz" />)
+  mount(app, function(el, renderer){
+    renderer.mount(<Component foo="baz" />)
     assert.equal(i, 0)
   })
 });
@@ -339,8 +328,8 @@ it.skip('should not allow setting the state during render', function (done) {
       return dom();
     }
   };
-  var app = deku()
-  app.mount(<Impure />)
+
+  var app = (<Impure />)
   mount(app)
 });
 
@@ -358,9 +347,10 @@ describe('memoization', function () {
         throw new Error('Should not update')
       }
     };
-    var app = deku(<Component count={0} />)
-    mount(app, function(){
-      app.mount(<Component count={1} />)
+
+    var app = (<Component count={0} />)
+    mount(app, function(el, renderer){
+      renderer.mount(<Component count={1} />)
       assert.equal(i, 2)
       done()
     })
@@ -382,9 +372,10 @@ describe('memoization', function () {
         throw new Error('Should not update')
       }
     };
-    var app = deku(<Component count={0} />)
-    mount(app, function(){
-      app.mount(<Component count={0} />)
+
+    var app = (<Component count={0} />)
+    mount(app, function(el, renderer){
+      renderer.mount(<Component count={0} />)
       assert.equal(i, 1)
       done()
     })
@@ -402,7 +393,7 @@ it('should empty the container before initial render', function () {
   var el = div();
   el.innerHTML = '<div>a</div>';
 
-  var app = deku(<Component />);
+  var app = (<Component />);
   var renderer = render(app, el);
   assert.equal(el.innerHTML, '<div>b</div>');
   renderer.remove()
