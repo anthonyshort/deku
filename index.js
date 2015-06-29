@@ -492,7 +492,10 @@ function render (app, container, opts) {
     var entity = entities[entityId]
     setSources(entity)
 
-    if (!shouldUpdate(entity)) return updateChildren(entityId)
+    if (!shouldUpdate(entity)) {
+      commit(entity)
+      return updateChildren(entityId)
+    }
 
     var currentTree = entity.virtualElement
     var nextProps = entity.pendingProps

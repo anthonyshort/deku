@@ -1,4 +1,12 @@
 
+0.4.6 / 2015-06-29
+==================
+
+ * Merge pull request #187 from dekujs/should-render
+ * Fixed: State not committed during shouldUpdate
+ * Merge pull request #177 from mpal9000/patch-1
+ * docs - initialState props
+
 0.4.5 / 2015-06-13
 ==================
 
