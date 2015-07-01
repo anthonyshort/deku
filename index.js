@@ -1,92 +1,5 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.deku=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
 /**
- * Module dependencies.
- */
-
-var Emitter = _require('component-emitter')
-
-/**
- * Expose `scene`.
- */
-
-module.exports = Application
-
-/**
- * Create a new `Application`.
- *
- * @param {Object} element Optional initial element
- */
-
-function Application (element) {
-  if (!(this instanceof Application)) return new Application(element)
-  this.options = {}
-  this.sources = {}
-  this.element = element
-}
-
-/**
- * Mixin `Emitter`.
- */
-
-Emitter(Application.prototype)
-
-/**
- * Add a plugin
- *
- * @param {Function} plugin
- */
-
-Application.prototype.use = function (plugin) {
-  plugin(this)
-  return this
-}
-
-/**
- * Set an option
- *
- * @param {String} name
- */
-
-Application.prototype.option = function (name, val) {
-  this.options[name] = val
-  return this
-}
-
-/**
- * Set value used somewhere in the IO network.
- */
-
-Application.prototype.set = function (name, data) {
-  this.sources[name] = data
-  this.emit('source', name, data)
-  return this
-}
-
-/**
- * Mount a virtual element.
- *
- * @param {VirtualElement} element
- */
-
-Application.prototype.mount = function (element) {
-  this.element = element
-  this.emit('mount', element)
-  return this
-}
-
-/**
- * Remove the world. Unmount everything.
- */
-
-Application.prototype.unmount = function () {
-  if (!this.element) return
-  this.element = null
-  this.emit('unmount')
-  return this
-}
-
-},{"component-emitter":10}],2:[function(_require,module,exports){
-/**
  * All of the events can bind to
  */
 
@@ -128,15 +41,7 @@ module.exports = {
   onWheel: 'wheel'
 }
 
-},{}],3:[function(_require,module,exports){
-/**
- * Create the application.
- */
-
-exports.tree =
-exports.scene =
-exports.deku = _require('./application')
-
+},{}],2:[function(_require,module,exports){
 /**
  * Render scenes to the DOM.
  */
@@ -159,7 +64,7 @@ exports.element =
 exports.createElement =
 exports.dom = _require('./virtual')
 
-},{"./application":1,"./render":4,"./stringify":5,"./virtual":8}],4:[function(_require,module,exports){
+},{"./render":3,"./stringify":4,"./virtual":7}],3:[function(_require,module,exports){
 /**
  * Dependencies.
  */
@@ -170,15 +75,22 @@ var walk = _require('dom-walk')
 var isDom = _require('is-dom')
 var uid = _require('get-uid')
 var keypath = _require('object-path')
-var type = _require('component-type')
 var utils = _require('./utils')
 var svg = _require('./svg')
 var events = _require('./events')
 var defaults = utils.defaults
+var pickMap = utils.pickMap
 var forEach = _require('fast.js/forEach')
 var assign = _require('fast.js/object/assign')
 var reduce = _require('fast.js/reduce')
 var isPromise = _require('is-promise')
+
+
+/**
+ * Root
+ */
+
+var rootId = 'root'
 
 /**
  * These elements won't be pooled
@@ -202,14 +114,11 @@ module.exports = render
  * @return {Object}
  */
 
-function render (app, container, opts) {
+function render (element, container, opts) {
   var frameId
   var isRendering
-  var rootId = 'root'
   var currentElement
   var currentNativeElement
-  var connections = {}
-  var components = {}
   var entities = {}
   var pools = {}
   var handlers = {}
@@ -227,10 +136,9 @@ function render (app, container, opts) {
    * is doing something stupid with the DOM in their components.
    */
 
-  var options = defaults(assign({}, app.options || {}, opts || {}), {
+  var options = defaults(assign({}, opts || {}), {
     pooling: true,
-    batching: true,
-    validateProps: false
+    batching: true
   })
 
   /**
@@ -240,20 +148,11 @@ function render (app, container, opts) {
   addNativeEventListeners()
 
   /**
-   * Watch for changes to the app so that we can update
-   * the DOM as needed.
-   */
-
-  app.on('unmount', onunmount)
-  app.on('mount', onmount)
-  app.on('source', onupdate)
-
-  /**
    * If the app has already mounted an element, we can just
    * render that straight away.
    */
 
-  if (app.element) render()
+  render()
 
   /**
    * Teardown the DOM rendering so that it stops
@@ -263,45 +162,31 @@ function render (app, container, opts) {
   function teardown () {
     removeNativeEventListeners()
     removeNativeElement()
-    app.off('unmount', onunmount)
-    app.off('mount', onmount)
-    app.off('source', onupdate)
   }
 
   /**
    * Swap the current rendered node with a new one that is rendered
-   * from the new virtual element mounted on the app.
+   * from the new virtual element mounted in the dom.
    *
    * @param {VirtualElement} element
    */
 
-  function onmount () {
+  function mount (elem) {
+    element = elem
     invalidate()
   }
 
   /**
-   * If the app unmounts an element, we should clear out the current
+   * If the we unmount an element, we should clear out the current
    * rendered element. This will remove all the entities.
    */
 
-  function onunmount () {
+  function unmount () {
+    element = null
     removeNativeElement()
     currentElement = null
   }
 
-  /**
-   * Update all components that are bound to the source
-   *
-   * @param {String} name
-   * @param {*} data
-   */
-
-  function onupdate (name, data) {
-    if (!connections[name]) return;
-    connections[name].forEach(function(update) {
-      update(data)
-    })
-  }
 
   /**
    * Render and mount a component to the native dom.
@@ -311,8 +196,6 @@ function render (app, container, opts) {
    */
 
   function mountEntity (entity) {
-    register(entity)
-    setSources(entity)
     children[entity.id] = {}
     entities[entity.id] = entity
 
@@ -350,9 +233,6 @@ function render (app, container, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
-    var componentEntities = components[entityId].entities;
-    delete componentEntities[entityId]
-    delete components[entityId]
     delete entities[entityId]
     delete children[entityId]
   }
@@ -431,7 +311,7 @@ function render (app, container, opts) {
     // 2. If a new element has been mounted, we should diff them.
     // 3. We should update check all child components for changes.
     if (!currentNativeElement) {
-      currentElement = app.element
+      currentElement = element
       currentNativeElement = toNative(rootId, '0', currentElement)
       if (container.children.length > 0) {
         console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
@@ -441,9 +321,9 @@ function render (app, container, opts) {
       }
       removeAllChildren(container);
       container.appendChild(currentNativeElement)
-    } else if (currentElement !== app.element) {
-      currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
-      currentElement = app.element
+    } else if (currentElement !== element) {
+      currentNativeElement = patch(rootId, currentElement, element, currentNativeElement)
+      currentElement = element
       updateChildren(rootId)
     } else {
       updateChildren(rootId)
@@ -490,7 +370,6 @@ function render (app, container, opts) {
 
   function updateEntity (entityId) {
     var entity = entities[entityId]
-    setSources(entity)
 
     if (!shouldUpdate(entity)) {
       commit(entity)
@@ -639,7 +518,7 @@ function render (app, container, opts) {
    */
 
   function toNativeComponent (entityId, path, vnode) {
-    var child = new Entity(vnode.component, vnode.props, entityId)
+    var child = new Entity(vnode.component, vnode.props, entities[entityId])
     children[entityId][path] = child.id
     return mountEntity(child)
   }
@@ -1235,7 +1114,6 @@ function render (app, container, opts) {
     }
     entity.pendingState = assign({}, entity.context.state)
     entity.pendingProps = assign({}, entity.context.props)
-    validateProps(entity.context.props, entity.propTypes)
     entity.dirty = false
   }
 
@@ -1254,102 +1132,6 @@ function render (app, container, opts) {
     return bool
   }
 
-  /**
-   * Register an entity.
-   *
-   * This is mostly to pre-preprocess component properties and values chains.
-   *
-   * The end result is for every component that gets mounted,
-   * you create a set of IO nodes in the network from the `value` definitions.
-   *
-   * @param {Component} component
-   */
-
-  function register (entity) {
-    registerEntity(entity)
-    var component = entity.component
-    if (component.registered) return
-
-    // initialize sources once for a component type.
-    registerSources(entity)
-    component.registered = true
-  }
-
-  /**
-   * Add entity to data-structures related to components/entities.
-   *
-   * @param {Entity} entity
-   */
-
-  function registerEntity(entity) {
-    var component = entity.component
-    // all entities for this component type.
-    var entities = component.entities = component.entities || {}
-    // add entity to component list
-    entities[entity.id] = entity
-    // map to component so you can remove later.
-    components[entity.id] = component
-  }
-
-  /**
-   * Initialize sources for a component by type.
-   *
-   * @param {Entity} entity
-   */
-
-  function registerSources(entity) {
-    var component = components[entity.id]
-    // get 'class-level' sources.
-    // if we've already hooked it up, then we're good.
-    var sources = component.sources
-    if (sources) return
-    var entities = component.entities
-
-    // hook up sources.
-    var map = component.sourceToPropertyName = {}
-    component.sources = sources = []
-    var propTypes = component.propTypes
-    for (var name in propTypes) {
-      var data = propTypes[name]
-      if (!data) continue
-      if (!data.source) continue
-      sources.push(data.source)
-      map[data.source] = name
-    }
-
-    // send value updates to all component instances.
-    sources.forEach(function (source) {
-      connections[source] = connections[source] || []
-      connections[source].push(update)
-
-      function update (data) {
-        var prop = map[source]
-        for (var entityId in entities) {
-          var entity = entities[entityId]
-          var changes = {}
-          changes[prop] = data
-          updateEntityProps(entityId, assign(entity.pendingProps, changes))
-        }
-      }
-    })
-  }
-
-  /**
-   * Set the initial source value on the entity
-   *
-   * @param {Entity} entity
-   */
-
-  function setSources (entity) {
-    var component = entity.component
-    var map = component.sourceToPropertyName
-    var sources = component.sources
-    sources.forEach(function (source) {
-      var name = map[source]
-      if (entity.pendingProps[name] != null) return
-      entity.pendingProps[name] = app.sources[source] // get latest value plugged into global store
-    })
-  }
 
   /**
    * Add all of the DOM event listeners
@@ -1441,78 +1223,6 @@ function render (app, container, opts) {
   }
 
   /**
-   * Validate the current properties. These simple validations
-   * make it easier to ensure the correct props are passed in.
-   *
-   * Available rules include:
-   *
-   * type: {String} string | array | object | boolean | number | date | function
-   *       {Array} An array of types mentioned above
-   *       {Function} fn(value) should return `true` to pass in
-   * expects: [] An array of values this prop could equal
-   * optional: Boolean
-   */
-
-  function validateProps (props, rules, optPrefix) {
-    var prefix = optPrefix || ''
-    if (!options.validateProps) return
-    forEach(rules, function (options, name) {
-      if (!options) {
-        throw new Error('deku: propTypes should have an options object for each type')
-      }
-
-      var propName = prefix ? prefix + '.' + name : name
-      var value = keypath.get(props, name)
-      var valueType = type(value)
-      var typeFormat = type(options.type)
-      var optional = (options.optional === true)
-
-      // If it's optional and doesn't exist
-      if (optional && value == null) {
-        return
-      }
-
-      // If it's required and doesn't exist
-      if (!optional && value == null) {
-        throw new TypeError('Missing property: ' + propName)
-      }
-
-      // It's a nested type
-      if (typeFormat === 'object') {
-        validateProps(value, options.type, propName)
-        return
-      }
-
-      // If it's the incorrect type
-      if (typeFormat === 'string' && valueType !== options.type) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // If type is validate function
-      if (typeFormat === 'function' && !options.type(value)) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // if type is array of possible types
-      if (typeFormat === 'array' && options.type.indexOf(valueType) < 0) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // If it's an invalid value
-      if (options.expects && options.expects.indexOf(value) < 0) {
-        throw new TypeError('Invalid property value: ' + propName)
-      }
-    })
-
-    // Now check for props that haven't been defined
-    forEach(props, function (value, key) {
-      // props.children is always passed in, even if it's not defined
-      if (key === 'children') return
-      if (!rules[key]) throw new Error('Unexpected property: ' + key)
-    })
-  }
-
-  /**
    * Used for debugging to inspect the current state without
    * us needing to explicitly manage storing/updating references.
    *
@@ -1524,10 +1234,8 @@ function render (app, container, opts) {
       entities: entities,
       pools: pools,
       handlers: handlers,
-      connections: connections,
       currentElement: currentElement,
       options: options,
-      app: app,
       container: container,
       children: children
     }
@@ -1539,6 +1247,8 @@ function render (app, container, opts) {
    */
 
   return {
+    mount: mount,
+    unmount: unmount,
     remove: teardown,
     inspect: inspect
   }
@@ -1554,14 +1264,21 @@ function render (app, container, opts) {
  * @param {Object} props
  */
 
-function Entity (component, props, ownerId) {
+function Entity (component, props, owner) {
+  owner = owner || {id: rootId}
+
   this.id = uid()
-  this.ownerId = ownerId
+  this.ownerId = owner.id
   this.component = component
-  this.propTypes = component.propTypes || {}
+  this.staticContext = owner.staticContext || {}
+  if (component.statics) this.staticContext = assign({}, this.staticContext, this.component.statics)
   this.context = {}
   this.context.id = this.id;
-  this.context.props = defaults(props || {}, component.defaultProps || {})
+  this.context.props = defaults(
+    props || {},
+    component.defaultProps || {},
+    pickMap(this.component.dependencies || {}, this.staticContext)
+  )
   this.context.state = this.component.initialState ? this.component.initialState(this.context.props) : {}
   this.pendingProps = assign({}, this.context.props)
   this.pendingState = assign({}, this.context.state)
@@ -1595,20 +1312,18 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./events":2,"./svg":6,"./utils":7,"component-raf":11,"component-type":12,"dom-pool":13,"dom-walk":14,"fast.js/forEach":18,"fast.js/object/assign":21,"fast.js/reduce":24,"get-uid":25,"is-dom":26,"is-promise":27,"object-path":28}],5:[function(_require,module,exports){
+},{"./events":1,"./svg":5,"./utils":6,"component-raf":8,"dom-pool":10,"dom-walk":11,"fast.js/forEach":14,"fast.js/object/assign":17,"fast.js/reduce":20,"get-uid":21,"is-dom":22,"is-promise":23,"object-path":24}],4:[function(_require,module,exports){
 var utils = _require('./utils')
 var events = _require('./events')
 var defaults = utils.defaults
+var pickMap = utils.pickMap
+var assign = _require('fast.js/object/assign')
 
 /**
  * Expose `stringify`.
  */
 
-module.exports = function (app) {
-  if (!app.element) {
-    throw new Error('No element mounted')
-  }
-
+module.exports = function (element) {
   /**
    * Render to string.
    *
@@ -1617,22 +1332,19 @@ module.exports = function (app) {
    * @return {String}
    */
 
-  function stringify (component, optProps) {
+  function stringify (component, optProps, context) {
+    if (component.statics) context = assign({}, context, component.statics)
     var propTypes = component.propTypes || {}
-    var props = defaults(optProps || {}, component.defaultProps || {})
+    var props = defaults(
+      optProps || {},
+      component.defaultProps || {},
+      pickMap(component.dependencies || {}, context)
+    )
     var state = component.initialState ? component.initialState(props) : {}
-
-    for (var name in propTypes) {
-      var options = propTypes[name]
-      if (options.source) {
-        props[name] = app.sources[options.source]
-      }
-    }
-
     if (component.beforeMount) component.beforeMount({ props: props, state: state })
     if (component.beforeRender) component.beforeRender({ props: props, state: state })
     var node = component.render({ props: props, state: state })
-    return stringifyNode(node, '0')
+    return stringifyNode(node, '0', context)
   }
 
   /**
@@ -1644,7 +1356,7 @@ module.exports = function (app) {
    * @return {String}
    */
 
-  function stringifyNode (node, path) {
+  function stringifyNode (node, path, context) {
     switch (node.type) {
       case 'text': return node.data
       case 'element':
@@ -1658,19 +1370,19 @@ module.exports = function (app) {
           str += innerHTML
         } else {
           for (var i = 0, n = children.length; i < n; i++) {
-            str += stringifyNode(children[i], path + '.' + i)
+            str += stringifyNode(children[i], path + '.' + i, context)
           }
         }
 
         str += '</' + tagName + '>'
         return str
-      case 'component': return stringify(node.component, node.props)
+      case 'component': return stringify(node.component, node.props, context)
     }
 
     throw new Error('Invalid type')
   }
 
-  return stringifyNode(app.element, '0')
+  return stringifyNode(element, '0', {})
 }
 
 /**
@@ -1704,9 +1416,7 @@ function attr (key, val) {
   return ' ' + key + '="' + val + '"'
 }
 
-},{"./events":2,"./utils":7}],6:[function(_require,module,exports){
-var indexOf = _require('fast.js/array/indexOf')
-
+},{"./events":1,"./utils":6,"fast.js/object/assign":17}],5:[function(_require,module,exports){
 /**
  * This file lists the supported SVG elements used by the
  * renderer. We may add better SVG support in the future
@@ -1721,75 +1431,75 @@ exports.namespace = 'http://www.w3.org/2000/svg'
  * @type {Array}
  */
 
-exports.elements = [
-  'circle',
-  'defs',
-  'ellipse',
-  'g',
-  'line',
-  'linearGradient',
-  'mask',
-  'path',
-  'pattern',
-  'polygon',
-  'polyline',
-  'radialGradient',
-  'rect',
-  'stop',
-  'svg',
-  'text',
-  'tspan'
-]
+exports.elements = {
+  'circle': true,
+  'defs': true,
+  'ellipse': true,
+  'g': true,
+  'line': true,
+  'linearGradient': true,
+  'mask': true,
+  'path': true,
+  'pattern': true,
+  'polygon': true,
+  'polyline': true,
+  'radialGradient': true,
+  'rect': true,
+  'stop': true,
+  'svg': true,
+  'text': true,
+  'tspan': true
+}
 
 /**
  * Supported SVG attributes
  */
 
-exports.attributes = [
-  'cx',
-  'cy',
-  'd',
-  'dx',
-  'dy',
-  'fill',
-  'fillOpacity',
-  'fontFamily',
-  'fontSize',
-  'fx',
-  'fy',
-  'gradientTransform',
-  'gradientUnits',
-  'markerEnd',
-  'markerMid',
-  'markerStart',
-  'offset',
-  'opacity',
-  'patternContentUnits',
-  'patternUnits',
-  'points',
-  'preserveAspectRatio',
-  'r',
-  'rx',
-  'ry',
-  'spreadMethod',
-  'stopColor',
-  'stopOpacity',
-  'stroke',
-  'strokeDasharray',
-  'strokeLinecap',
-  'strokeOpacity',
-  'strokeWidth',
-  'textAnchor',
-  'transform',
-  'version',
-  'viewBox',
-  'x1',
-  'x2',
-  'x',
-  'y1',
-  'y2',
-  'y'
-]
+exports.attributes = {
+  'cx': true,
+  'cy': true,
+  'd': true,
+  'dx': true,
+  'dy': true,
+  'fill': true,
+  'fillOpacity': true,
+  'fontFamily': true,
+  'fontSize': true,
+  'fx': true,
+  'fy': true,
+  'gradientTransform': true,
+  'gradientUnits': true,
+  'markerEnd': true,
+  'markerMid': true,
+  'markerStart': true,
+  'offset': true,
+  'opacity': true,
+  'patternContentUnits': true,
+  'patternUnits': true,
+  'points': true,
+  'preserveAspectRatio': true,
+  'r': true,
+  'rx': true,
+  'ry': true,
+  'spreadMethod': true,
+  'stopColor': true,
+  'stopOpacity': true,
+  'stroke': true,
+  'strokeDasharray': true,
+  'strokeLinecap': true,
+  'strokeOpacity': true,
+  'strokeWidth': true,
+  'textAnchor': true,
+  'transform': true,
+  'version': true,
+  'viewBox': true,
+  'x1': true,
+  'x2': true,
+  'x': true,
+  'y1': true,
+  'y2': true,
+  'y': true,
+}
 
 /**
  * Is element's namespace SVG?
@@ -1798,7 +1508,7 @@ exports.attributes = [
  */
 
 exports.isElement = function (name) {
-  return indexOf(exports.elements, name) !== -1
+  return name in exports.elements
 }
 
 /**
@@ -1808,14 +1518,20 @@ exports.isElement = function (name) {
  */
 
 exports.isAttribute = function (attr) {
-  return indexOf(exports.attributes, attr) !== -1
+  return attr in exports.attributes
 }
 
-
-},{"fast.js/array/indexOf":16}],7:[function(_require,module,exports){
+},{}],6:[function(_require,module,exports){
 /**
- * The npm 'defaults' module but without clone because
- * it was requiring the 'Buffer' module which is huge.
+ * Dependencies
+ */
+
+var slice = _require('sliced')
+var assign = _require('fast.js/object/assign')
+
+/**
+ * The npm 'defaults' module but without cloning and with
+ * support for multiple sources of `defaults`.
  *
  * @param {Object} options
  * @param {Object} defaults
@@ -1824,6 +1540,11 @@ exports.isAttribute = function (attr) {
  */
 
 exports.defaults = function(options, defaults) {
+  if (arguments.length > 2) {
+    var sources = slice(arguments, 1).reverse()
+    defaults = assign.apply(null, [{}].concat(sources))
+  }
+
   Object.keys(defaults).forEach(function(key) {
     if (typeof options[key] === 'undefined') {
       options[key] = defaults[key]
@@ -1832,14 +1553,30 @@ exports.defaults = function(options, defaults) {
   return options
 }
 
-},{}],8:[function(_require,module,exports){
+/**
+ * Create a new object composed of picked `src` properties,
+ * mapped to new propertie names using `map`.
+ *
+ * @param  {Object} map Property map
+ * @param  {Object} src Source object
+ * @return {Object}
+ */
+
+exports.pickMap = function(map, src) {
+  var dest = {}
+  for (var key in map) {
+    dest[key] = src[map[key]]
+  }
+  return dest
+}
+
+},{"fast.js/object/assign":17,"sliced":25}],7:[function(_require,module,exports){
 /**
  * Module dependencies.
  */
 
 var type = _require('component-type')
 var slice = _require('sliced')
-var flatten = _require('array-flatten')
 
 /**
  * This function lets us create virtual nodes using a simple
@@ -1898,7 +1635,7 @@ function virtual (type, props, children) {
     children = [ children ]
   }
 
-  children = flatten(children, 1).reduce(normalize, [])
+  children = children.reduce(normalize, [])
 
   // pull the key out from the data.
   var key = 'key' in props ? String(props.key) : null
@@ -1931,6 +1668,9 @@ function virtual (type, props, children) {
 function normalize (acc, node) {
   if (node == null) {
     return acc
+  }
+  if (Array.isArray(node)) {
+    throw new TypeError('deku: Child nodes can\'t be an array. https://goo.gl/m5bIS2')
   }
   if (typeof node === 'string' || typeof node === 'number') {
     var newNode = new TextNode(String(node))
@@ -2007,12 +1747,14 @@ function TextNode (text) {
 function parseAttributes (attributes) {
   // style: { 'text-align': 'left' }
   if (attributes.style) {
+    console.warn('deku: Using an object for the style attribute is deprecated. You should use another module to transform the object into a string.')
     attributes.style = parseStyle(attributes.style)
   }
 
   // class: { foo: true, bar: false, baz: true }
   // class: ['foo', 'bar', 'baz']
   if (attributes.class) {
+    console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
     attributes.class = parseClass(attributes.class)
   }
 
@@ -2081,229 +1823,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":9,"component-type":12,"sliced":29}],9:[function(_require,module,exports){
-/**
- * Recursive flatten function with depth.
- *
- * @param  {Array}  array
- * @param  {Array}  result
- * @param  {Number} depth
- * @return {Array}
- */
-function flattenDepth (array, result, depth) {
-  for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (depth > 0 && Array.isArray(value)) {
-      flattenDepth(value, result, depth - 1)
-    } else {
-      result.push(value)
-    }
-  }
-
-  return result
-}
-
-/**
- * Recursive flatten function. Omitting depth is slightly faster.
- *
- * @param  {Array} array
- * @param  {Array} result
- * @return {Array}
- */
-function flattenForever (array, result) {
-  for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (Array.isArray(value)) {
-      flattenForever(value, result)
-    } else {
-      result.push(value)
-    }
-  }
-
-  return result
-}
-
-/**
- * Flatten an array, with the ability to define a depth.
- *
- * @param  {Array}  array
- * @param  {Number} depth
- * @return {Array}
- */
-module.exports = function (array, depth) {
-  if (depth == null) {
-    return flattenForever(array, [])
-  }
-
-  return flattenDepth(array, [], depth)
-}
-
-},{}],10:[function(_require,module,exports){
-
-/**
- * Expose `Emitter`.
- */
-
-module.exports = Emitter;
-
-/**
- * Initialize a new `Emitter`.
- *
- * @api public
- */
-
-function Emitter(obj) {
-  if (obj) return mixin(obj);
-};
-
-/**
- * Mixin the emitter properties.
- *
- * @param {Object} obj
- * @return {Object}
- * @api private
- */
-
-function mixin(obj) {
-  for (var key in Emitter.prototype) {
-    obj[key] = Emitter.prototype[key];
-  }
-  return obj;
-}
-
-/**
- * Listen on the given `event` with `fn`.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.on =
-Emitter.prototype.addEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-    .push(fn);
-  return this;
-};
-
-/**
- * Adds an `event` listener that will be invoked a single
- * time then automatically removed.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.once = function(event, fn){
-  function on() {
-    this.off(event, on);
-    fn.apply(this, arguments);
-  }
-
-  on.fn = fn;
-  this.on(event, on);
-  return this;
-};
-
-/**
- * Remove the given callback for `event` or all
- * registered callbacks.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.off =
-Emitter.prototype.removeListener =
-Emitter.prototype.removeAllListeners =
-Emitter.prototype.removeEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-
-  // all
-  if (0 == arguments.length) {
-    this._callbacks = {};
-    return this;
-  }
-
-  // specific event
-  var callbacks = this._callbacks['$' + event];
-  if (!callbacks) return this;
-
-  // remove all handlers
-  if (1 == arguments.length) {
-    delete this._callbacks['$' + event];
-    return this;
-  }
-
-  // remove specific handler
-  var cb;
-  for (var i = 0; i < callbacks.length; i++) {
-    cb = callbacks[i];
-    if (cb === fn || cb.fn === fn) {
-      callbacks.splice(i, 1);
-      break;
-    }
-  }
-  return this;
-};
-
-/**
- * Emit `event` with the given args.
- *
- * @param {String} event
- * @param {Mixed} ...
- * @return {Emitter}
- */
-
-Emitter.prototype.emit = function(event){
-  this._callbacks = this._callbacks || {};
-  var args = [].slice.call(arguments, 1)
-    , callbacks = this._callbacks['$' + event];
-
-  if (callbacks) {
-    callbacks = callbacks.slice(0);
-    for (var i = 0, len = callbacks.length; i < len; ++i) {
-      callbacks[i].apply(this, args);
-    }
-  }
-
-  return this;
-};
-
-/**
- * Return array of callbacks for `event`.
- *
- * @param {String} event
- * @return {Array}
- * @api public
- */
-
-Emitter.prototype.listeners = function(event){
-  this._callbacks = this._callbacks || {};
-  return this._callbacks['$' + event] || [];
-};
-
-/**
- * Check if this emitter has `event` handlers.
- *
- * @param {String} event
- * @return {Boolean}
- * @api public
- */
-
-Emitter.prototype.hasListeners = function(event){
-  return !! this.listeners(event).length;
-};
-
-},{}],11:[function(_require,module,exports){
+},{"component-type":9,"sliced":25}],8:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2339,7 +1859,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],12:[function(_require,module,exports){
+},{}],9:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -2375,7 +1895,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],13:[function(_require,module,exports){
+},{}],10:[function(_require,module,exports){
 function Pool(params) {
     if (typeof params !== 'object') {
         throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
@@ -2429,7 +1949,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Pool;
 }
 
-},{}],14:[function(_require,module,exports){
+},{}],11:[function(_require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2455,7 +1975,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],15:[function(_require,module,exports){
+},{}],12:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2478,42 +1998,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":19}],16:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Index Of
- *
- * A faster `Array.prototype.indexOf()` implementation.
- *
- * @param  {Array}  subject   The array (or array-like) to search within.
- * @param  {mixed}  target    The target item to search for.
- * @param  {Number} fromIndex The position to start searching from, if known.
- * @return {Number}           The position of the target in the subject, or -1 if it does not exist.
- */
-module.exports = function fastIndexOf (subject, target, fromIndex) {
-  var length = subject.length,
-      i = 0;
-
-  if (typeof fromIndex === 'number') {
-    i = fromIndex;
-    if (i < 0) {
-      i += length;
-      if (i < 0) {
-        i = 0;
-      }
-    }
-  }
-
-  for (; i < length; i++) {
-    if (subject[i] === target) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-},{}],17:[function(_require,module,exports){
+},{"../function/bindInternal3":15}],13:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2550,7 +2035,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":20}],18:[function(_require,module,exports){
+},{"../function/bindInternal4":16}],14:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2573,7 +2058,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":15,"./object/forEach":22}],19:[function(_require,module,exports){
+},{"./array/forEach":12,"./object/forEach":18}],15:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2586,7 +2071,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],20:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2599,7 +2084,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],21:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2635,7 +2120,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],22:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2660,7 +2145,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":19}],23:[function(_require,module,exports){
+},{"../function/bindInternal3":15}],19:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2699,7 +2184,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":20}],24:[function(_require,module,exports){
+},{"../function/bindInternal4":16}],20:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -2724,14 +2209,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":17,"./object/reduce":23}],25:[function(_require,module,exports){
+},{"./array/reduce":13,"./object/reduce":19}],21:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],26:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2748,14 +2233,14 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],27:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 module.exports = isPromise;
 
 function isPromise(obj) {
   return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
 
-},{}],28:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3026,10 +2511,10 @@ function isPromise(obj) {
   return objectPath;
 });
 
-},{}],29:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":30}],30:[function(_require,module,exports){
+},{"./lib/sliced":26}],26:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
@@ -3064,5 +2549,5 @@ module.exports = function (args, slice, sliceEnd) {
 }
 
 
-},{}]},{},[3])(3)
+},{}]},{},[2])(2)
 });

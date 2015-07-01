@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku} from '../../'
+import {dom} from '../../'
 import {mount} from '../helpers'
 import trigger from 'trigger-event'
 
@@ -14,8 +14,7 @@ describe('key diffing', function () {
   }
 
   it('should move components with keys', function(done){
-    var app = deku()
-    app.mount(
+    var app = (
       <ul>
         <Item key="0">One</Item>
         <Item key="1">Two</Item>
@@ -25,7 +24,7 @@ describe('key diffing', function () {
       var lis = el.querySelectorAll('li')
       var one = lis[0]
       var two = lis[1]
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="1">Two</Item>
           <Item key="0">One</Item>
@@ -39,8 +38,7 @@ describe('key diffing', function () {
   })
 
   it('should remove components with keys', function(done){
-    var app = deku()
-    app.mount(
+    var app = (
       <ul>
         <Item key="0">One</Item>
         <Item key="1">Two</Item>
@@ -49,7 +47,7 @@ describe('key diffing', function () {
     mount(app, function(el, renderer){
       var lis = el.querySelectorAll('li')
       var two = lis[1]
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="1">Two</Item>
         </ul>
@@ -61,8 +59,7 @@ describe('key diffing', function () {
   })
 
   it('should update components with keys', function(done){
-    var app = deku()
-    app.mount(
+    var app = (
       <ul>
         <Item key="0">One</Item>
         <Item key="1">Two</Item>
@@ -74,7 +71,7 @@ describe('key diffing', function () {
       var one = lis[0]
       var two = lis[1]
       var three = lis[2]
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="0">One</Item>
           <Item key="2">Four</Item>
@@ -89,7 +86,7 @@ describe('key diffing', function () {
   })
 
   it('should add components with keys', function(done){
-    var app = deku(
+    var app = (
       <ul>
         <Item key="0">Zero</Item>
         <Item key="1">One</Item>
@@ -98,7 +95,7 @@ describe('key diffing', function () {
     )
     mount(app, function(el, renderer){
       assert.equal(el.innerHTML, `<ul><li>Zero</li><li>One</li><li>Two</li></ul>`)
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="5">Five</Item>
           <Item key="4">Four</Item>
@@ -110,7 +107,7 @@ describe('key diffing', function () {
       )
       assert.equal(length(renderer.inspect().children.root), 6)
       assert.equal(el.innerHTML, `<ul><li>Five</li><li>Four</li><li>Three</li><li>Zero</li><li>One</li><li>Two</li></ul>`)
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="6">Six</Item>
           <Item key="7">Seven</Item>
@@ -131,7 +128,7 @@ describe('key diffing', function () {
     function click() {
       done()
     }
-    var app = deku(
+    var app = (
       <ul>
         <Item key="1">
           <span>I do nothing</span>
@@ -143,7 +140,7 @@ describe('key diffing', function () {
     )
     mount(app, function(el, renderer){
       document.body.appendChild(el)
-      app.mount(
+      renderer.mount(
         <ul>
           <Item key="0">
             <span onClick={click}>Click Me!</span>

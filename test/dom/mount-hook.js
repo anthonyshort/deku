@@ -1,5 +1,5 @@
 import {mount,div} from '../helpers'
-import {component,render,deku,dom} from '../../'
+import {component,render,dom} from '../../'
 import assert from 'assert'
 
 it('should fire mount events on sub-components', function(){
@@ -21,8 +21,7 @@ it('should fire mount events on sub-components', function(){
       return dom(ComponentA, { text: 'foo', name: props.name });
     }
   };
-  var app = deku()
-  app.mount(dom(ComponentB, { name: 'Bob' }))
+  var app = dom(ComponentB, { name: 'Bob' })
   mount(app, function(){
     assert.equal(i, 4);
   })
@@ -62,11 +61,11 @@ it('should fire unmount events on sub-components from the bottom up', function()
     }
   }
 
-  var app = deku()
-  app.mount(dom(Parent, { show: true }));
 
-  mount(app, function(){
-    app.mount(dom(Parent, { show: false }));
+  var app = dom(Parent, { show: true })
+
+  mount(app, function(el, renderer){
+    renderer.mount(dom(Parent, { show: false }));
     assert.equal(arr.length, 2)
     assert.equal(arr[1], 'A')
     assert.equal(arr[0], 'B')
@@ -101,12 +100,12 @@ it('should unmount sub-components that move themselves in the DOM', function(){
     }
   }
 
-  var app = deku()
-  app.mount(dom(Parent, { show: true }));
-  mount(app, function(el){
+
+  var app = dom(Parent, { show: true })
+  mount(app, function(el, renderer){
     var overlay = document.querySelector('.Overlay')
     assert(overlay.parentElement === document.body, 'It should move element to the root')
-    app.mount(dom(Parent, { show: false }));
+    renderer.mount(dom(Parent, { show: false }));
     assert.equal(arr[0], 'A');
   })
 });
@@ -131,10 +130,10 @@ it('should fire mount events on sub-components created later', function(){
       }
     }
   };
-  var app = deku()
-  app.mount(dom(ComponentB, { showComponent: false }));
-  mount(app, function(){
-    app.mount(dom(ComponentB, { showComponent: true }));
+
+  var app = dom(ComponentB, { showComponent: false })
+  mount(app, function(el, renderer){
+    renderer.mount(dom(ComponentB, { showComponent: true }));
     assert.equal(calls, 2);
   })
 });
@@ -161,10 +160,9 @@ it('should fire unmount events on sub-components created later', function(){
     }
   };
 
-  var app = deku()
-  app.mount(dom(ComponentB, { showComponent: true }));
-  mount(app, function(){
-    app.mount(dom(ComponentB, { showComponent: false }));
+  var app = dom(ComponentB, { showComponent: true })
+  mount(app, function(el, renderer){
+    renderer.mount(dom(ComponentB, { showComponent: false }));
     assert.equal(calls, 1);
   })
 });

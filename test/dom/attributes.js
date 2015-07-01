@@ -3,7 +3,7 @@
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {component,dom} from '../../'
 import {mount,div} from '../helpers'
 
 var AttrComponent = {
@@ -14,37 +14,31 @@ var AttrComponent = {
 }
 
 it('should add/update/remove attributes', function(){
-  var app = deku()
-  app.mount(<AttrComponent />);
-  mount(app, function(el){
+  mount(<AttrComponent />, function(el, renderer){
     assert.equal(el.innerHTML, '<span></span>')
-    app.mount(<AttrComponent name="Bob" />)
+    renderer.mount(<AttrComponent name="Bob" />)
     assert.equal(el.innerHTML, '<span name="Bob"></span>')
-    app.mount(<AttrComponent name="Tom" />)
+    renderer.mount(<AttrComponent name="Tom" />)
     assert.equal(el.innerHTML, '<span name="Tom"></span>')
-    app.mount(<AttrComponent name={null} />)
+    renderer.mount(<AttrComponent name={null} />)
     assert.equal(el.innerHTML, '<span></span>')
-    app.mount(<AttrComponent name={undefined} />)
+    renderer.mount(<AttrComponent name={undefined} />)
     assert.equal(el.innerHTML, '<span></span>')
   })
 })
 
 it('should not touch the DOM if attributes have not changed', function(){
-  var app = deku()
-  app.mount(<AttrComponent name='Bob' />);
-  mount(app, function(el){
+  mount(<AttrComponent name='Bob' />, function(el, renderer){
     var target = el.children[0];
     target.setAttribute = function(){
       throw new Error('should not set attributes');
     };
-    app.mount(<AttrComponent name='Bob' />);
+    renderer.mount(<AttrComponent name='Bob' />);
   })
 })
 
 it('should not touch the DOM just because attributes are falsy', function () {
-  var app = deku()
-  app.mount(<AttrComponent name="" />);
-  mount(app, function(root){
+  mount(<AttrComponent name="" />, function(root, renderer){
     var el = root.children[0];
     el.setAttribute = function () {
       throw new Error('should not set attributes');
@@ -52,17 +46,14 @@ it('should not touch the DOM just because attributes are falsy', function () {
     el.removeAttribute = function () {
       throw new Error('should not remove attributes');
     };
-    app.mount(<AttrComponent name="" />);
+    renderer.mount(<AttrComponent name="" />);
   })
 })
 
 it('should update the value of input fields', function () {
-  var app = deku()
-  app.mount(<input value="Bob" />);
-
-  mount(app, function(el){
+  mount(<input value="Bob" />, function(el, renderer){
     assert.equal(el.querySelector('input').value, 'Bob');
-    app.mount(<input value="Tom" />);
+    renderer.mount(<input value="Tom" />);
     assert.equal(el.querySelector('input').value, 'Tom');
   })
 })
@@ -75,21 +66,15 @@ it('should render and update innerHTML', function () {
     }
   }
 
-  var app = deku()
-  app.mount(<Test content="Hello <strong>deku</strong>" />)
-
-  mount(app, function(el){
+  mount(<Test content="Hello <strong>deku</strong>" />, function(el, renderer){
     assert.equal(el.innerHTML,'<div>Hello <strong>deku</strong></div>')
-    app.mount(<Test content="Hello <strong>Pluto</strong>" />)
+    renderer.mount(<Test content="Hello <strong>Pluto</strong>" />)
     assert.equal(el.innerHTML,'<div>Hello <strong>Pluto</strong></div>')
   })
 })
 
 it('should render and update the checked state of a checkbox', function () {
-  var app = deku();
-  app.mount(<input checked={true} />);
-
-  mount(app, function (el) {
+  mount(<input checked={true} />, function (el, renderer) {
     var checkbox = el.querySelector('input');
 
     // initially should be checked
@@ -97,17 +82,14 @@ it('should render and update the checked state of a checkbox', function () {
     assert.equal(checkbox.getAttribute('checked'), null);
 
     // should now be unchecked
-    app.mount(<input checked={false} />);
+    renderer.mount(<input checked={false} />);
     assert(!checkbox.checked);
     assert(!checkbox.hasAttribute('checked'));
   })
 })
 
 it('should render and update a disabled input', function () {
-  var app = deku();
-  app.mount(<input disabled={true} />);
-
-  mount(app, function (el) {
+  mount(<input disabled={true} />, function (el, renderer) {
     var checkbox = el.querySelector('input');
 
     // initially should be disabled
@@ -115,17 +97,14 @@ it('should render and update a disabled input', function () {
     assert.equal(checkbox.hasAttribute('disabled'), true);
 
     // should now be enabled
-    app.mount(<input disabled={false} />);
+    renderer.mount(<input disabled={false} />);
     assert.equal(checkbox.disabled, false);
     assert.equal(checkbox.hasAttribute('disabled'), false);
   })
 })
 
 it('should render a disabled input as a boolean', function () {
-  var app = deku();
-  app.mount(<input disabled />);
-
-  mount(app, function (el) {
+  mount(<input disabled />, function (el, renderer) {
     var checkbox = el.querySelector('input');
 
     // initially should be disabled
@@ -133,28 +112,27 @@ it('should render a disabled input as a boolean', function () {
     assert.equal(checkbox.hasAttribute('disabled'), true);
 
     // should now be enabled
-    app.mount(<input />);
+    renderer.mount(<input />);
     assert.equal(checkbox.disabled, false);
     assert.equal(checkbox.hasAttribute('disabled'), false);
   })
 })
 
 it('should render and update a selected option', function () {
-  var app = deku();
-  app.mount(
+  var app = (
     <select>
       <option selected>one</option>
       <option>two</option>
     </select>
   );
 
-  mount(app, function (el) {
+  mount(app, function (el, renderer) {
     var options = el.querySelectorAll('option');
     selected(options[0])
     unselected(options[1]);
 
     // should now be enabled
-    app.mount(
+    renderer.mount(
       <select>
         <option>one</option>
         <option selected>two</option>

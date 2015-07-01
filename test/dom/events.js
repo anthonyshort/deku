@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku,render} from '../../'
+import {dom,render} from '../../'
 import {mount,Span,div} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
@@ -35,10 +35,9 @@ it('should add click event', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<Page x={20} />)
+  var app = (<Page x={20} />)
 
-  mount(app, function(el, renderer){
+  mount(app, function(el){
     document.body.appendChild(el);
     assert.equal(el.innerHTML, '<span>Hello World</span>')
     trigger(el.querySelector('span'), 'click')
@@ -73,16 +72,15 @@ it('should remove click event', function(done){
     }
   }
 
-  var app = deku()
   var el = div();
-  app.mount(<Page click={true} />)
+  var app = (<Page click={true} />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     document.body.appendChild(el);
     rootEl = el
     trigger(el.querySelector('span'), 'click')
     assert.equal(count, 1)
-    app.mount(<Page click={false} />)
+    renderer.mount(<Page click={false} />)
     trigger(el.querySelector('span'), 'click')
     assert.equal(count, 1)
     document.body.removeChild(el);
@@ -103,15 +101,14 @@ it('should update click event', function(){
     }
   }
 
-  var app = deku()
   var el = div();
-  app.mount(<Page clicker={onclicka} />)
+  var app = (<Page clicker={onclicka} />)
 
   mount(app, function(el, renderer){
     document.body.appendChild(el);
     trigger(el.querySelector('span'), 'click');
     assert.equal(count, 1)
-    app.mount(<Page clicker={onclickb} />)
+    renderer.mount(<Page clicker={onclickb} />)
     trigger(el.querySelector('span'), 'click')
     assert.equal(count, 0)
     document.body.removeChild(el);
@@ -127,8 +124,7 @@ it('should update click event', function(){
 })
 
 it('should delegate events', function () {
-  var app = deku()
-  app.mount(<Delegate />)
+  var app = (<Delegate />)
 
   mount(app, function(el){
     document.body.appendChild(el);
@@ -158,8 +154,7 @@ it('should delegate events on the root', function () {
     }
   }
 
-  var app = deku()
-  app.mount(<DelegateRoot />);
+  var app = (<DelegateRoot />);
 
   mount(app, function(el){
     document.body.appendChild(el);
@@ -184,8 +179,7 @@ it('should set a delegateTarget', function (done) {
     }
   }
 
-  var app = deku()
-  app.mount(<DelegateRoot />);
+  var app = (<DelegateRoot />);
 
   mount(app, function(el){
     document.body.appendChild(el);
@@ -238,17 +232,16 @@ it('should update events when nested children are removed', function () {
     }
   }
 
-  var app = deku()
-  app.mount(<List items={items} />)
+  var app = (<List items={items} />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     document.body.appendChild(el);
     trigger(el.querySelector('a'), 'click')
-    app.mount(<List items={items} />)
+    renderer.mount(<List items={items} />)
     trigger(el.querySelector('a'), 'click')
-    app.mount(<List items={items} />)
+    renderer.mount(<List items={items} />)
     trigger(el.querySelector('a'), 'click')
-    app.mount(<List items={items} />)
+    renderer.mount(<List items={items} />)
     assert.equal(el.innerHTML, '<ul></ul>')
     document.body.removeChild(el);
   })
@@ -272,14 +265,14 @@ it('should remove handlers when an element is removed', function (done) {
       }
     }
   }
-  var app = deku(
+  var app = (
     <div>
       <Toggle showChildren />
       <div onClick={fn}></div>
     </div>
   )
   mount(app, function(el, renderer){
-    app.mount(
+    renderer.mount(
       <div>
         <Toggle />
       </div>
@@ -315,8 +308,8 @@ it.skip('should keep focus on elements', function () {
   };
 
 
-  var app = deku(dom(App));
-  mount(app, function(el, renderer){
+  var app = dom(App);
+  mount(app, function(el){
     document.body.appendChild(el)
     var inputs = el.querySelectorAll('input')
     var one = inputs[0]

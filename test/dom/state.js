@@ -2,7 +2,7 @@
 
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,deku,render} from '../../'
+import {component,dom,render} from '../../'
 import {mount,Span,div} from '../helpers'
 
 var StateChangeOnMount = {
@@ -29,8 +29,7 @@ var Composed = {
 }
 
 it('should update components when state changes', function(done){
-  var app = deku();
-  app.mount(<StateChangeOnMount />);
+  var app = (<StateChangeOnMount />);
 
   var container = div()
   var rendered = render(app, container)
@@ -45,8 +44,7 @@ it('should update components when state changes', function(done){
 })
 
 it('should update composed components when state changes', function(done){
-  var app = deku();
-  app.mount(<Composed />)
+  var app = (<Composed />)
 
   var container = div()
   var rendered = render(app, container)

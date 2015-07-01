@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {component,dom} from '../../'
 import {mount,div} from '../helpers'
 
 var Toggle = {
@@ -18,23 +18,21 @@ var Toggle = {
 }
 
 it('should replace elements with text elements', function(){
-  var app = deku()
-  app.mount(<Toggle showElement />)
+  var app = (<Toggle showElement />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<div><span></span></div>')
-    app.mount(<Toggle showText />)
+    renderer.mount(<Toggle showText />)
     assert.equal(el.innerHTML, '<div>bar</div>')
   })
 })
 
 it('should replace text nodes with elements', function(){
-  var app = deku()
-  app.mount(<Toggle showText />)
+  var app = (<Toggle showText />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<div>bar</div>')
-    app.mount(<Toggle showElement />)
+    renderer.mount(<Toggle showElement />)
     assert.equal(el.innerHTML, '<div><span></span></div>')
   })
 });

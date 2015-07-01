@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import raf from 'component-raf'
-import {component,deku,render,dom} from '../../';
+import {component,render,dom} from '../../';
 import {mount,div} from '../helpers';
 import assert from 'assert';
 
@@ -42,11 +42,10 @@ it('should fire beforeUpdate', function(done){
     }
   }
 
-  var app = deku();
-  app.mount(<Test count={1} />)
+  var app = (<Test count={1} />)
 
-  mount(app, function(el){
-    app.mount(<Test count={2} />)
+  mount(app, function(el, renderer){
+    renderer.mount(<Test count={2} />)
     assert(fired);
     done();
   })
@@ -76,11 +75,10 @@ it('should fire afterUpdate', function(done){
     }
   }
 
-  var app = deku();
-  app.mount(<Test count={1} />)
+  var app = (<Test count={1} />)
 
-  mount(app, function(el){
-    app.mount(<Test count={2} />)
+  mount(app, function(el, renderer){
+    renderer.mount(<Test count={2} />)
     assert(fired);
     done();
   })
@@ -101,13 +99,12 @@ it('should only call `beforeUpdate` once', function(done){
   };
 
   var el = document.createElement('div')
-  var app = deku();
-  app.mount(<Component text="one" />)
+  var app = (<Component text="one" />)
 
   var renderer = render(app, el)
 
-  app.mount(<Component text="two" />)
-  app.mount(<Component text="three" />)
+  renderer.mount(<Component text="two" />)
+  renderer.mount(<Component text="three" />)
 
   raf(function(){
     assert(i === 1)

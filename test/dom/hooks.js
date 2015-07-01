@@ -2,7 +2,7 @@
 
 import raf from 'component-raf'
 import {mount,div} from '../helpers'
-import {render,deku,element} from '../../'
+import {render,element} from '../../'
 import assert from 'assert'
 
 it('should fire all lifecycle hooks in the correct order with correct params', function(done){
@@ -93,8 +93,7 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
     }
   }
 
-  var app = deku()
-  app.mount(<MyComponent />)
+  var app = (<MyComponent />)
 
   var container = div()
   var renderer = render(app, container)
@@ -134,7 +133,7 @@ it('should exist in the DOM when after mount is called', function (done) {
 
   var container = document.createElement('div')
   document.body.appendChild(container)
-  var renderer = render(deku(<Test />), container)
+  var renderer = render(<Test />, container)
   document.body.removeChild(container)
   renderer.remove()
 })
@@ -154,7 +153,7 @@ it('should fire mount events top-down', function () {
     afterRender() { order.push('parent:afterRender') }
   }
 
-  var app = deku(<Parent />)
+  var app = (<Parent />)
   mount(app)
   assert.deepEqual(order, [
     'parent:afterRender',
@@ -199,6 +198,6 @@ it('should return a promise from afterMount to update state', function (done) {
   }
   var container = document.createElement('div')
   document.body.appendChild(container)
-  var renderer = render(deku(<Test />), container, { batching: false })
+  var renderer = render(<Test />, container, { batching: false })
   assert.equal(container.innerHTML, '<div id="one">one</div>')
 });

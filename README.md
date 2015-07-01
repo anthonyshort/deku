@@ -16,32 +16,27 @@ npm install deku
 
 ```js
 // button.js
-let propTypes = {
-  kind: {
-    type: 'string',
-    expects: ['submit', 'button']
+
+let Button = {
+  render (component) {
+    let {props, state} = component
+    return <button class="Button" type={props.kind}>{props.children}</button>
+  },
+  afterUpdate (component, prevProps, prevState, updateState) {
+    let {props, state} = component
+    if (!state.clicked) {
+      updateState({ clicked: true })
+    }
   }
 }
 
-function render (component) {
-  let {props, state} = component
-  return <button class="Button" type={props.kind}>{props.children}</button>
-}
-
-function afterUpdate (component, prevProps, prevState, updateState) {
-  let {props, state} = component
-  if (!state.clicked) {
-    updateState({ clicked: true })
-  }
-}
-
-export default {propTypes, render, afterUpdate}
+export {Button}
 ```
 
 Components are then rendered by mounting it in a tree:
 
 ```js
-import Button from './button'
+import {Button} from './button'
 import {tree,render,renderString} from 'deku'
 
 let app = tree(
@@ -197,32 +192,26 @@ We have hooks for `beforeMount`, `afterMount`, `beforeUpdate`, `afterUpdate`, `b
 
 [Learn more about the lifecycle hooks](https://github.com/dekujs/deku/blob/master/docs/guides/components.md)
 
-## Validation
+## Prop Validation
 
-You can validate the props sent to your component by defining a `propTypes` object:
+Prop validation isn't handle by Deku, but because we're dealing with pure functions it's easy enough to just compose it yourself using [some other validation library](https://www.npmjs.com/package/validate):
 
 ```js
-let propTypes = {
-  style: {
+import schema from 'validate'
+
+let {assert} = schema({
+  name: {
     type: 'string',
-    expects: ['submit', 'button']
-  },
-  danger: {
-    type: 'boolean',
-    optional: true
+    required: true,
+    message: 'name is required'
   }
+})
+
+let render = function({ props, state }) {
+  assert(props)
+  return <div></div>
 }
 ```
-
-To enable validation you just need to enable it on the tree:
-
-```js
-app.option('validateProps', true)
-```
-
-This is off by default and we've made it an option so that you can enable it just during development without needing a separate build.
-
-Props can originate from anywhere in the outside world, it's useful to validate them. When validation is enabled you'll only be able to pass in props that are defined and they must conform to the `propTypes` spec.
 
 ## External data and communication
 

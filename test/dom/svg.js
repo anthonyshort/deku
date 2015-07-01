@@ -19,6 +19,6 @@ it('should render svg elements', function(){
     }
   }
 
-  var app = tree(<MyCircle />)
+  var app = (<MyCircle />)
   mount(app)
 })

@@ -1,7 +1,7 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {component,dom} from '../../'
 import {mount,div} from '../helpers'
 
 /**
@@ -78,14 +78,13 @@ var ComponentToggle = {
  */
 
 it('should add/remove element nodes', function(){
-  var app = deku()
-  app.mount(<Toggle showChildren={false} />);
+  var app = (<Toggle showChildren={false} />);
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<div></div>')
-    app.mount(<Toggle showChildren={true} />);
+    renderer.mount(<Toggle showChildren={true} />);
     assert.equal(el.innerHTML, '<div><span id="foo"></span></div>')
-    app.mount(<Toggle showChildren={false} />);
+    renderer.mount(<Toggle showChildren={false} />);
     assert.equal(el.innerHTML, '<div></div>')
   })
 });
@@ -96,14 +95,13 @@ it('should add/remove element nodes', function(){
  */
 
 it('should only remove adjacent element nodes', function(){
-  var app = deku()
-  app.mount(<AdjacentTest i={1} />)
+  var app = (<AdjacentTest i={1} />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert(el.querySelector('#foo'));
     assert(el.querySelector('#bar'));
     assert(el.querySelector('#baz'));
-    app.mount(<AdjacentTest i={2} />)
+    renderer.mount(<AdjacentTest i={2} />)
     assert(el.querySelector('#foo'));
     assert.equal(el.querySelector('#bar'), null);
     assert.equal(el.querySelector('#baz'), null);
@@ -115,12 +113,11 @@ it('should only remove adjacent element nodes', function(){
  */
 
 it('should change tag names', function(){
-  var app = deku()
-  app.mount(<CustomTag type="span" />);
+  var app = (<CustomTag type="span" />);
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<span></span>');
-    app.mount(<CustomTag type="div" />);
+    renderer.mount(<CustomTag type="div" />);
     assert.equal(el.innerHTML, '<div></div>');
   })
 });
@@ -146,14 +143,13 @@ it('should change root node and still update correctly', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<Test type="span" text="test" />)
+  var app = (<Test type="span" text="test" />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<span>test</span>')
-    app.mount(<Test type="div" text="test" />)
+    renderer.mount(<Test type="div" text="test" />)
     assert.equal(el.innerHTML, '<div>test</div>')
-    app.mount(<Test type="div" text="foo" />)
+    renderer.mount(<Test type="div" text="foo" />)
     assert.equal(el.innerHTML, '<div>foo</div>')
   })
 });
@@ -194,11 +190,10 @@ it('should unmount components when removing an element node', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<App showElements={true} />)
+  var app = (<App showElements={true} />)
 
-  mount(app, function(el){
-    app.mount(<App showElements={false} />)
+  mount(app, function(el, renderer){
+    renderer.mount(<App showElements={false} />)
     assert.equal(i, 1);
   })
 });
@@ -217,11 +212,10 @@ it('should change sub-component tag names', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<Test type="span" />)
+  var app = (<Test type="span" />)
 
-  mount(app, function(el){
-    app.mount(<Test type="div" />)
+  mount(app, function(el, renderer){
+    renderer.mount(<Test type="div" />)
     assert.equal(el.innerHTML, '<div></div>');
   })
 })
@@ -267,12 +261,11 @@ it('should update sub-components with the same element', function () {
       return props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
     }
   }
-  var app = deku()
-  app.mount(<App page={1} show={true} />)
-  mount(app, function(el){
-    app.mount(<App page={1} show={false} />)
-    app.mount(<App page={2} title="Hello World" />)
-    app.mount(<App page={2} title="foo" />)
+  var app = (<App page={1} show={true} />)
+  mount(app, function(el, renderer){
+    renderer.mount(<App page={1} show={false} />)
+    renderer.mount(<App page={2} title="Hello World" />)
+    renderer.mount(<App page={2} title="foo" />)
     assert.equal(el.innerHTML, '<div><span>foo</span></div>');
   })
 });
@@ -293,12 +286,11 @@ it('should replace elements with component nodes', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<Test showElement={true} />)
+  var app = (<Test showElement={true} />)
 
-  mount(app, function(el){
+  mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<span>element</span>')
-    app.mount(<Test showElement={false} />)
+    renderer.mount(<Test showElement={false} />)
     assert.equal(el.innerHTML, '<div>component</div>')
   })
 });
@@ -332,12 +324,11 @@ it('should replace components', function(){
     }
   }
 
-  var app = deku()
-  app.mount(<ComponentC type="A" />)
+  var app = (<ComponentC type="A" />)
 
   mount(app, function(el, renderer){
     assert.equal(el.innerHTML, '<div>A</div>')
-    app.mount(<ComponentC type="B" />)
+    renderer.mount(<ComponentC type="B" />)
     assert.equal(el.innerHTML, '<div>B</div>')
   })
 })
@@ -348,12 +339,11 @@ it('should replace components', function(){
  */
 
 it('should remove references to child components when they are removed', function(){
-  var app = deku()
-  app.mount(<ComponentToggle showComponent={true} />);
+  var app = (<ComponentToggle showComponent={true} />);
 
   mount(app, function(el, renderer){
     assert(Object.keys(renderer.inspect().children).length === 3)
-    app.mount(<ComponentToggle showComponent={false} />);
+    renderer.mount(<ComponentToggle showComponent={false} />);
     assert(Object.keys(renderer.inspect().children).length === 2)
   })
 });
