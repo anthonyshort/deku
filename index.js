@@ -184,7 +184,7 @@ var isPromise = _require('is-promise')
  * These elements won't be pooled
  */
 
-var avoidPooling = ['input', 'textarea'];
+var avoidPooling = ['input', 'textarea', 'select', 'option'];
 
 /**
  * Expose `dom`.
