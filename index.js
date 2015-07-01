@@ -902,7 +902,7 @@ function render (app, container, opts) {
     } else {
 
       // Just remove the text node
-      if (!isElement(el)) return el.parentNode.removeChild(el)
+      if (!isElement(el)) return el && el.parentNode.removeChild(el)
 
       // Then we need to find any components within this
       // branch and unmount them.
@@ -1086,7 +1086,7 @@ function render (app, container, opts) {
    */
 
   function isElement (el) {
-    return !!el.tagName
+    return !!(el && el.tagName)
   }
 
   /**

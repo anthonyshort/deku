@@ -1,4 +1,11 @@
 
+0.4.8 / 2015-07-01
+==================
+
+ * Merge branch 'master' of ssh://github.com/dekujs/deku
+ * Merge pull request #188 from xdissent/fix-remove-null-el
+ * Handle null element in isElement(). fixes #180
+
 0.4.7 / 2015-07-01
 ==================
 
