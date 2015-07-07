@@ -1,4 +1,10 @@
 
+0.4.9 / 2015-07-07
+==================
+
+ * Merge pull request #191 from timmak/svg-missing-animate
+ * Add animate to svg list
+
 0.4.8 / 2015-07-01
 ==================
 
