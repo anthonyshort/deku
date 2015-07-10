@@ -33,10 +33,21 @@ it('should not render class from an empty array', function () {
   assert(node.attributes.class === undefined);
 });
 
+it('should set class from a compacted array', function() {
+  var node = dom('div', { class: ['foo', false, 'bar', undefined, 'baz'] });
+  assert(node.attributes.class === 'foo bar baz');
+})
+
 it('should set class from an object', function () {
   var names = { foo: true, bar: false, baz: true };
   var node = dom('div', { class: names });
   assert(node.attributes.class === 'foo baz');
+});
+
+it('should set class from a array of mixed objects and strings', function() {
+  var names = ['foo', {bar: true, bor: false}, 'baz', {biz: true}];
+  var node = dom('div', { class: names });
+  assert(node.attributes.class === 'foo bar baz biz')
 });
 
 it('should set the style attribute with an object', function () {
