@@ -54,12 +54,24 @@ it('should render styles from a string', function () {
   assert(node.attributes.style === 'text-align:left;height:10px;width:10px;');
 });
 
-it('it should flatten children', function () {
+it('it should throw an error when arrays are used as children', function (done) {
+  try {
+    dom('div', null, [
+      [dom('span')]
+    ])
+    done(false)
+  } catch (e) {
+    done()
+  }
+});
+
+it('it should allow using array spread on children', function () {
+  var children = [dom('span')]
   var node = dom('div', null, [
-    [dom('span')]
-  ]);
-  assert(node.children[0].type === 'element');
-  assert(node.children[0].tagName === 'span');
+    ...children
+  ])
+  assert(node.children.length === 1)
+  assert(node.children[0].tagName === 'span')
 });
 
 it('it should add indexes to children', function () {
@@ -67,7 +79,8 @@ it('it should add indexes to children', function () {
     null,
     dom('span'),
     dom('span'),
-    [dom('span'), dom('span')],
+    dom('span'),
+    dom('span'),
     dom('span'),
     null
   ]);
