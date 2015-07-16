@@ -2,35 +2,11 @@
 0.4.10 / 2015-07-16
 ==================
 
- * Merge branch 'master' of ssh://github.com/dekujs/deku
- * Release 0.4.10
- * Merge pull request #204 from Alpacatty/master
  * Added validate hook
- * Merge pull request #176 from dekujs/remove-validation
- * Fixed conflict
- * Merge pull request #196 from Yomguithereal/false-in-vdom-children
  * Attach events to document instead of document.body
- * Merge pull request #198 from dekujs/cancel/events
  * added ability to cancel events
- * Possibility to pass `false` as well as `null` in component children This enables the following common pattern:   return (    <div>     {condition && <span>Hello</span>}    </div>   );
+ * Possibility to pass `false` as well as `null` in component children
  * Remove prop validation
- * Merge branch 'master' of ssh://github.com/dekujs/deku
- * Added deprecation warnings for magic class and style transformations.
- * No longer flattening children in virtual nodes
- * Faster SVG element lookups
-
-0.4.10 / 2015-07-16
-==================
-
- * Added validate hook
- * Merge pull request #176 from dekujs/remove-validation
- * Fixed conflict
- * Merge pull request #196 from Yomguithereal/false-in-vdom-children
- * Merge pull request #198 from dekujs/cancel/events
- * added ability to cancel events
- * Possibility to pass `false` as well as `null` in component children This enables the following common pattern:   return (    <div>     {condition && <span>Hello</span>}    </div>   );
- * Remove prop validation
- * Merge branch 'master' of ssh://github.com/dekujs/deku
  * Added deprecation warnings for magic class and style transformations.
  * No longer flattening children in virtual nodes
  * Faster SVG element lookups
