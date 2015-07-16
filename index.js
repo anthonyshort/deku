@@ -85,7 +85,7 @@ Application.prototype.unmount = function () {
   return this
 }
 
-},{"component-emitter":10}],2:[function(_require,module,exports){
+},{"component-emitter":9}],2:[function(_require,module,exports){
 /**
  * All of the events can bind to
  */
@@ -170,7 +170,6 @@ var walk = _require('dom-walk')
 var isDom = _require('is-dom')
 var uid = _require('get-uid')
 var keypath = _require('object-path')
-var type = _require('component-type')
 var utils = _require('./utils')
 var svg = _require('./svg')
 var events = _require('./events')
@@ -229,8 +228,7 @@ function render (app, container, opts) {
 
   var options = defaults(assign({}, app.options || {}, opts || {}), {
     pooling: true,
-    batching: true,
-    validateProps: false
+    batching: true
   })
 
   /**
@@ -1235,8 +1233,10 @@ function render (app, container, opts) {
     }
     entity.pendingState = assign({}, entity.context.state)
     entity.pendingProps = assign({}, entity.context.props)
-    validateProps(entity.context.props, entity.propTypes)
     entity.dirty = false
+    if (typeof entity.component.validate === 'function') {
+      entity.component.validate(entity.context)
+    }
   }
 
   /**
@@ -1387,8 +1387,7 @@ function render (app, container, opts) {
       var fn = keypath.get(handlers, [target.__entity__, target.__path__, eventType])
       if (fn) {
         event.delegateTarget = target
-        fn(event)
-        break
+        if (false === fn(event)) break
       }
       target = target.parentNode
     }
@@ -1411,8 +1410,9 @@ function render (app, container, opts) {
         if (result) {
           updateEntityStateAsync(entity, result)
         }
+        return result
       } else {
-        fn.call(null, e)
+        return fn.call(null, e)
       }
     })
   }
@@ -1438,78 +1438,6 @@ function render (app, container, opts) {
 
   function removeAllEvents (entityId) {
     keypath.del(handlers, [entityId])
-  }
-
-  /**
-   * Validate the current properties. These simple validations
-   * make it easier to ensure the correct props are passed in.
-   *
-   * Available rules include:
-   *
-   * type: {String} string | array | object | boolean | number | date | function
-   *       {Array} An array of types mentioned above
-   *       {Function} fn(value) should return `true` to pass in
-   * expects: [] An array of values this prop could equal
-   * optional: Boolean
-   */
-
-  function validateProps (props, rules, optPrefix) {
-    var prefix = optPrefix || ''
-    if (!options.validateProps) return
-    forEach(rules, function (options, name) {
-      if (!options) {
-        throw new Error('deku: propTypes should have an options object for each type')
-      }
-
-      var propName = prefix ? prefix + '.' + name : name
-      var value = keypath.get(props, name)
-      var valueType = type(value)
-      var typeFormat = type(options.type)
-      var optional = (options.optional === true)
-
-      // If it's optional and doesn't exist
-      if (optional && value == null) {
-        return
-      }
-
-      // If it's required and doesn't exist
-      if (!optional && value == null) {
-        throw new TypeError('Missing property: ' + propName)
-      }
-
-      // It's a nested type
-      if (typeFormat === 'object') {
-        validateProps(value, options.type, propName)
-        return
-      }
-
-      // If it's the incorrect type
-      if (typeFormat === 'string' && valueType !== options.type) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // If type is validate function
-      if (typeFormat === 'function' && !options.type(value)) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // if type is array of possible types
-      if (typeFormat === 'array' && options.type.indexOf(valueType) < 0) {
-        throw new TypeError('Invalid property type: ' + propName)
-      }
-
-      // If it's an invalid value
-      if (options.expects && options.expects.indexOf(value) < 0) {
-        throw new TypeError('Invalid property value: ' + propName)
-      }
-    })
-
-    // Now check for props that haven't been defined
-    forEach(props, function (value, key) {
-      // props.children is always passed in, even if it's not defined
-      if (key === 'children') return
-      if (!rules[key]) throw new Error('Unexpected property: ' + key)
-    })
   }
 
   /**
@@ -1595,7 +1523,7 @@ function getNodeAtPath(el, path) {
   return el
 }
 
-},{"./events":2,"./svg":6,"./utils":7,"component-raf":11,"component-type":12,"dom-pool":13,"dom-walk":14,"fast.js/forEach":18,"fast.js/object/assign":21,"fast.js/reduce":24,"get-uid":25,"is-dom":26,"is-promise":27,"object-path":28}],5:[function(_require,module,exports){
+},{"./events":2,"./svg":6,"./utils":7,"component-raf":10,"dom-pool":12,"dom-walk":13,"fast.js/forEach":16,"fast.js/object/assign":19,"fast.js/reduce":22,"get-uid":23,"is-dom":24,"is-promise":25,"object-path":26}],5:[function(_require,module,exports){
 var utils = _require('./utils')
 var events = _require('./events')
 var defaults = utils.defaults
@@ -1705,8 +1633,6 @@ function attr (key, val) {
 }
 
 },{"./events":2,"./utils":7}],6:[function(_require,module,exports){
-var indexOf = _require('fast.js/array/indexOf')
-
 /**
  * This file lists the supported SVG elements used by the
  * renderer. We may add better SVG support in the future
@@ -1721,76 +1647,76 @@ exports.namespace = 'http://www.w3.org/2000/svg'
  * @type {Array}
  */
 
-exports.elements = [
-  'animate',
-  'circle',
-  'defs',
-  'ellipse',
-  'g',
-  'line',
-  'linearGradient',
-  'mask',
-  'path',
-  'pattern',
-  'polygon',
-  'polyline',
-  'radialGradient',
-  'rect',
-  'stop',
-  'svg',
-  'text',
-  'tspan'
-]
+exports.elements = {
+  'animate': true,
+  'circle': true,
+  'defs': true,
+  'ellipse': true,
+  'g': true,
+  'line': true,
+  'linearGradient': true,
+  'mask': true,
+  'path': true,
+  'pattern': true,
+  'polygon': true,
+  'polyline': true,
+  'radialGradient': true,
+  'rect': true,
+  'stop': true,
+  'svg': true,
+  'text': true,
+  'tspan': true
+}
 
 /**
  * Supported SVG attributes
  */
 
-exports.attributes = [
-  'cx',
-  'cy',
-  'd',
-  'dx',
-  'dy',
-  'fill',
-  'fillOpacity',
-  'fontFamily',
-  'fontSize',
-  'fx',
-  'fy',
-  'gradientTransform',
-  'gradientUnits',
-  'markerEnd',
-  'markerMid',
-  'markerStart',
-  'offset',
-  'opacity',
-  'patternContentUnits',
-  'patternUnits',
-  'points',
-  'preserveAspectRatio',
-  'r',
-  'rx',
-  'ry',
-  'spreadMethod',
-  'stopColor',
-  'stopOpacity',
-  'stroke',
-  'strokeDasharray',
-  'strokeLinecap',
-  'strokeOpacity',
-  'strokeWidth',
-  'textAnchor',
-  'transform',
-  'version',
-  'viewBox',
-  'x1',
-  'x2',
-  'x',
-  'y1',
-  'y2',
-  'y'
-]
+exports.attributes = {
+  'cx': true,
+  'cy': true,
+  'd': true,
+  'dx': true,
+  'dy': true,
+  'fill': true,
+  'fillOpacity': true,
+  'fontFamily': true,
+  'fontSize': true,
+  'fx': true,
+  'fy': true,
+  'gradientTransform': true,
+  'gradientUnits': true,
+  'markerEnd': true,
+  'markerMid': true,
+  'markerStart': true,
+  'offset': true,
+  'opacity': true,
+  'patternContentUnits': true,
+  'patternUnits': true,
+  'points': true,
+  'preserveAspectRatio': true,
+  'r': true,
+  'rx': true,
+  'ry': true,
+  'spreadMethod': true,
+  'stopColor': true,
+  'stopOpacity': true,
+  'stroke': true,
+  'strokeDasharray': true,
+  'strokeLinecap': true,
+  'strokeOpacity': true,
+  'strokeWidth': true,
+  'textAnchor': true,
+  'transform': true,
+  'version': true,
+  'viewBox': true,
+  'x1': true,
+  'x2': true,
+  'x': true,
+  'y1': true,
+  'y2': true,
+  'y': true,
+}
 
 /**
  * Is element's namespace SVG?
@@ -1799,7 +1725,7 @@ exports.attributes = [
  */
 
 exports.isElement = function (name) {
-  return indexOf(exports.elements, name) !== -1
+  return name in exports.elements
 }
 
 /**
@@ -1809,11 +1735,10 @@ exports.isElement = function (name) {
  */
 
 exports.isAttribute = function (attr) {
-  return indexOf(exports.attributes, attr) !== -1
+  return attr in exports.attributes
 }
 
-
-},{"fast.js/array/indexOf":16}],7:[function(_require,module,exports){
+},{}],7:[function(_require,module,exports){
 /**
  * The npm 'defaults' module but without clone because
  * it was requiring the 'Buffer' module which is huge.
@@ -1840,7 +1765,6 @@ exports.defaults = function(options, defaults) {
 
 var type = _require('component-type')
 var slice = _require('sliced')
-var flatten = _require('array-flatten')
 
 /**
  * This function lets us create virtual nodes using a simple
@@ -1899,7 +1823,7 @@ function virtual (type, props, children) {
     children = [ children ]
   }
 
-  children = flatten(children, 1).reduce(normalize, [])
+  children = children.reduce(normalize, [])
 
   // pull the key out from the data.
   var key = 'key' in props ? String(props.key) : null
@@ -1930,8 +1854,11 @@ function virtual (type, props, children) {
  */
 
 function normalize (acc, node) {
-  if (node == null) {
+  if (node == null || node === false) {
     return acc
+  }
+  if (Array.isArray(node)) {
+    throw new TypeError('deku: Child nodes can\'t be an array. https://goo.gl/m5bIS2')
   }
   if (typeof node === 'string' || typeof node === 'number') {
     var newNode = new TextNode(String(node))
@@ -2008,12 +1935,14 @@ function TextNode (text) {
 function parseAttributes (attributes) {
   // style: { 'text-align': 'left' }
   if (attributes.style) {
+    console.warn('deku: Using an object for the style attribute is deprecated. You should use another module to transform the object into a string.')
     attributes.style = parseStyle(attributes.style)
   }
 
   // class: { foo: true, bar: false, baz: true }
   // class: ['foo', 'bar', 'baz']
   if (attributes.class) {
+    console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
     attributes.class = parseClass(attributes.class)
   }
 
@@ -2082,66 +2011,7 @@ function parseClass (value) {
   return value
 }
 
-},{"array-flatten":9,"component-type":12,"sliced":29}],9:[function(_require,module,exports){
-/**
- * Recursive flatten function with depth.
- *
- * @param  {Array}  array
- * @param  {Array}  result
- * @param  {Number} depth
- * @return {Array}
- */
-function flattenDepth (array, result, depth) {
-  for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (depth > 0 && Array.isArray(value)) {
-      flattenDepth(value, result, depth - 1)
-    } else {
-      result.push(value)
-    }
-  }
-
-  return result
-}
-
-/**
- * Recursive flatten function. Omitting depth is slightly faster.
- *
- * @param  {Array} array
- * @param  {Array} result
- * @return {Array}
- */
-function flattenForever (array, result) {
-  for (var i = 0; i < array.length; i++) {
-    var value = array[i]
-
-    if (Array.isArray(value)) {
-      flattenForever(value, result)
-    } else {
-      result.push(value)
-    }
-  }
-
-  return result
-}
-
-/**
- * Flatten an array, with the ability to define a depth.
- *
- * @param  {Array}  array
- * @param  {Number} depth
- * @return {Array}
- */
-module.exports = function (array, depth) {
-  if (depth == null) {
-    return flattenForever(array, [])
-  }
-
-  return flattenDepth(array, [], depth)
-}
-
-},{}],10:[function(_require,module,exports){
+},{"component-type":11,"sliced":27}],9:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2304,7 +2174,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],11:[function(_require,module,exports){
+},{}],10:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -2340,7 +2210,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],12:[function(_require,module,exports){
+},{}],11:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -2376,7 +2246,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],13:[function(_require,module,exports){
+},{}],12:[function(_require,module,exports){
 function Pool(params) {
     if (typeof params !== 'object') {
         throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
@@ -2430,7 +2300,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Pool;
 }
 
-},{}],14:[function(_require,module,exports){
+},{}],13:[function(_require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2456,7 +2326,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],15:[function(_require,module,exports){
+},{}],14:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2479,42 +2349,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":19}],16:[function(_require,module,exports){
-'use strict';
-
-/**
- * # Index Of
- *
- * A faster `Array.prototype.indexOf()` implementation.
- *
- * @param  {Array}  subject   The array (or array-like) to search within.
- * @param  {mixed}  target    The target item to search for.
- * @param  {Number} fromIndex The position to start searching from, if known.
- * @return {Number}           The position of the target in the subject, or -1 if it does not exist.
- */
-module.exports = function fastIndexOf (subject, target, fromIndex) {
-  var length = subject.length,
-      i = 0;
-
-  if (typeof fromIndex === 'number') {
-    i = fromIndex;
-    if (i < 0) {
-      i += length;
-      if (i < 0) {
-        i = 0;
-      }
-    }
-  }
-
-  for (; i < length; i++) {
-    if (subject[i] === target) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-},{}],17:[function(_require,module,exports){
+},{"../function/bindInternal3":17}],15:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2551,7 +2386,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":20}],18:[function(_require,module,exports){
+},{"../function/bindInternal4":18}],16:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2574,7 +2409,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":15,"./object/forEach":22}],19:[function(_require,module,exports){
+},{"./array/forEach":14,"./object/forEach":20}],17:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2587,7 +2422,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],20:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2600,7 +2435,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],21:[function(_require,module,exports){
+},{}],19:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2636,7 +2471,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],22:[function(_require,module,exports){
+},{}],20:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2661,7 +2496,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":19}],23:[function(_require,module,exports){
+},{"../function/bindInternal3":17}],21:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2700,7 +2535,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":20}],24:[function(_require,module,exports){
+},{"../function/bindInternal4":18}],22:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -2725,14 +2560,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":17,"./object/reduce":23}],25:[function(_require,module,exports){
+},{"./array/reduce":15,"./object/reduce":21}],23:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],26:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2749,14 +2584,14 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],27:[function(_require,module,exports){
+},{}],25:[function(_require,module,exports){
 module.exports = isPromise;
 
 function isPromise(obj) {
   return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
 
-},{}],28:[function(_require,module,exports){
+},{}],26:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -3027,10 +2862,10 @@ function isPromise(obj) {
   return objectPath;
 });
 
-},{}],29:[function(_require,module,exports){
+},{}],27:[function(_require,module,exports){
 module.exports = exports = _require('./lib/sliced');
 
-},{"./lib/sliced":30}],30:[function(_require,module,exports){
+},{"./lib/sliced":28}],28:[function(_require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
