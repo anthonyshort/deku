@@ -50,6 +50,13 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
       assert(id)
       log.push('beforeRender')
     },
+    validate (component) {
+      let {props, state, id} = component
+      assert(props)
+      assert(state)
+      assert(id)
+      log.push('validate')
+    },
     render (component, setState) {
       let {props, state, id} = component
       log.push('render')
@@ -102,8 +109,11 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
   // Wait till the next frame because we triggered an
   // update in the afterMount hook
   raf(function(){
+  console.log(log)
+
     assert.deepEqual(log, [
       'initialState',
+      'validate',
       'beforeMount',
       'beforeRender',
       'render',
@@ -112,6 +122,7 @@ it('should fire all lifecycle hooks in the correct order with correct params', f
       'shouldUpdate',
       'beforeUpdate',
       'beforeRender',
+      'validate',
       'render',
       'afterRender',
       'afterUpdate'
