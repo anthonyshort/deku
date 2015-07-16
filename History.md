@@ -1,4 +1,43 @@
 
+0.4.9 / 2015-07-07
+==================
+
+ * Merge pull request #191 from timmak/svg-missing-animate
+ * Add animate to svg list
+
+0.4.8 / 2015-07-01
+==================
+
+ * Merge branch 'master' of ssh://github.com/dekujs/deku
+ * Merge pull request #188 from xdissent/fix-remove-null-el
+ * Handle null element in isElement(). fixes #180
+
+0.4.7 / 2015-07-01
+==================
+
+ * Not pooling select elements
+
+0.4.6 / 2015-06-29
+==================
+
+ * Merge pull request #187 from dekujs/should-render
+ * Fixed: State not committed during shouldUpdate
+ * Merge pull request #177 from mpal9000/patch-1
+ * docs - initialState props
+
+0.4.5 / 2015-06-13
+==================
+
+ * We made it smaller!
+ * Merge pull request #173 from foray1010/master
+ * Added wheel event
+ * Update README.md
+ * Update README.md
+ * Merge pull request #166 from xdissent/patch-1
+ * Merge pull request #167 from DylanPiercey/patch-1
+ * Update jsx.md
+ * Update events link in README
+
 0.4.4 / 2015-06-05
 ==================
 

@@ -124,7 +124,8 @@ module.exports = {
   onTouchCancel: 'touchcancel',
   onTouchEnd: 'touchend',
   onTouchMove: 'touchmove',
-  onTouchStart: 'touchstart'
+  onTouchStart: 'touchstart',
+  onWheel: 'wheel'
 }
 
 },{}],3:[function(_require,module,exports){
@@ -183,7 +184,7 @@ var isPromise = _require('is-promise')
  * These elements won't be pooled
  */
 
-var avoidPooling = ['input', 'textarea'];
+var avoidPooling = ['input', 'textarea', 'select', 'option'];
 
 /**
  * Expose `dom`.
@@ -491,7 +492,10 @@ function render (app, container, opts) {
     var entity = entities[entityId]
     setSources(entity)
 
-    if (!shouldUpdate(entity)) return updateChildren(entityId)
+    if (!shouldUpdate(entity)) {
+      commit(entity)
+      return updateChildren(entityId)
+    }
 
     var currentTree = entity.virtualElement
     var nextProps = entity.pendingProps
@@ -898,7 +902,7 @@ function render (app, container, opts) {
     } else {
 
       // Just remove the text node
-      if (!isElement(el)) return el.parentNode.removeChild(el)
+      if (!isElement(el)) return el && el.parentNode.removeChild(el)
 
       // Then we need to find any components within this
       // branch and unmount them.
@@ -1082,7 +1086,7 @@ function render (app, container, opts) {
    */
 
   function isElement (el) {
-    return !!el.tagName
+    return !!(el && el.tagName)
   }
 
   /**
@@ -1718,6 +1722,7 @@ exports.namespace = 'http://www.w3.org/2000/svg'
  */
 
 exports.elements = [
+  'animate',
   'circle',
   'defs',
   'ellipse',
