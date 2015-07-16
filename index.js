@@ -1357,7 +1357,7 @@ function render (app, container, opts) {
 
   function addNativeEventListeners () {
     forEach(events, function (eventType) {
-      document.body.addEventListener(eventType, handleEvent, true)
+      document.addEventListener(eventType, handleEvent, true)
     })
   }
 
@@ -1367,7 +1367,7 @@ function render (app, container, opts) {
 
   function removeNativeEventListeners () {
     forEach(events, function (eventType) {
-      document.body.removeEventListener(eventType, handleEvent, true)
+      document.removeEventListener(eventType, handleEvent, true)
     })
   }
 
