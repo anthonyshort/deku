@@ -1935,14 +1935,12 @@ function TextNode (text) {
 function parseAttributes (attributes) {
   // style: { 'text-align': 'left' }
   if (attributes.style) {
-    console.warn('deku: Using an object for the style attribute is deprecated. You should use another module to transform the object into a string.')
     attributes.style = parseStyle(attributes.style)
   }
 
   // class: { foo: true, bar: false, baz: true }
   // class: ['foo', 'bar', 'baz']
   if (attributes.class) {
-    console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
     attributes.class = parseClass(attributes.class)
   }
 
@@ -1973,6 +1971,9 @@ function parseStyle (styles) {
   if (type(styles) === 'string') {
     return styles
   }
+  if ("production" === 'development') {
+    console.warn('deku: Using an object for the style attribute is deprecated. You should use another module to transform the object into a string.')
+  }
   var str = ''
   for (var name in styles) {
     var value = styles[name]
@@ -1993,6 +1994,9 @@ function parseStyle (styles) {
 function parseClass (value) {
   // { foo: true, bar: false, baz: true }
   if (type(value) === 'object') {
+    if ("production" === 'development') {
+      console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
+    }
     var matched = []
     for (var key in value) {
       if (value[key]) matched.push(key)
@@ -2002,6 +2006,9 @@ function parseClass (value) {
 
   // ['foo', 'bar', 'baz']
   if (type(value) === 'array') {
+    if ("production" === 'development') {
+      console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
+    }
     if (value.length === 0) {
       return
     }
