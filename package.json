@@ -12,6 +12,7 @@
     "bump": "git://github.com/ianstormtaylor/bump.git#0.4.2",
     "component-classes": "^1.2.3",
     "duo-test": "^0.3.13",
+    "envify": "^3.4.0",
     "es6-promise": "^2.1.1",
     "memoizee": "^0.3.8",
     "minify": "^1.4.11",
