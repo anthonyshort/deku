@@ -28,8 +28,6 @@
     "component-emitter": "^1.1.3",
     "component-raf": "^1.2.0",
     "component-type": "^1.1.0",
-    "dom-pool": "^0.1.1",
-    "dom-walk": "^0.1.1",
     "fast.js": "^0.1.1",
     "get-uid": "^1.0.1",
     "is-dom": "^1.0.5",
