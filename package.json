@@ -20,6 +20,7 @@
     "phantomjs": "^1.9.17",
     "standard": "^3.6.1",
     "trigger-event": "^1.0.0",
+    "virtual-element": "^1.0.0",
     "zuul": "~1.16.4"
   },
   "dependencies": {

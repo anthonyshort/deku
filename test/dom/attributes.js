@@ -3,7 +3,8 @@
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {component,deku} from '../../'
+import dom from 'virtual-element'
 import {mount,div} from '../helpers'
 
 var AttrComponent = {

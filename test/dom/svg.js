@@ -2,8 +2,9 @@
 
 import raf from 'component-raf';
 import assert from 'assert';
-import {tree,dom,render} from '../../';
+import {tree,render} from '../../';
 import {mount,div} from '../helpers';
+import dom from 'virtual-element'
 
 it('should render svg elements', function(){
 

@@ -1,7 +1,8 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku,renderString} from '../../'
+import {deku,renderString} from '../../'
+import dom from 'virtual-element'
 
 it('should render an element', function(){
   var Component = {

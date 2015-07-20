@@ -1,9 +1,10 @@
 /** @jsx dom */
 
 import raf from 'component-raf'
-import {component,deku,render,dom} from '../../';
+import {deku,render} from '../../';
 import {mount,div} from '../helpers';
 import assert from 'assert';
+import dom from 'virtual-element'
 
 var Updater = {
   initialState: function(){

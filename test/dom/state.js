@@ -2,8 +2,9 @@
 
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,dom,deku,render} from '../../'
+import {deku,render} from '../../'
 import {mount,Span,div} from '../helpers'
+import dom from 'virtual-element'
 
 var StateChangeOnMount = {
   initialState: function(){

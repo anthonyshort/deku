@@ -1,10 +1,11 @@
 /** @jsx dom */
 
 import {mount,div} from '../helpers'
-import {component,render,deku,dom} from '../../'
+import {render,deku} from '../../'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import assert from 'assert'
+import dom from 'virtual-element'
 
 it('should call register hook', function(done){
   const App = {

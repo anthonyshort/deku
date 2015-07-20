@@ -1,8 +1,9 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {component,dom,deku} from '../../'
+import {deku} from '../../'
 import {mount,div} from '../helpers'
+import dom from 'virtual-element'
 
 /**
  * Custom components used for testing

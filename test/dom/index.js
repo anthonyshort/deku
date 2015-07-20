@@ -4,9 +4,10 @@ import trigger from 'trigger-event'
 import Emitter from 'component-emitter'
 import raf from 'component-raf'
 import assert from 'assert'
-import {component,deku,dom,render} from '../../'
+import {component,deku,render} from '../../'
 import {HelloWorld,Span,TwoWords,mount,div} from '../helpers'
 import memoize from 'memoizee'
+import dom from 'virtual-element'
 
 it('should render and remove an element', function(){
   var app = deku();

@@ -1,9 +1,10 @@
 /** @jsx dom */
 
 import {mount,div} from '../helpers'
-import {component,render,deku,dom} from '../../'
+import {render,deku} from '../../'
 import raf from 'component-raf'
 import assert from 'assert'
+import dom from 'virtual-element'
 
 it('should set source without property type', function(done){
   const App = {

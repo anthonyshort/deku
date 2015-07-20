@@ -2,8 +2,9 @@
 
 import raf from 'component-raf'
 import {mount,div} from '../helpers'
-import {render,deku,element} from '../../'
+import {render,deku} from '../../'
 import assert from 'assert'
+import element from 'virtual-element'
 
 it('should fire all lifecycle hooks in the correct order with correct params', function(done){
   let log = []

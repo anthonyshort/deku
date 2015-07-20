@@ -1,4 +1,5 @@
-import {render,deku,dom} from '../'
+import {render,deku} from '../'
+import element from 'virtual-element'
 import assert from 'assert'
 
 /**
@@ -38,7 +39,7 @@ exports.mount = function(app, fn, errorHandler) {
 exports.HelloWorld = {
   render: function(component){
     let {props, state} = component
-    return dom('span', null, ['Hello World']);
+    return element('span', null, ['Hello World']);
   }
 };
 
@@ -49,7 +50,7 @@ exports.HelloWorld = {
 exports.Span = {
   render: function(component){
     let {props, state} = component
-    return dom('span', null, [props.text]);
+    return element('span', null, [props.text]);
   }
 };
 
@@ -60,7 +61,7 @@ exports.Span = {
 exports.TwoWords = {
   render: function(component){
     let {props, state} = component
-    return dom('span', null, [props.one + ' ' + props.two]);
+    return element('span', null, [props.one + ' ' + props.two]);
   }
 };
 

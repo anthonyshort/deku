@@ -1,11 +1,12 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku,render} from '../../'
+import {deku,render} from '../../'
 import {mount,Span,div} from '../helpers'
 import trigger from 'trigger-event'
 import raf from 'component-raf'
 import classes from 'component-classes'
+import dom from 'virtual-element'
 
 var Delegate = {
   render: function (component) {
@@ -17,7 +18,7 @@ var Delegate = {
         onClick: function(e, component, setState){
           setState({ active: i })
         },
-        class: { active: active === i }
+        class: active === i ? 'active' : false
       }, [
         dom('a', 'link')
       ]);
@@ -137,18 +138,20 @@ it('should delegate events', function () {
     assert(classes(first.parentNode).has('active'));
     var second = el.querySelectorAll('a')[1];
     trigger(second, 'click');
-    assert(classes(second.parentNode).has('active'));
-    assert(classes(first.parentNode).has('active') === false)
+    assert(second.parentNode.classList.contains('active') === true)
+    assert(first.parentNode.classList.contains('active') === false)
     document.body.removeChild(el);
   })
 })
 
-it('should delegate events on the root', function () {
+it('should delegate events on the root', function (done) {
   var DelegateRoot = {
     render: function (component, setState) {
       let {props, state} = component
+      let classes = []
+      if (state.active) classes.push('active')
       return (
-        <div class={{ active: state.active }} onClick={onClick}>
+        <div class={ classes.join(' ') } onClick={onClick}>
           <a>link</a>
         </div>
       )
@@ -165,8 +168,9 @@ it('should delegate events on the root', function () {
     document.body.appendChild(el);
     var first = el.querySelectorAll('a')[0]
     trigger(first, 'click')
-    assert(classes(first.parentNode).has('active') === true)
-    document.body.removeChild(el);
+    assert(first.parentNode.className === 'active')
+    document.body.removeChild(el)
+    done()
   })
 })
 
@@ -178,8 +182,8 @@ it('should set a delegateTarget', function (done) {
       let {props, state} = component
       return <div onClick={onClick}><a>link</a></div>;
       function onClick(event) {
-        assert(event.delegateTarget === rootEl.querySelector('div'));
-        done();
+        assert(event.delegateTarget === rootEl.querySelector('div'))
+        done()
       }
     }
   }
@@ -192,7 +196,7 @@ it('should set a delegateTarget', function (done) {
     rootEl = el
     var first = el.querySelectorAll('a')[0]
     trigger(first, 'click')
-    document.body.removeChild(el);
+    document.body.removeChild(el)
   })
 })
 

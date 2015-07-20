@@ -1,6 +1,7 @@
 import {mount,div} from '../helpers'
-import {component,render,deku,dom} from '../../'
+import {render,deku} from '../../'
 import assert from 'assert'
+import dom from 'virtual-element'
 
 it('should fire mount events on sub-components', function(){
   var i = 0;

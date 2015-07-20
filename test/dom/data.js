@@ -1,9 +1,10 @@
 /** @jsx dom */
 
-import {dom,deku} from '../../';
+import {deku} from '../../'
 import trigger from 'trigger-event'
-import {mount} from '../helpers';
-import assert from 'assert';
+import {mount} from '../helpers'
+import assert from 'assert'
+import dom from 'virtual-element'
 
 it('should get default value from data value', function(){
   var Test = {
@@ -105,8 +106,8 @@ it('should handle two-way updating with multiple components depending on the sam
       let {props, state} = component
       return dom('span', null, props.text);
     }
-  }  
-  
+  }
+
   function setTitle(string) {
     app.set('title', string);
   }

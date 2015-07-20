@@ -1,9 +1,10 @@
 /** @jsx dom */
 
 import assert from 'assert'
-import {dom,deku} from '../../'
+import {deku} from '../../'
 import {mount} from '../helpers'
 import trigger from 'trigger-event'
+import dom from 'virtual-element'
 
 describe('key diffing', function () {
 
