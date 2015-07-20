@@ -179,22 +179,6 @@ it('should render the value of inputs', function(){
   assert.equal(renderString(app), '<input value="foo"></input>')
 })
 
-it('should render data sources', function(){
-  var Component = {
-    propTypes: {
-      'text': { source: 'text' }
-    },
-    render: function(component){
-      let {props, state} = component
-      return <div>{props.text}</div>
-    }
-  };
-  var app = deku()
-    .set('text', 'Hello World')
-    .mount(<Component />)
-  assert.equal(renderString(app), '<div>Hello World</div>')
-})
-
 it('should not render event handlers as attributes', function () {
   var Component = {
     render: function() {
