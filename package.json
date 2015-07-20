@@ -34,6 +34,8 @@
     "get-uid": "^1.0.1",
     "is-dom": "^1.0.5",
     "is-promise": "^2.0.0",
+    "is-svg-attribute": "^1.0.2",
+    "is-svg-element": "^1.0.1",
     "object-path": "^0.8.1",
     "sliced": "0.0.5"
   }
