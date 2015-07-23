@@ -46,7 +46,7 @@ clean:
 	@-rm -rf build build.js node_modules
 
 lint: $(src)
-	standard lib/**/*.js
+	standard lib/**/*.js | snazzy
 
 size: standalone
 	@minify build/deku.js | gzip -9 | wc -c

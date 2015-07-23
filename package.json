@@ -18,6 +18,7 @@
     "minify": "^1.4.11",
     "mochify": "^2.1.1",
     "phantomjs": "^1.9.17",
+    "snazzy": "^1.0.1",
     "standard": "^3.6.1",
     "trigger-event": "^1.0.0",
     "virtual-element": "^1.0.0",
