@@ -1858,7 +1858,7 @@ function normalize (acc, node) {
     return acc
   }
   if (Array.isArray(node)) {
-    throw new TypeError('deku: Child nodes can\'t be an array. https://goo.gl/m5bIS2')
+    return acc.concat(node.reduce(normalize, []))
   }
   if (typeof node === 'string' || typeof node === 'number') {
     var newNode = new TextNode(String(node))

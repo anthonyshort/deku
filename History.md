@@ -1,4 +1,12 @@
 
+0.4.12 / 2015-07-28
+==================
+
+ * Merge pull request #212 from dekujs/flatmap-children
+ * Fixed failing tests
+ * Update index.js
+ * Flattening the virtual element children array
+
 0.4.11 / 2015-07-17
 ==================
 
