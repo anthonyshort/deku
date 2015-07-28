@@ -65,10 +65,10 @@ it('it should throw an error when arrays are used as children', function (done) 
   }
 });
 
-it('it should allow using array spread on children', function () {
+it('it should allow nested arrays of children', function () {
   var children = [dom('span')]
   var node = dom('div', null, [
-    ...children
+    children
   ])
   assert(node.children.length === 1)
   assert(node.children[0].tagName === 'span')
