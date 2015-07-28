@@ -54,21 +54,10 @@ it('should render styles from a string', function () {
   assert(node.attributes.style === 'text-align:left;height:10px;width:10px;');
 });
 
-it('it should throw an error when arrays are used as children', function (done) {
-  try {
-    dom('div', null, [
-      [dom('span')]
-    ])
-    done(false)
-  } catch (e) {
-    done()
-  }
-});
-
-it('it should allow using array spread on children', function () {
+it('it should allow nested arrays of children', function () {
   var children = [dom('span')]
   var node = dom('div', null, [
-    ...children
+    children
   ])
   assert(node.children.length === 1)
   assert(node.children[0].tagName === 'span')
