@@ -16,25 +16,26 @@ tests = $(shell find test/**/*.js)
 # Targets.
 #
 
+default: test
 $(src): node_modules
 $(tests): node_modules
 
 standalone: $(src)
 	@mkdir -p build
-	@browserify \
+	@NODE_ENV=development browserify \
 		--standalone deku \
-		-t [ envify --NODE_ENV production ] \
+		-t envify \
 		-e lib/index.js | bfc > build/deku.js
 
-build: $(tests) $(src)
-	@browserify \
+test: $(src) $(tests)
+	@NODE_ENV=development hihat test/index.js \
 		--debug \
-		-e test/index.js \
-		-t [ envify --NODE_ENV development ] \
-		-t [ babelify --optional es7.asyncFunctions --sourceMapRelative . ] > build.js
-
-test: lint build
-	@duo-test browser --commands 'make build'
+		-t envify \
+		-t [ babelify --optional es7.asyncFunctions ] \
+		-p tap-dev-tool
+		# | tap-closer \
+		# | smokestack \
+		# | tap-spec
 
 test-cloud: build
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- build.js
@@ -45,7 +46,7 @@ node_modules: package.json
 clean:
 	@-rm -rf build build.js node_modules
 
-lint: $(src)
+lint: $(src) $(tests)
 	standard lib/**/*.js | snazzy
 
 size: standalone
