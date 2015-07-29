@@ -34,8 +34,8 @@ test: $(src) $(tests)
 		-t babelify \
 		-p tap-dev-tool
 
-test-cloud:
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) ./node_modules/.bin/zuul -- ./test/index.js
+test-cloud: node_modules
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
