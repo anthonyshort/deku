@@ -28,7 +28,7 @@ standalone: $(src)
 		-e lib/index.js | bfc > build/deku.js
 
 test: $(src) $(tests)
-	@NODE_ENV=development hihat test/index.js \
+	@NODE_ENV=development hihat test/index.js -- \
 		--debug \
 		-t envify \
 		-t babelify \

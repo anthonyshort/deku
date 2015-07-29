@@ -4,7 +4,6 @@ import trigger from 'trigger-event'
 import Emitter from 'component-emitter'
 import raf from 'component-raf'
 import {deku,render} from '../../'
-import memoize from 'memoizee'
 import dom from 'virtual-element'
 import test from 'tape'
 
@@ -29,10 +28,8 @@ var ListItem = {
 }
 
 var Delegate = {
-  render: function (component) {
-    let {props, state} = component
-    var active = state.active || 0;
-    var self = this;
+  render: function ({props,state} ) {
+    var active = state.active || 0
     var items = [1,2,3].map(function(i){
       return dom('li', {
         onClick: function(e, component, setState){
@@ -41,9 +38,9 @@ var Delegate = {
         class: active === i ? 'active' : false
       }, [
         dom('a', 'link')
-      ]);
-    });
-    return dom('ul', items);
+      ])
+    })
+    return dom('ul', items)
   }
 }
 
