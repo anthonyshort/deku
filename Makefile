@@ -31,11 +31,11 @@ test: $(src) $(tests)
 	@NODE_ENV=development hihat test/index.js \
 		--debug \
 		-t envify \
-		-t [ babelify --optional es7.asyncFunctions ] \
+		-t babelify \
 		-p tap-dev-tool
 
-test-cloud: build
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- build.js
+test-cloud:
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
@@ -70,3 +70,4 @@ release: standalone
 .PHONY: lint
 .PHONY: size
 .PHONY: release
+.PHONY: test-cloud
