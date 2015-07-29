@@ -22,7 +22,7 @@ $(tests): node_modules
 
 standalone: $(src)
 	@mkdir -p build
-	@NODE_ENV=development browserify \
+	@NODE_ENV=production browserify \
 		--standalone deku \
 		-t envify \
 		-e lib/index.js | bfc > build/deku.js
@@ -35,7 +35,7 @@ test: $(src) $(tests)
 		-p tap-dev-tool
 
 test-cloud:
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) ./node_modules/.bin/zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
