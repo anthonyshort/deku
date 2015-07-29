@@ -48,7 +48,9 @@ var Delegate = {
 }
 
 var TwoWords = {
-  render: ({props}) => <span>{props.one} {props.two}</span>
+  render: ({props}) => {
+    return <span>{props.one} {props.two}</span>
+  }
 }
 
 // Test helpers
@@ -560,7 +562,21 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
   teardown({renderer,el})
 })
 
-test.skip('replace props instead of merging', ({equal,end}) => {
+test('replacing a text node with undefined value', ({equal,end}) => {
+  var Test = {
+    render: ({props}) => {
+      return dom('span', null, [props.one, ' ', props.two])
+    }
+  }
+  var {mount,renderer,el} = setup(equal)
+  mount(<Test one="Hello" two="World" />)
+  mount(<Test two="Pluto" />)
+  equal(el.innerHTML, '<span> Pluto</span>')
+  teardown({renderer,el})
+  end()
+})
+
+test('replace props instead of merging', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
   mount(<TwoWords one="Hello" two="World" />)
   mount(<TwoWords two="Pluto" />)

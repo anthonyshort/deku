@@ -33,9 +33,6 @@ test: $(src) $(tests)
 		-t envify \
 		-t [ babelify --optional es7.asyncFunctions ] \
 		-p tap-dev-tool
-		# | tap-closer \
-		# | smokestack \
-		# | tap-spec
 
 test-cloud: build
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- build.js
