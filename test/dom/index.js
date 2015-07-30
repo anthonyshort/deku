@@ -15,17 +15,10 @@ var StateChangeOnMount = {
   render: ({props,state}) => <span>{state.text}</span>
 }
 
-var Wrapper = {
-  render: ({ props }) => <div>{props.children}</div>
-}
-
-var RenderChildren = {
-  render: ({ props }) => props.children[0]
-}
-
-var ListItem = {
-  render: ({props}) => <li>{props.children}</li>
-}
+var Wrapper = ({ props }) => <div>{props.children}</div>
+var RenderChildren = ({ props }) => props.children[0]
+var ListItem = ({props}) => <li>{props.children}</li>
+var TwoWords = ({props}) => <span>{props.one} {props.two}</span>
 
 var Delegate = {
   render: function ({props,state} ) {
@@ -41,12 +34,6 @@ var Delegate = {
       ])
     })
     return dom('ul', items)
-  }
-}
-
-var TwoWords = {
-  render: ({props}) => {
-    return <span>{props.one} {props.two}</span>
   }
 }
 
@@ -301,8 +288,9 @@ test('option[selected]', ({ok,end,equal}) => {
 })
 
 test('component rendering', ({equal,end}) => {
-  var {el,renderer,mount} = setup(equal)
+  var {el,renderer,mount,html} = setup(equal)
 
+  // Object Component
   var Test = {
     defaultProps: {
       name: 'Amanda'
@@ -331,6 +319,14 @@ test('component rendering', ({equal,end}) => {
   equal(root.innerHTML, 'Hello Pluto', 'rendered updated state')
   teardown({renderer,el})
   equal(el.innerHTML, '', 'the element is removed')
+  end()
+})
+
+test('function components', ({equal,end}) => {
+  var {el,renderer,mount,html} = setup(equal)
+  var Box = ({props}) => <div>{props.text}</div>
+  mount(<Box text="Hello World" />)
+  html('<div>Hello World</div>', 'function component rendered')
   end()
 })
 
