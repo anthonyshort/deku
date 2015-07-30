@@ -9,21 +9,21 @@ import test from 'tape'
 
 // Test Components
 
-var Wrapper = ({ props }) => <div>{props.children}</div>
-var RenderChildren = ({ props }) => props.children[0]
-var ListItem = ({props}) => <li>{props.children}</li>
-var TwoWords = ({props}) => <span>{props.one} {props.two}</span>
+var RenderChildren  = ({props}) => props.children[0]
+var ListItem        = ({props}) => <li>{props.children}</li>
+var Wrapper         = ({props}) => <div>{props.children}</div>
+var TwoWords        = ({props}) => <span>{props.one} {props.two}</span>
 
 var StateChangeOnMount = {
   initialState: p => ({text: 'foo'}),
-  afterMount: (component, el, setState) => setState({ text: 'bar' }),
+  afterMount: (c,el,setState) => setState({ text: 'bar' }),
   render: ({state}) => <span>{state.text}</span>
 }
 
 var Delegate = function ({props,state}) {
   var active = state.active || 0
   var items = [1,2,3].map(i => {
-    <li class={active === i ? 'active' : false} onClick={(e, component, setState) => setState({ active: i })}>
+    <li class={active === i ? 'active' : false} onClick={(e,c,setState) => setState({ active: i })}>
       <a>link</a>
     </li>
   })
@@ -64,43 +64,88 @@ var createAssertHTML = function(container, equal) {
 
 // Tests
 
-test('virtual elements', ({equal,end}) => {
-  var {app,renderer,el,mount,unmount,html} = setup(equal)
+test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
+  var {renderer,el,mount,unmount,html} = setup(equal)
+  var rootEl
+
+  // Render
+  mount(<span />)
+  html('<span></span>', 'no attribute')
+
+  // Add
+  mount(<span name="Bob" />)
+  html('<span name="Bob"></span>', 'attribute added')
+
+  // Update
+  mount(<span name="Tom" />)
+  html('<span name="Tom"></span>', 'attribute updated')
+
+  // Update
+  mount(<span name={null} />)
+  html('<span></span>', 'attribute removed with null')
+
+  // Update
+  mount(<span name={undefined} />)
+  html('<span></span>', 'attribute removed with undefined')
+
+  // Update
+  mount(<span name="Bob" />)
+  el.children[0].setAttribute = () => fail('DOM was touched')
+
+  // Update
+  mount(<span name="Bob" />)
+  pass('DOM not updated without change')
+
+  // Update
   mount(<span>Hello World</span>)
-  html(`<span>Hello World</span>`, 'element is rendered')
+  html(`<span>Hello World</span>`, 'text rendered')
+
+  rootEl = el.firstChild
+
+  // Update
+  mount(<span>Hello Pluto</span>)
+  html('<span>Hello Pluto</span>', 'text updated')
+
+  // Remove
+  mount(<span></span>)
+  html('<span></span>', 'text removed')
+
+  // Update
+  mount(<span>{undefined} World</span>)
+  html('<span> World</span>', 'text was replaced by undefined')
+
+  // Root element should still be the same
+  equal(el.firstChild, rootEl, 'root element not replaced')
+
+  // Replace
   mount(<div>Foo!</div>)
   html('<div>Foo!</div>', 'element is replaced')
+  notEqual(el.firstChild, rootEl, 'root element replaced')
+
+  // Clear
   unmount()
   html('', 'element is removed when unmounted')
+
+  // Render
   mount(<div>Foo!</div>)
   html('<div>Foo!</div>', 'element is rendered again')
-  teardown({ renderer, el })
-  html('', 'element is removed')
-  end()
-})
 
-test('replace elements', ({equal,end}) => {
-  var {app,renderer,el,mount,html} = setup(equal)
-  mount(
-    <div>
-      <span/>
-    </div>
-  )
-  var rootEl = el.firstChild
-  html('<div><span></span></div>', 'initial render')
-  mount(
-    <div>bar</div>
-  )
+  rootEl = el.firstChild
+
+  // Update
+  mount(<div><span/></div>)
+  html('<div><span></span></div>', 'replaced text with an element')
+
+  // Update
+  mount(<div>bar</div>)
   html('<div>bar</div>', 'replaced child with text')
-  mount(
-    <div>
-      <span>Hello World</span>
-    </div>
-  )
+
+  // Update
+  mount(<div><span>Hello World</span></div>)
   html('<div><span>Hello World</span></div>', 'replaced text with element')
-  mount(
-    <div></div>
-  )
+
+  // Remove
+  mount(<div></div>)
   html('<div></div>', 'removed element')
   equal(el.firstChild, rootEl, 'root element not replaced')
 
@@ -132,53 +177,9 @@ test('replace elements', ({equal,end}) => {
   equal(el.firstChild.firstChild, span, 'child element not replaced')
   equal(el.firstChild, rootEl, 'root element not replaced')
 
-  // Replace the root element
-  mount(<span>Hello World</span>)
-  html('<span>Hello World</span>', 'root element was replaced')
-
-  // Replace text with undefined value
-  mount(<span>{undefined} World</span>)
-  html('<span> World</span>', 'text was replaced by undefined')
-
+  // Removing the renderer
   teardown({ renderer, el })
-  end()
-})
-
-test('text nodes', ({equal,end}) => {
-  var {app,mount,el,renderer,html} = setup(equal)
-  mount(<div></div>)
-  equal(el.innerHTML, '<div></div>')
-  var rootEl = el.firstChild
-  mount(<div>bar</div>)
-  html('<div>bar</div>', 'content rendered')
-  equal(el.firstChild, rootEl, 'element not replaced')
-  mount(<div>Hello Pluto</div>)
-  html('<div>Hello Pluto</div>', 'content rendered')
-  equal(el.firstChild, rootEl, 'element not replaced')
-  mount(<div></div>)
-  html('<div></div>')
-  equal(el.firstChild, rootEl, 'element not replaced')
-  teardown({ renderer, el })
-  end()
-})
-
-test('attributes', ({equal,pass,end,fail}) => {
-  var {app,mount,el,renderer,html} = setup(equal)
-  mount(<span />)
-  html('<span></span>', 'no attribute')
-  mount(<span name="Bob" />)
-  html('<span name="Bob"></span>', 'attribute added')
-  mount(<span name="Tom" />)
-  html('<span name="Tom"></span>', 'attribute updated')
-  mount(<span name={null} />)
-  html('<span></span>', 'attribute removed with null')
-  mount(<span name={undefined} />)
-  html('<span></span>', 'attribute removed with undefined')
-  mount(<span name="Bob" />)
-  el.children[0].setAttribute = () => fail('DOM was touched')
-  mount(<span name="Bob" />)
-  pass('DOM not updated without change')
-  teardown({ renderer, el })
+  html('', 'element is removed')
   end()
 })
 
@@ -200,6 +201,8 @@ test('innerHTML attribute', ({equal,end}) => {
   html('<div>Hello <strong>deku</strong></div>', 'innerHTML is rendered')
   mount(<div innerHTML="Hello <strong>Pluto</strong>" />)
   html('<div>Hello <strong>Pluto</strong></div>', 'innerHTML is updated')
+  mount(<div />)
+  html('<div></div>', 'innerHTML is removed')
   teardown({renderer,el})
   end()
 })
@@ -251,54 +254,45 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
 
 test('option[selected]', ({ok,end,equal}) => {
   var {mount,renderer,el} = setup(equal)
+  var options
+
+  // first should be selected
   mount(
     <select>
       <option selected>one</option>
       <option>two</option>
     </select>
   )
-  var options = el.querySelectorAll('option')
-  selected(options[0])
-  unselected(options[1])
-  // should now be enabled
+
+  options = el.querySelectorAll('option')
+  ok(!options[1].selected, 'is not selected')
+  ok(options[0].selected, 'is selected')
+
+  // second should be selected
   mount(
     <select>
       <option>one</option>
       <option selected>two</option>
     </select>
   )
+
   options = el.querySelectorAll('option')
-  unselected(options[0])
-  selected(options[1])
-  function selected(option) {
-    ok(option.selected, 'is selected')
-  }
-  function unselected(option) {
-    ok(!option.selected, 'is not selected')
-  }
+  ok(!options[0].selected, 'is not selected')
+  ok(options[1].selected, 'is selected')
+
   teardown({renderer,el})
   end()
 })
 
-test('component rendering', ({equal,end}) => {
+test('components', ({equal,end}) => {
   var {el,renderer,mount,html} = setup(equal)
 
   // Object Component
   var Test = {
-    defaultProps: {
-      name: 'Amanda'
-    },
-    initialState: (props) => {
-      return {
-        text: 'Hello World'
-      }
-    },
-    render: ({ props, state }) => {
-      return <span count={props.count} name={props.name}>{state.text}</span>
-    },
-    afterMount: ({ props, state }, el, updateState) => {
-      updateState({ text: 'Hello Pluto' })
-    }
+    defaultProps: { name: 'Amanda' },
+    initialState: (props) => ({ text: 'Hello World' }),
+    render: ({props,state}) => <span count={props.count} name={props.name}>{state.text}</span>,
+    afterMount: (c, el, updateState) => updateState({ text: 'Hello Pluto' })
   }
 
   mount(<Test count={2} />)
@@ -306,20 +300,23 @@ test('component rendering', ({equal,end}) => {
   equal(root.getAttribute('count'), '2', 'rendered with props')
   equal(root.getAttribute('name'), 'Amanda', 'has default props')
   equal(root.innerHTML, 'Hello World', 'rendered with initial state')
+
   mount(<Test count={3} />)
   equal(root.getAttribute('count'), '3', 'props updated')
   equal(root.getAttribute('name'), 'Amanda', 'default props still exist')
   equal(root.innerHTML, 'Hello Pluto', 'rendered updated state')
+
   teardown({renderer,el})
   equal(el.innerHTML, '', 'the element is removed')
   end()
 })
 
-test('function components', ({equal,end}) => {
+test('simple components', ({equal,end}) => {
   var {el,renderer,mount,html} = setup(equal)
   var Box = ({props}) => <div>{props.text}</div>
   mount(<Box text="Hello World" />)
   html('<div>Hello World</div>', 'function component rendered')
+  teardown({renderer,el})
   end()
 })
 
@@ -548,20 +545,6 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
   teardown({renderer,el})
 })
 
-test('replacing a text node with undefined value', ({equal,end}) => {
-  var Test = {
-    render: ({props}) => {
-      return dom('span', null, [props.one, ' ', props.two])
-    }
-  }
-  var {mount,renderer,el} = setup(equal)
-  mount(<Test one="Hello" two="World" />)
-  mount(<Test two="Pluto" />)
-  equal(el.innerHTML, '<span> Pluto</span>')
-  teardown({renderer,el})
-  end()
-})
-
 test('replace props instead of merging', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
   mount(<TwoWords one="Hello" two="World" />)
@@ -714,15 +697,9 @@ test('skipping updates with shouldUpdate', ({equal,end,fail}) => {
   var {mount,renderer,el} = setup(equal)
 
   var Test = {
-    afterUpdate(){
-      fail('component was updated')
-    },
-    shouldUpdate(){
-      return false
-    },
-    render(){
-      return <div />
-    }
+    afterUpdate:  () => fail('component was updated'),
+    shouldUpdate: () => false,
+    render:       () => <div/>
   }
 
   mount(<Test foo="bar" />)
@@ -856,7 +833,7 @@ test('replacing components with other components', ({equal,end}) => {
 
 test('adding, removing and updating events', ({equal,end}) => {
   var {mount,renderer,el,$} = setup(equal)
-  var count = 0;
+  var count = 0
   var onclicka = () => count += 1
   var onclickb = () => count -= 1
 
@@ -881,7 +858,7 @@ test('should bubble events', ({equal,end,fail,ok}) => {
   var {mount,renderer,el,$} = setup(equal)
 
   var Test = {
-    render: function ({props, state}, setState) {
+    render: function ({props,state}) {
       return (
         <div onClick={onParentClick}>
           <div class={state.active ? 'active' : ''} onClick={onClickTest}>
@@ -913,7 +890,7 @@ test('unmounting components when removing an element', ({equal,pass,end,plan}) =
   var {mount,renderer,el} = setup(equal)
 
   var Test = {
-    render: () => <div />,
+    render:        () => <div />,
     beforeUnmount: () => pass('component was unmounted')
   }
 
@@ -951,19 +928,15 @@ test('update sub-components with the same element', ({equal,end}) => {
     }
   }
 
-  let Page2 = {
-    render({props}) {
-      return <div>
+  let Page2 = ({props}) => {
+    return (
+      <div>
         <span>{props.title}</span>
       </div>
-    }
+    )
   }
 
-  let App = {
-    render({props}) {
-      return props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
-    }
-  }
+  let App = ({props}) => props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
 
   mount(<App page={1} show={true} />)
   mount(<App page={1} show={false} />)
