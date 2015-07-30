@@ -9,32 +9,25 @@ import test from 'tape'
 
 // Test Components
 
-var StateChangeOnMount = {
-  initialState: () => { return { text: 'foo' } },
-  afterMount: (component, el, setState) => setState({ text: 'bar' }),
-  render: ({props,state}) => <span>{state.text}</span>
-}
-
 var Wrapper = ({ props }) => <div>{props.children}</div>
 var RenderChildren = ({ props }) => props.children[0]
 var ListItem = ({props}) => <li>{props.children}</li>
 var TwoWords = ({props}) => <span>{props.one} {props.two}</span>
 
-var Delegate = {
-  render: function ({props,state} ) {
-    var active = state.active || 0
-    var items = [1,2,3].map(function(i){
-      return dom('li', {
-        onClick: function(e, component, setState){
-          setState({ active: i })
-        },
-        class: active === i ? 'active' : false
-      }, [
-        dom('a', 'link')
-      ])
-    })
-    return dom('ul', items)
-  }
+var StateChangeOnMount = {
+  initialState: p => ({text: 'foo'}),
+  afterMount: (component, el, setState) => setState({ text: 'bar' }),
+  render: ({state}) => <span>{state.text}</span>
+}
+
+var Delegate = function ({props,state}) {
+  var active = state.active || 0
+  var items = [1,2,3].map(i => {
+    <li class={active === i ? 'active' : false} onClick={(e, component, setState) => setState({ active: i })}>
+      <a>link</a>
+    </li>
+  })
+  return <ul>{items}</ul>
 }
 
 // Test helpers
@@ -315,7 +308,7 @@ test('component rendering', ({equal,end}) => {
   equal(root.innerHTML, 'Hello World', 'rendered with initial state')
   mount(<Test count={3} />)
   equal(root.getAttribute('count'), '3', 'props updated')
-  // equal(root.getAttribute('name'), 'Amanda', 'default props still exist')
+  equal(root.getAttribute('name'), 'Amanda', 'default props still exist')
   equal(root.innerHTML, 'Hello Pluto', 'rendered updated state')
   teardown({renderer,el})
   equal(el.innerHTML, '', 'the element is removed')
@@ -648,30 +641,19 @@ test('batched rendering', assert => {
 test('rendering nested components', ({equal,end}) => {
   var {mount,renderer,el,html} = setup(equal)
 
-  var ComponentA = {
-    render({props, state}) {
-      return <div name="ComponentA">{props.children}</div>
-    }
-  }
+  var ComponentA = ({props}) => <div name="ComponentA">{props.children}</div>
+  var ComponentB = ({props}) => <div name="ComponentB">{props.children}</div>
 
-  var ComponentB = {
-    render({props, state}) {
-      return <div name="ComponentB">{props.children}</div>
-    }
-  }
-
-  var ComponentC = {
-    render({props, state}) {
-      return (
-        <div name="ComponentC">
-          <ComponentB>
-            <ComponentA>
-              <span>{props.text}</span>
-            </ComponentA>
-          </ComponentB>
-        </div>
-      )
-    }
+  var ComponentC = ({props}) => {
+    return (
+      <div name="ComponentC">
+        <ComponentB>
+          <ComponentA>
+            <span>{props.text}</span>
+          </ComponentA>
+        </ComponentB>
+      </div>
+    )
   }
 
   mount(<ComponentC text='Hello World!' />)
@@ -838,17 +820,8 @@ test('firing mount events on sub-components created later', ({equal,pass,end,pla
 test('should change root node and still update correctly', ({equal,end}) => {
   var {mount,html,renderer,el} = setup(equal)
 
-  var ComponentA = {
-    render: function({props,state}) {
-      return dom(props.type, null, props.text)
-    }
-  }
-
-  var Test = {
-    render: function({props,state}) {
-      return <ComponentA type={props.type} text={props.text} />
-    }
-  }
+  var ComponentA  = ({props}) => dom(props.type, null, props.text)
+  var Test        = ({props}) => <ComponentA type={props.type} text={props.text} />
 
   mount(<Test type="span" text="test" />)
   html('<span>test</span>')
@@ -862,22 +835,14 @@ test('should change root node and still update correctly', ({equal,end}) => {
 
 test('replacing components with other components', ({equal,end}) => {
   var {mount,renderer,el,html} = setup(equal)
+  var ComponentA = () => <div>A</div>
+  var ComponentB = () => <div>B</div>
 
-  var ComponentA = {
-    render: () => <div>A</div>
-  }
-
-  var ComponentB = {
-    render: () => <div>B</div>
-  }
-
-  var ComponentC = {
-    render: function ({props,state}) {
-      if (props.type === 'A') {
-        return <ComponentA />
-      } else {
-        return <ComponentB />
-      }
+  var ComponentC = ({props,state}) => {
+    if (props.type === 'A') {
+      return <ComponentA />
+    } else {
+      return <ComponentB />
     }
   }
 
@@ -1033,17 +998,6 @@ test('svg elements', ({equal,end}) => {
   end()
 })
 
-// TODO: Not sure how to do this if we're hiding that state
-// test('should remove references to child components when they are removed', function(){
-//   var app = deku()
-//   app.mount(<ComponentToggle showComponent={true} />);
-//   mount(app, function(el, renderer){
-//     assert(Object.keys(renderer.inspect().children).length === 3)
-//     app.mount(<ComponentToggle showComponent={false} />);
-//     assert(Object.keys(renderer.inspect().children).length === 2)
-//   })
-// });
-
 test('moving components with keys', ({equal,end,ok,pass,plan}) => {
   var {mount,renderer,el} = setup(equal)
   var one,two,three
@@ -1153,24 +1107,20 @@ test('updating event handlers when children are removed', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
   var items = ['foo','bar','baz']
 
-  var ListItem = {
-    render: function ({props,state}) {
-      return (
-        <li>
-          <a onClick={e => items.splice(props.index, 1)} />
-        </li>
-      )
-    }
+  var ListItem = ({props}) => {
+    return (
+      <li>
+        <a onClick={e => items.splice(props.index, 1)} />
+      </li>
+    )
   }
 
-  var List = {
-    render: function ({props}) {
-      return (
-        <ul>
-          {props.items.map((_,i) => <ListItem index={i} />)}
-        </ul>
-      )
-    }
+  var List = ({props}) => {
+    return (
+      <ul>
+        {props.items.map((_,i) => <ListItem index={i} />)}
+      </ul>
+    )
   }
 
   mount(<List items={items} />)
