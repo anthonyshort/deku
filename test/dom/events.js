@@ -292,6 +292,31 @@ it('should remove handlers when an element is removed', function (done) {
   })
 })
 
+// Let's run this test only if the browser supports shadow DOM
+if (document.body.createShadowRoot)
+  it('should be possible to change the root listener node so we can render into document fragments', function(done) {
+    var Button = {
+      render: function(comp) {
+        return dom('button', {onClick: done.bind(null, null)});
+      }
+    };
+
+    var host = document.createElement('div');
+    var shadow = host.createShadowRoot();
+    shadow.innerHTML = '<div></div>';
+    var mountNode = shadow.querySelector('div');
+
+    document.body.appendChild(host);
+
+    var app = deku(<Button />)
+    var renderer = render(app, mountNode, { batching: false, rootListenerNode: shadow });
+    var button = shadow.querySelector('button');
+    trigger(button, 'click');
+
+    renderer.remove();
+    document.body.removeChild(host);
+  })
+
 it.skip('should keep focus on elements', function () {
   var App = {
     render: function(comp, next) {
