@@ -91,3 +91,16 @@ test('renderString: function attributes', assert => {
   assert.equal(renderString(app), '<div></div>', 'attribute not rendered')
   assert.end()
 })
+
+test('rendering data sources to a string', ({equal,end}) => {
+  var Component = {
+    propTypes: {
+      'text': { source: 'text' }
+    },
+    render: ({props,state}) => <div>{props.text}</div>
+  }
+  var app = deku(<Component />)
+  app.set('text', 'Hello World')
+  equal(renderString(app), '<div>Hello World</div>')
+  end()
+})
