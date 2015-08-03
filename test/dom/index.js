@@ -1114,7 +1114,7 @@ if (document.body.createShadowRoot) {
   test('change the root listener node so we can render into document fragments', ({equal,end}) => {
     var Button = {
       render: function(comp) {
-        return dom('button', {onClick: done.bind(null, null)})
+        return dom('button', { onClick: () => end() })
       }
     }
 
