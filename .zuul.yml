@@ -1,5 +1,5 @@
 ui: tape
-concurrency: 10
+concurrency: 2
 browsers:
   - name: chrome
     version: 43..latest
