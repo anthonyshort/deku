@@ -221,6 +221,14 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
   mount(<input />)
   equal(checkbox.value, '', 'value property removed')
 
+  comment('input cursor position')
+  mount(<input type="text" value="Game of Thrones" />)
+  var input = $('input')
+  input.setSelectionRange(5,7)
+  mount(<input type="text" value="Way of Kings" />)
+  equal(input.selectionStart, 5, 'selection start')
+  equal(input.selectionEnd, 7, 'selection end')
+
   comment('input.checked')
   mount(<input checked={true} />)
   ok(checkbox.checked, 'checked with a true value')
