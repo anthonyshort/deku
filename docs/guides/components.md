@@ -19,7 +19,8 @@ To use this in our app, we would just import it and mount it:
 
 ```js
 import {Button} from './button.js'
-import {element,tree,render} from 'deku'
+import {tree,render} from 'deku'
+import element from 'virtual-element'
 
 let app = tree(
   <Button>Hello!</Button>

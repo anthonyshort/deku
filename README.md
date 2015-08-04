@@ -141,7 +141,7 @@ So now we can start defining components in their own module and export them. Let
 
 ```js
 // button.js
-import {element} from 'virtual-element'
+import element from 'virtual-element'
 
 let MyButton = {
   render ({props}) {
