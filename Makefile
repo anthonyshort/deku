@@ -1,4 +1,3 @@
-
 #
 # Binaries.
 #
@@ -10,82 +9,65 @@ BIN := ./node_modules/.bin
 # Wildcards.
 #
 
-lib = $(shell find lib/*.js)
-js = $(shell find lib/*.js test/*.js)
-
-#
-# Default.
-#
-
-default: index.js
+src = $(shell find lib/*.js)
+tests = $(shell find test/**/*.js)
 
 #
 # Targets.
 #
 
-build.js: node_modules $(js)
-	@browserify -d -e test/index.js -t [ babelify --optional es7.asyncFunctions ] -t [ envify --NODE_ENV development ] > build.js
+default: test
+$(src): node_modules
+$(tests): node_modules
 
-tests.js: node_modules $(js)
-	@browserify -d -e test/index.js -t [ babelify --optional es7.asyncFunctions ] -t [ envify --NODE_ENV development ] | bfc > tests.js
+standalone: $(src)
+	@mkdir -p build
+	@NODE_ENV=production browserify \
+		--standalone deku \
+		-t envify \
+		-e lib/index.js | bfc > build/deku.js
 
-index.js: node_modules $(js)
-	@browserify -t [ envify --NODE_ENV production ] -s deku lib/index.js | bfc > index.js
+test: $(src) $(tests)
+	@NODE_ENV=development hihat test/index.js -- \
+		--debug \
+		-t envify \
+		-t babelify \
+		-p tap-dev-tool
 
-#
-# Tests.
-#
-
-test: build.js
-	@$(BIN)/duo-test browser --commands 'make build.js'
-
-test-phantom:
-	@$(BIN)/mochify --transform babelify --phantomjs ./node_modules/.bin/phantomjs --ui bdd ./test/index.js
-.PHONY: test
-
-test-cloud: tests.js
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- tests.js
-
-test-lint: $(lib)
-	@$(BIN)/standard lib/*
-.PHONY: test-lint
-
-test-watch:
-	@$(BIN)/mochify --watch
-.PHONY: watch
-
-test-coverage:
-	@$(BIN)/mochify --cover
-.PHONY: coverage
-
-test-size: index.js
-	$(BIN)/minify index.js | gzip -9 | wc -c
-.PHONY: test-size
-
-#
-# Tasks.
-#
+test-cloud: node_modules
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
 
 clean:
-	@-rm -rf build.js index.js tests.js
-.PHONY: clean
+	@-rm -rf build build.js node_modules
 
-distclean: clean
-	@-rm -rf components node_modules
-.PHONY: distclean
+lint: $(src) $(tests)
+	standard lib/**/*.js | snazzy
+
+size: standalone
+	@minify build/deku.js | gzip -9 | wc -c
 
 #
 # Releases.
 #
 
-release: clean index.js
+release: standalone
 	bump $$VERSION && \
 	git changelog --tag $$VERSION && \
 	git commit --all -m "Release $$VERSION" && \
 	git tag $$VERSION && \
 	git push origin master --tags && \
 	npm publish
+
+#
+# These tasks will be run every time regardless of dependencies.
+#
+
+.PHONY: standalone
+.PHONY: clean
+.PHONY: lint
+.PHONY: size
 .PHONY: release
+.PHONY: test-cloud

@@ -1,206 +1,106 @@
 /** @jsx dom */
 
-import assert from 'assert'
-import {dom,deku,renderString} from '../../'
+import {deku,renderString} from '../../'
+import dom from 'virtual-element'
+import test from 'tape'
 
-it('should render an element', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <div></div>
-    }
-  };
+var render = function (vnode) {
   var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div></div>')
-});
+  app.mount(vnode)
+  return renderString(app)
+}
 
-it('should render an element with attributes', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return dom('div', { id: 'foo'});
-    }
-  };
-  var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div id="foo"></div>')
-});
-
-it('should render an element with text', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <div>foo</div>
+test('rendering virtual element to a string', ({equal,end}) => {
+  var Other = {
+    render: function({ props }) {
+      return <span>{props.text}</span>
     }
   }
-  var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div>foo</div>')
-});
-
-it('should render an element with child elements', function(){
   var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <div><span>foo</span></div>;
-    }
-  };
-  var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div><span>foo</span></div>')
-});
-
-it('should render an element with child components', function(){
-  var Span = {
-    render: function(component){
-      let {props, state} = component
-      return <span>foo</span>;
-    }
-  };
-  var Div = {
-    render: function(component){
-      let {props, state} = component
-      return <div><Span /></div>;
-    }
-  };
-  var app = deku()
-  app.mount(<Div />)
-  assert.equal(renderString(app), '<div><span>foo</span></div>')
-});
-
-it('should render an element with component root', function(){
-  var Span = {
-    render: function(component){
-      let {props, state} = component
-      return <span>foo</span>
-    }
-  };
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <Span />;
-    }
-  };
-  var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<span>foo</span>')
-});
-
-it('should render with props', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <div>{props.text}</div>;
-    }
-  };
-  var app = deku()
-  app.mount(<Component text="foo" />)
-  assert.equal(renderString(app), '<div>foo</div>')
-});
-
-it('should render with initial state', function(){
-  var Component = {
-    initialState: function(props){
-      return { text: 'foo', count: props.initialCount }
-    },
-    render: function(component){
-      let {props, state} = component
-      return <div count={state.count}>{state.text}</div>
-    }
-  };
-  var app = deku()
-  app.mount(<Component initialCount={0} />)
-  assert.equal(renderString(app), '<div count="0">foo</div>')
-});
-
-it('should have initial props', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <div>{props.text}</div>
-    },
-    defaultProps: {
-      text: 'Hello!'
+    render: function (component) {
+      return (
+        <div id="foo">
+          <span>foo</span>
+          <Other text="foo" />
+        </div>
+      )
     }
   }
-  var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div>Hello!</div>')
+  equal(render(<Component />), '<div id="foo"><span>foo</span><span>foo</span></div>', 'element rendered')
+  end()
 })
 
-it('should call beforeMount and beforeRender', function(done){
+test('renderString: components', ({equal,end}) => {
   var Component = {
-    initialState: function(){
-      return { text: 'foo' }
+    defaultProps: {
+      hello: 'Hello'
     },
-    beforeMount: function(component){
-      let {props, state} = component
-      assert(props.foo)
-      assert(state.text)
+    initialState: function (props) {
+      return { count: props.initialCount }
     },
-    beforeRender: function(component){
-      let {props, state} = component
-      assert(props.foo)
-      assert(state.text)
-      done()
+    render: function ({ props, state }) {
+      return <div count={state.count}>{props.hello} {props.name}</div>
+    }
+  }
+  equal(render(<Component name="Amanda" initialCount={0} />), '<div count="0">Hello Amanda</div>', 'rendered correctly')
+  end()
+})
+
+test('renderString: lifecycle hooks', assert => {
+  var called = []
+  var Component = {
+    beforeMount: function({ props, state }) {
+      called.push('beforeMount')
+      assert.ok(props, 'beforeMount has props')
+      assert.ok(state, 'beforeMount has state')
+    },
+    beforeRender: function({ props, state }){
+      called.push('beforeRender')
+      assert.ok(props, 'beforeRender has props')
+      assert.ok(state, 'beforeRender has state')
     },
     render: function(props, state){
-      return dom('div');
+      return <div />
     }
-  };
+  }
   var app = deku()
-  app.mount(<Component foo="bar" />)
+  app.mount(<Component />)
   renderString(app)
+  assert.ok(~called.indexOf('beforeRender'), 'beforeRender called')
+  assert.ok(~called.indexOf('beforeMount'), 'beforeMount called')
+  assert.end()
 })
 
-it('should render innerHTML', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return dom('div', { innerHTML: '<span>foo</span>' });
-    }
-  };
+test('renderString: innerHTML', assert => {
   var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<div><span>foo</span></div>')
+  app.mount(<div innerHTML="<span>foo</span>" />)
+  assert.equal(renderString(app), '<div><span>foo</span></div>', 'innerHTML rendered')
+  assert.end()
 })
 
-it('should render the value of inputs', function(){
-  var Component = {
-    render: function(component){
-      let {props, state} = component
-      return <input value="foo" />
-    }
-  };
+test('renderString: input.value', assert => {
   var app = deku()
-  app.mount(<Component />)
-  assert.equal(renderString(app), '<input value="foo"></input>')
+  app.mount(<input value="foo" />)
+  assert.equal(renderString(app), '<input value="foo"></input>', 'value rendered')
+  assert.end()
 })
 
-it('should render data sources', function(){
+test('renderString: function attributes', assert => {
+  function foo() { return 'blah' }
+  var app = deku(<div onClick={foo} />)
+  assert.equal(renderString(app), '<div></div>', 'attribute not rendered')
+  assert.end()
+})
+
+test('rendering data sources to a string', ({equal,end}) => {
   var Component = {
     propTypes: {
       'text': { source: 'text' }
     },
-    render: function(component){
-      let {props, state} = component
-      return <div>{props.text}</div>
-    }
-  };
-  var app = deku()
-    .set('text', 'Hello World')
-    .mount(<Component />)
-  assert.equal(renderString(app), '<div>Hello World</div>')
-})
-
-it('should not render event handlers as attributes', function () {
-  var Component = {
-    render: function() {
-      return <div onClick={foo} />
-    }
+    render: ({props,state}) => <div>{props.text}</div>
   }
-  function foo() { return 'blah' }
   var app = deku(<Component />)
-  assert.equal(renderString(app), '<div></div>')
-});
+  app.set('text', 'Hello World')
+  equal(renderString(app), '<div>Hello World</div>')
+  end()
+})

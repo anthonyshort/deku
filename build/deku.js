@@ -20,7 +20,6 @@ module.exports = Application
 function Application (element) {
   if (!(this instanceof Application)) return new Application(element)
   this.options = {}
-  this.sources = {}
   this.element = element
 }
 
@@ -49,16 +48,6 @@ Application.prototype.use = function (plugin) {
 
 Application.prototype.option = function (name, val) {
   this.options[name] = val
-  return this
-}
-
-/**
- * Set value used somewhere in the IO network.
- */
-
-Application.prototype.set = function (name, data) {
-  this.sources[name] = data
-  this.emit('source', name, data)
   return this
 }
 
@@ -151,22 +140,30 @@ if (typeof document !== 'undefined') {
 
 exports.renderString = _require('./stringify')
 
+},{"./application":1,"./render":5,"./stringify":6}],4:[function(_require,module,exports){
+var type = _require('component-type')
+
 /**
- * Create virtual elements.
+ * Returns the type of a virtual node
+ *
+ * @param  {Object} node
+ * @return {String}
  */
 
-exports.element =
-exports.createElement =
-exports.dom = _require('./virtual')
+module.exports = function nodeType (node) {
+  var v = type(node)
+  if (v === 'null' || node === false) return 'empty'
+  if (v !== 'object') return 'text'
+  if (type(node.type) === 'string') return 'element'
+  return 'component'
+}
 
-},{"./application":1,"./render":4,"./stringify":5,"./virtual":8}],4:[function(_require,module,exports){
+},{"component-type":11}],5:[function(_require,module,exports){
 /**
  * Dependencies.
  */
 
 var raf = _require('component-raf')
-var Pool = _require('dom-pool')
-var walk = _require('dom-walk')
 var isDom = _require('is-dom')
 var uid = _require('get-uid')
 var keypath = _require('object-path')
@@ -178,18 +175,15 @@ var forEach = _require('fast.js/forEach')
 var assign = _require('fast.js/object/assign')
 var reduce = _require('fast.js/reduce')
 var isPromise = _require('is-promise')
-
-/**
- * These elements won't be pooled
- */
-
-var avoidPooling = ['input', 'textarea', 'select', 'option'];
+var nodeType = _require('./node-type')
 
 /**
  * Expose `dom`.
  */
 
 module.exports = render
+
+var containers = {}
 
 /**
  * Render an app to the DOM
@@ -201,35 +195,43 @@ module.exports = render
  * @return {Object}
  */
 
-function render (app, container, opts) {
-  var frameId
-  var isRendering
-  var rootId = 'root'
-  var currentElement
-  var currentNativeElement
-  var connections = {}
-  var components = {}
-  var entities = {}
-  var pools = {}
-  var handlers = {}
-  var mountQueue = []
-  var children = {}
-  children[rootId] = {}
+function render (element, node, opts) {
 
-  if (!isDom(container)) {
+  // Compatibility with Application
+  if (element.element) {
+    var app = element
+    element = app.element
+  }
+
+  if (!isDom(node)) {
     throw new Error('Container element must be a DOM element')
   }
 
-  /**
-   * Rendering options. Batching is only ever really disabled
-   * when running tests, and pooling can be disabled if the user
-   * is doing something stupid with the DOM in their components.
-   */
+  var containerId = node.getAttribute('data-cid')
 
-  var options = defaults(assign({}, app.options || {}, opts || {}), {
-    pooling: true,
-    batching: true
-  })
+  if (!containerId) {
+    if (node.children.length > 0) {
+      console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
+    }
+    if (node === document.body) {
+      console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
+    }
+    var containerId = uid()
+    node.setAttribute('data-cid', containerId)
+    containers[containerId] = {
+      node: node,
+      currentNativeElement: null,
+      currentElement: null,
+      isRendering: false,
+      frameId: null,
+      entities: {},
+      handlers: {},
+      mountQueue: [],
+      children: {
+        root: {}
+      }
+    }
+  }
 
   /**
    * Listen to DOM events
@@ -237,69 +239,27 @@ function render (app, container, opts) {
 
   addNativeEventListeners()
 
-  /**
-   * Watch for changes to the app so that we can update
-   * the DOM as needed.
-   */
-
-  app.on('unmount', onunmount)
-  app.on('mount', onmount)
-  app.on('source', onupdate)
-
-  /**
-   * If the app has already mounted an element, we can just
-   * render that straight away.
-   */
-
-  if (app.element) render()
+  var container = containers[containerId]
+  var frameId = container.frameId
+  var isRendering = container.isRendering
+  var rootId = 'root'
+  var currentElement = container.currentElement
+  var currentNativeElement = container.currentNativeElement
+  var entities = container.entities
+  var handlers = container.handlers
+  var mountQueue = container.mountQueue
+  var children = container.children
+  render()
 
   /**
-   * Teardown the DOM rendering so that it stops
-   * rendering and everything can be garbage collected.
+   * Rendering options. Batching is only ever really disabled
+   * when running tests, and pooling can be disabled if the user
+   * is doing something stupid with the DOM in their components.
    */
 
-  function teardown () {
-    removeNativeEventListeners()
-    removeNativeElement()
-    app.off('unmount', onunmount)
-    app.off('mount', onmount)
-    app.off('source', onupdate)
-  }
-
-  /**
-   * Swap the current rendered node with a new one that is rendered
-   * from the new virtual element mounted on the app.
-   *
-   * @param {VirtualElement} element
-   */
-
-  function onmount () {
-    invalidate()
-  }
-
-  /**
-   * If the app unmounts an element, we should clear out the current
-   * rendered element. This will remove all the entities.
-   */
-
-  function onunmount () {
-    removeNativeElement()
-    currentElement = null
-  }
-
-  /**
-   * Update all components that are bound to the source
-   *
-   * @param {String} name
-   * @param {*} data
-   */
-
-  function onupdate (name, data) {
-    if (!connections[name]) return;
-    connections[name].forEach(function(update) {
-      update(data)
-    })
-  }
+  var options = defaults(assign({}, opts || {}), {
+    batching: true
+  })
 
   /**
    * Render and mount a component to the native dom.
@@ -309,8 +269,6 @@ function render (app, container, opts) {
    */
 
   function mountEntity (entity) {
-    register(entity)
-    setSources(entity)
     children[entity.id] = {}
     entities[entity.id] = entity
 
@@ -348,9 +306,6 @@ function render (app, container, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
-    var componentEntities = components[entityId].entities;
-    delete componentEntities[entityId]
-    delete components[entityId]
     delete entities[entityId]
     delete children[entityId]
   }
@@ -421,27 +376,21 @@ function render (app, container, opts) {
       frameId = raf(render)
       return
     } else {
-      isRendering = true
+      container.isRendering = isRendering = true
     }
 
     // 1. If there isn't a native element rendered for the current mounted element
     // then we need to create it from scratch.
     // 2. If a new element has been mounted, we should diff them.
     // 3. We should update check all child components for changes.
-    if (!currentNativeElement) {
-      currentElement = app.element
-      currentNativeElement = toNative(rootId, '0', currentElement)
-      if (container.children.length > 0) {
-        console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
-      }
-      if (container === document.body) {
-        console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
-      }
-      removeAllChildren(container);
-      container.appendChild(currentNativeElement)
-    } else if (currentElement !== app.element) {
-      currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
-      currentElement = app.element
+    if (!container.currentNativeElement) {
+      container.currentElement = element
+      container.currentNativeElement = toNative(rootId, '0', element)
+      removeAllChildren(container.node)
+      container.node.appendChild(container.currentNativeElement)
+    } else if (container.currentElement !== element) {
+      container.currentNativeElement = patch(rootId, container.currentElement, element, container.currentNativeElement)
+      container.currentElement = element
       updateChildren(rootId)
     } else {
       updateChildren(rootId)
@@ -460,8 +409,8 @@ function render (app, container, opts) {
    */
 
   function flushMountQueue () {
-    var entityId
-    while (entityId = mountQueue.pop()) {
+    while (mountQueue.length > 0) {
+      var entityId = mountQueue.pop()
       var entity = entities[entityId]
       trigger('afterRender', entity, [entity.context, entity.nativeElement])
       triggerUpdate('afterMount', entity, [entity.context, entity.nativeElement, setState(entity)])
@@ -475,7 +424,7 @@ function render (app, container, opts) {
   function clearFrame () {
     if (!frameId) return
     raf.cancel(frameId)
-    frameId = 0
+    container.frameId = frameId = 0
   }
 
   /**
@@ -488,7 +437,6 @@ function render (app, container, opts) {
 
   function updateEntity (entityId) {
     var entity = entities[entityId]
-    setSources(entity)
 
     if (!shouldUpdate(entity)) {
       commit(entity)
@@ -574,8 +522,9 @@ function render (app, container, opts) {
    */
 
   function toNative (entityId, path, vnode) {
-    switch (vnode.type) {
+    switch (nodeType(vnode)) {
       case 'text': return toNativeText(vnode)
+      case 'empty': return toNativeEmptyElement(entityId, path)
       case 'element': return toNativeElement(entityId, path, vnode)
       case 'component': return toNativeComponent(entityId, path, vnode)
     }
@@ -587,8 +536,8 @@ function render (app, container, opts) {
    * @param {Object} vnode
    */
 
-  function toNativeText (vnode) {
-    return document.createTextNode(vnode.data)
+  function toNativeText (text) {
+    return document.createTextNode(text)
   }
 
   /**
@@ -596,22 +545,16 @@ function render (app, container, opts) {
    */
 
   function toNativeElement (entityId, path, vnode) {
-    var attributes = vnode.attributes
-    var children = vnode.children
-    var tagName = vnode.tagName
     var el
+    var attributes = vnode.attributes
+    var tagName = vnode.type
+    var childNodes = vnode.children
 
     // create element either from pool or fresh.
-    if (!options.pooling || !canPool(tagName)) {
-      if (svg.isElement(tagName)) {
-        el = document.createElementNS(svg.namespace, tagName)
-      } else {
-        el = document.createElement(tagName)
-      }
+    if (svg.isElement(tagName)) {
+      el = document.createElementNS(svg.namespace, tagName)
     } else {
-      var pool = getPool(tagName)
-      el = cleanup(pool.pop())
-      if (el.parentNode) el.parentNode.removeChild(el)
+      el = document.createElement(tagName)
     }
 
     // set attributes.
@@ -619,16 +562,27 @@ function render (app, container, opts) {
       setAttribute(entityId, path, el, name, value)
     })
 
-    // store keys on the native element for fast event handling.
-    el.__entity__ = entityId
-    el.__path__ = path
-
     // add children.
-    forEach(children, function (child, i) {
+    forEach(childNodes, function (child, i) {
       var childEl = toNative(entityId, path + '.' + i, child)
       if (!childEl.parentNode) el.appendChild(childEl)
     })
 
+    // store keys on the native element for fast event handling.
+    el.__entity__ = entityId
+    el.__path__ = path
+
+    return el
+  }
+
+  /**
+   * Create a native element from a virtual element.
+   */
+
+  function toNativeEmptyElement (entityId, path) {
+    var el = document.createElement('noscript')
+    el.__entity__ = entityId
+    el.__path__ = path
     return el
   }
 
@@ -637,7 +591,7 @@ function render (app, container, opts) {
    */
 
   function toNativeComponent (entityId, path, vnode) {
-    var child = new Entity(vnode.component, vnode.props, entityId)
+    var child = new Entity(vnode.type, assign({ children: vnode.children }, vnode.attributes), entityId)
     children[entityId][path] = child.id
     return mountEntity(child)
   }
@@ -655,13 +609,17 @@ function render (app, container, opts) {
    */
 
   function diffNode (path, entityId, prev, next, el) {
+    var leftType = nodeType(prev)
+    var rightType = nodeType(next)
+
     // Type changed. This could be from element->text, text->ComponentA,
     // ComponentA->ComponentB etc. But NOT div->span. These are the same type
     // (ElementNode) but different tag name.
-    if (prev.type !== next.type) return replaceElement(entityId, path, el, next)
+    if (leftType !== rightType) return replaceElement(entityId, path, el, next)
 
-    switch (next.type) {
+    switch (rightType) {
       case 'text': return diffText(prev, next, el)
+      case 'empty': return el
       case 'element': return diffElement(path, entityId, prev, next, el)
       case 'component': return diffComponent(path, entityId, prev, next, el)
     }
@@ -672,7 +630,7 @@ function render (app, container, opts) {
    */
 
   function diffText (previous, current, el) {
-    if (current.data !== previous.data) el.data = current.data
+    if (current !== previous) el.data = current
     return el
   }
 
@@ -688,9 +646,12 @@ function render (app, container, opts) {
     var rightKeys = reduce(next.children, keyMapReducer, {})
     var currentChildren = assign({}, children[entityId])
 
-    function keyMapReducer (acc, child) {
-      if (child.key != null) {
-        acc[child.key] = child
+    function keyMapReducer (acc, child, i) {
+      if (child && child.attributes && child.attributes.key != null) {
+        acc[child.attributes.key] = {
+          element: child,
+          index: i
+        }
         hasKeys = true
       }
       return acc
@@ -725,8 +686,8 @@ function render (app, container, opts) {
         positions[rightNode.index] = diffNode(
           leftPath,
           entityId,
-          leftNode,
-          rightNode,
+          leftNode.element,
+          rightNode.element,
           childNodes[leftNode.index]
         )
       })
@@ -759,7 +720,7 @@ function render (app, container, opts) {
           positions[rightNode.index] = toNative(
             entityId,
             rightPath,
-            rightNode
+            rightNode.element
           )
         }
       })
@@ -773,33 +734,33 @@ function render (app, container, opts) {
         var rightNode = next.children[i]
 
         // Removals
-        if (rightNode == null) {
+        if (rightNode === undefined) {
           removeElement(
             entityId,
-            path + '.' + leftNode.index,
-            childNodes[leftNode.index]
+            path + '.' + i,
+            childNodes[i]
           )
+          continue
         }
 
         // New Node
-        if (leftNode == null) {
-          positions[rightNode.index] = toNative(
+        if (leftNode === undefined) {
+          positions[i] = toNative(
             entityId,
-            path + '.' + rightNode.index,
+            path + '.' + i,
             rightNode
           )
+          continue
         }
 
         // Updated
-        if (leftNode && rightNode) {
-          positions[leftNode.index] = diffNode(
-            path + '.' + leftNode.index,
-            entityId,
-            leftNode,
-            rightNode,
-            childNodes[leftNode.index]
-          )
-        }
+        positions[i] = diffNode(
+          path + '.' + i,
+          entityId,
+          leftNode,
+          rightNode,
+          childNodes[i]
+        )
       }
     }
 
@@ -846,14 +807,14 @@ function render (app, container, opts) {
    */
 
   function diffComponent (path, entityId, prev, next, el) {
-    if (next.component !== prev.component) {
+    if (next.type !== prev.type) {
       return replaceElement(entityId, path, el, next)
     } else {
       var targetId = children[entityId][path]
 
       // This is a hack for now
       if (targetId) {
-        updateEntityProps(targetId, next.props)
+        updateEntityProps(targetId, assign({ children: next.children }, next.attributes))
       }
 
       return el
@@ -865,7 +826,7 @@ function render (app, container, opts) {
    */
 
   function diffElement (path, entityId, prev, next, el) {
-    if (next.tagName !== prev.tagName) return replaceElement(entityId, path, el, next)
+    if (next.type !== prev.type) return replaceElement(entityId, path, el, next)
     diffAttributes(prev, next, el, entityId, path)
     diffChildren(path, entityId, prev, next, el)
     return el
@@ -927,15 +888,6 @@ function render (app, container, opts) {
 
     // Remove it from the DOM
     el.parentNode.removeChild(el)
-
-    // Return all of the elements in this node tree to the pool
-    // so that the elements can be re-used.
-    if (options.pooling) {
-      walk(el, function (node) {
-        if (!isElement(node) || !canPool(node.tagName)) return
-        getPool(node.tagName.toLowerCase()).push(node)
-      })
-    }
   }
 
   /**
@@ -1006,6 +958,10 @@ function render (app, container, opts) {
    */
 
   function setAttribute (entityId, path, el, name, value) {
+    if (!value) {
+      removeAttribute(entityId, path, el, name)
+      return
+    }
     if (events[name]) {
       addEvent(entityId, path, events[name], value)
       return
@@ -1050,7 +1006,7 @@ function render (app, container, opts) {
         break
       case 'innerHTML':
       case 'value':
-        el[name] = ""
+        el[name] = ''
         break
       default:
         el.removeAttribute(name)
@@ -1085,51 +1041,6 @@ function render (app, container, opts) {
 
   function isElement (el) {
     return !!(el && el.tagName)
-  }
-
-  /**
-   * Get the pool for a tagName, creating it if it
-   * doesn't exist.
-   *
-   * @param {String} tagName
-   *
-   * @return {Pool}
-   */
-
-  function getPool (tagName) {
-    var pool = pools[tagName]
-    if (!pool) {
-      var poolOpts = svg.isElement(tagName) ?
-        { namespace: svg.namespace, tagName: tagName } :
-        { tagName: tagName }
-      pool = pools[tagName] = new Pool(poolOpts)
-    }
-    return pool
-  }
-
-  /**
-   * Clean up previously used native element for reuse.
-   *
-   * @param {HTMLElement} el
-   */
-
-  function cleanup (el) {
-    removeAllChildren(el)
-    removeAllAttributes(el)
-    return el
-  }
-
-  /**
-   * Remove all the attributes from a node
-   *
-   * @param {HTMLElement} el
-   */
-
-  function removeAllAttributes (el) {
-    for (var i = el.attributes.length - 1; i >= 0; i--) {
-      var name = el.attributes[i].name
-      el.removeAttribute(name)
-    }
   }
 
   /**
@@ -1255,103 +1166,6 @@ function render (app, container, opts) {
   }
 
   /**
-   * Register an entity.
-   *
-   * This is mostly to pre-preprocess component properties and values chains.
-   *
-   * The end result is for every component that gets mounted,
-   * you create a set of IO nodes in the network from the `value` definitions.
-   *
-   * @param {Component} component
-   */
-
-  function register (entity) {
-    registerEntity(entity)
-    var component = entity.component
-    if (component.registered) return
-
-    // initialize sources once for a component type.
-    registerSources(entity)
-    component.registered = true
-  }
-
-  /**
-   * Add entity to data-structures related to components/entities.
-   *
-   * @param {Entity} entity
-   */
-
-  function registerEntity(entity) {
-    var component = entity.component
-    // all entities for this component type.
-    var entities = component.entities = component.entities || {}
-    // add entity to component list
-    entities[entity.id] = entity
-    // map to component so you can remove later.
-    components[entity.id] = component
-  }
-
-  /**
-   * Initialize sources for a component by type.
-   *
-   * @param {Entity} entity
-   */
-
-  function registerSources(entity) {
-    var component = components[entity.id]
-    // get 'class-level' sources.
-    // if we've already hooked it up, then we're good.
-    var sources = component.sources
-    if (sources) return
-    var entities = component.entities
-
-    // hook up sources.
-    var map = component.sourceToPropertyName = {}
-    component.sources = sources = []
-    var propTypes = component.propTypes
-    for (var name in propTypes) {
-      var data = propTypes[name]
-      if (!data) continue
-      if (!data.source) continue
-      sources.push(data.source)
-      map[data.source] = name
-    }
-
-    // send value updates to all component instances.
-    sources.forEach(function (source) {
-      connections[source] = connections[source] || []
-      connections[source].push(update)
-
-      function update (data) {
-        var prop = map[source]
-        for (var entityId in entities) {
-          var entity = entities[entityId]
-          var changes = {}
-          changes[prop] = data
-          updateEntityProps(entityId, assign(entity.pendingProps, changes))
-        }
-      }
-    })
-  }
-
-  /**
-   * Set the initial source value on the entity
-   *
-   * @param {Entity} entity
-   */
-
-  function setSources (entity) {
-    var component = entity.component
-    var map = component.sourceToPropertyName
-    var sources = component.sources
-    sources.forEach(function (source) {
-      var name = map[source]
-      if (entity.pendingProps[name] != null) return
-      entity.pendingProps[name] = app.sources[source] // get latest value plugged into global store
-    })
-  }
-
-  /**
    * Add all of the DOM event listeners
    */
 
@@ -1387,7 +1201,7 @@ function render (app, container, opts) {
       var fn = keypath.get(handlers, [target.__entity__, target.__path__, eventType])
       if (fn) {
         event.delegateTarget = target
-        if (false === fn(event)) break
+        if (fn(event) === false) break
       }
       target = target.parentNode
     }
@@ -1439,37 +1253,6 @@ function render (app, container, opts) {
   function removeAllEvents (entityId) {
     keypath.del(handlers, [entityId])
   }
-
-  /**
-   * Used for debugging to inspect the current state without
-   * us needing to explicitly manage storing/updating references.
-   *
-   * @return {Object}
-   */
-
-  function inspect () {
-    return {
-      entities: entities,
-      pools: pools,
-      handlers: handlers,
-      connections: connections,
-      currentElement: currentElement,
-      options: options,
-      app: app,
-      container: container,
-      children: children
-    }
-  }
-
-  /**
-   * Return an object that lets us completely remove the automatic
-   * DOM rendering and export debugging tools.
-   */
-
-  return {
-    remove: teardown,
-    inspect: inspect
-  }
 }
 
 /**
@@ -1486,9 +1269,8 @@ function Entity (component, props, ownerId) {
   this.id = uid()
   this.ownerId = ownerId
   this.component = component
-  this.propTypes = component.propTypes || {}
   this.context = {}
-  this.context.id = this.id;
+  this.context.id = this.id
   this.context.props = defaults(props || {}, component.defaultProps || {})
   this.context.state = this.component.initialState ? this.component.initialState(this.context.props) : {}
   this.pendingProps = assign({}, this.context.props)
@@ -1499,34 +1281,11 @@ function Entity (component, props, ownerId) {
   this.displayName = component.name || 'Component'
 }
 
-/**
- * Should we pool an element?
- */
-
-function canPool(tagName) {
-  return avoidPooling.indexOf(tagName) < 0
-}
-
-/**
- * Get a nested node using a path
- *
- * @param {HTMLElement} el   The root node '0'
- * @param {String} path The path string eg. '0.2.43'
- */
-
-function getNodeAtPath(el, path) {
-  var parts = path.split('.')
-  parts.shift()
-  while (parts.length) {
-    el = el.childNodes[parts.pop()]
-  }
-  return el
-}
-
-},{"./events":2,"./svg":6,"./utils":7,"component-raf":10,"dom-pool":12,"dom-walk":13,"fast.js/forEach":16,"fast.js/object/assign":19,"fast.js/reduce":22,"get-uid":23,"is-dom":24,"is-promise":25,"object-path":26}],5:[function(_require,module,exports){
+},{"./events":2,"./node-type":4,"./svg":7,"./utils":8,"component-raf":10,"fast.js/forEach":14,"fast.js/object/assign":17,"fast.js/reduce":20,"get-uid":21,"is-dom":22,"is-promise":23,"object-path":26}],6:[function(_require,module,exports){
 var utils = _require('./utils')
 var events = _require('./events')
 var defaults = utils.defaults
+var nodeType = _require('./node-type')
 
 /**
  * Expose `stringify`.
@@ -1546,17 +1305,8 @@ module.exports = function (app) {
    */
 
   function stringify (component, optProps) {
-    var propTypes = component.propTypes || {}
     var props = defaults(optProps || {}, component.defaultProps || {})
     var state = component.initialState ? component.initialState(props) : {}
-
-    for (var name in propTypes) {
-      var options = propTypes[name]
-      if (options.source) {
-        props[name] = app.sources[options.source]
-      }
-    }
-
     if (component.beforeMount) component.beforeMount({ props: props, state: state })
     if (component.beforeRender) component.beforeRender({ props: props, state: state })
     var node = component.render({ props: props, state: state })
@@ -1573,12 +1323,13 @@ module.exports = function (app) {
    */
 
   function stringifyNode (node, path) {
-    switch (node.type) {
-      case 'text': return node.data
+    switch (nodeType(node)) {
+      case 'empty': return '<noscript />'
+      case 'text': return node
       case 'element':
         var children = node.children
         var attributes = node.attributes
-        var tagName = node.tagName
+        var tagName = node.type
         var innerHTML = attributes.innerHTML
         var str = '<' + tagName + attrs(attributes) + '>'
 
@@ -1592,7 +1343,7 @@ module.exports = function (app) {
 
         str += '</' + tagName + '>'
         return str
-      case 'component': return stringify(node.component, node.props)
+      case 'component': return stringify(node.type, node.attributes)
     }
 
     throw new Error('Invalid type')
@@ -1632,113 +1383,12 @@ function attr (key, val) {
   return ' ' + key + '="' + val + '"'
 }
 
-},{"./events":2,"./utils":7}],6:[function(_require,module,exports){
-/**
- * This file lists the supported SVG elements used by the
- * renderer. We may add better SVG support in the future
- * that doesn't require whitelisting elements.
- */
-
+},{"./events":2,"./node-type":4,"./utils":8}],7:[function(_require,module,exports){
+exports.isElement = _require('is-svg-element').isElement
+exports.isAttribute = _require('is-svg-attribute')
 exports.namespace = 'http://www.w3.org/2000/svg'
 
-/**
- * Supported SVG elements
- *
- * @type {Array}
- */
-
-exports.elements = {
-  'animate': true,
-  'circle': true,
-  'defs': true,
-  'ellipse': true,
-  'g': true,
-  'line': true,
-  'linearGradient': true,
-  'mask': true,
-  'path': true,
-  'pattern': true,
-  'polygon': true,
-  'polyline': true,
-  'radialGradient': true,
-  'rect': true,
-  'stop': true,
-  'svg': true,
-  'text': true,
-  'tspan': true
-}
-
-/**
- * Supported SVG attributes
- */
-
-exports.attributes = {
-  'cx': true,
-  'cy': true,
-  'd': true,
-  'dx': true,
-  'dy': true,
-  'fill': true,
-  'fillOpacity': true,
-  'fontFamily': true,
-  'fontSize': true,
-  'fx': true,
-  'fy': true,
-  'gradientTransform': true,
-  'gradientUnits': true,
-  'markerEnd': true,
-  'markerMid': true,
-  'markerStart': true,
-  'offset': true,
-  'opacity': true,
-  'patternContentUnits': true,
-  'patternUnits': true,
-  'points': true,
-  'preserveAspectRatio': true,
-  'r': true,
-  'rx': true,
-  'ry': true,
-  'spreadMethod': true,
-  'stopColor': true,
-  'stopOpacity': true,
-  'stroke': true,
-  'strokeDasharray': true,
-  'strokeLinecap': true,
-  'strokeOpacity': true,
-  'strokeWidth': true,
-  'textAnchor': true,
-  'transform': true,
-  'version': true,
-  'viewBox': true,
-  'x1': true,
-  'x2': true,
-  'x': true,
-  'y1': true,
-  'y2': true,
-  'y': true,
-}
-
-/**
- * Is element's namespace SVG?
- *
- * @param {String} name
- */
-
-exports.isElement = function (name) {
-  return name in exports.elements
-}
-
-/**
- * Are element's attributes SVG?
- *
- * @param {String} attr
- */
-
-exports.isAttribute = function (attr) {
-  return attr in exports.attributes
-}
-
-},{}],7:[function(_require,module,exports){
+},{"is-svg-attribute":24,"is-svg-element":25}],8:[function(_require,module,exports){
 /**
  * The npm 'defaults' module but without clone because
  * it was requiring the 'Buffer' module which is huge.
@@ -1749,8 +1399,8 @@ exports.isAttribute = function (attr) {
  * @return {Object}
  */
 
-exports.defaults = function(options, defaults) {
-  Object.keys(defaults).forEach(function(key) {
+exports.defaults = function (options, defaults) {
+  Object.keys(defaults).forEach(function (key) {
     if (typeof options[key] === 'undefined') {
       options[key] = defaults[key]
     }
@@ -1758,267 +1408,7 @@ exports.defaults = function(options, defaults) {
   return options
 }
 
-},{}],8:[function(_require,module,exports){
-/**
- * Module dependencies.
- */
-
-var type = _require('component-type')
-var slice = _require('sliced')
-
-/**
- * This function lets us create virtual nodes using a simple
- * syntax. It is compatible with JSX transforms so you can use
- * JSX to write nodes that will compile to this function.
- *
- * let node = virtual('div', { id: 'foo' }, [
- *   virtual('a', { href: 'http://google.com' }, 'Google')
- * ])
- *
- * You can leave out the attributes or the children if either
- * of them aren't needed and it will figure out what you're
- * trying to do.
- */
-
-module.exports = virtual
-
-/**
- * Create virtual DOM trees.
- *
- * This creates the nicer API for the user.
- * It translates that friendly API into an actual tree of nodes.
- *
- * @param {String|Function} type
- * @param {Object} props
- * @param {Array} children
- * @return {Node}
- * @api public
- */
-
-function virtual (type, props, children) {
-  // Default to div with no args
-  if (!type) {
-    throw new Error('deku: Element needs a type. Read more: http://cl.ly/b0KZ')
-  }
-
-  // Skipped adding attributes and we're passing
-  // in children instead.
-  if (arguments.length === 2 && (typeof props === 'string' || Array.isArray(props))) {
-    children = props
-    props = {}
-  }
-
-  // Account for JSX putting the children as multiple arguments.
-  // This is essentially just the ES6 rest param
-  if (arguments.length > 2 && Array.isArray(arguments[2]) === false) {
-    children = slice(arguments, 2)
-  }
-
-  children = children || []
-  props = props || {}
-
-  // passing in a single child, you can skip
-  // using the array
-  if (!Array.isArray(children)) {
-    children = [ children ]
-  }
-
-  children = children.reduce(normalize, [])
-
-  // pull the key out from the data.
-  var key = 'key' in props ? String(props.key) : null
-  delete props['key']
-
-  // if you pass in a function, it's a `Component` constructor.
-  // otherwise it's an element.
-  var node
-  if (typeof type === 'string') {
-    node = new ElementNode(type, props, key, children)
-  } else {
-    node = new ComponentNode(type, props, key, children)
-  }
-
-  // set the unique ID
-  node.index = 0
-
-  return node
-}
-
-/**
- * Parse nodes into real `Node` objects.
- *
- * @param {Mixed} node
- * @param {Integer} index
- * @return {Node}
- * @api private
- */
-
-function normalize (acc, node) {
-  if (node == null || node === false) {
-    return acc
-  }
-  if (Array.isArray(node)) {
-    return acc.concat(node.reduce(normalize, []))
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    var newNode = new TextNode(String(node))
-    newNode.index = acc.length
-    acc.push(newNode)
-  } else {
-    node.index = acc.length
-    acc.push(node)
-  }
-  return acc
-}
-
-/**
- * Initialize a new `ComponentNode`.
- *
- * @param {Component} component
- * @param {Object} props
- * @param {String} key Used for sorting/replacing during diffing.
- * @param {Array} children Child virtual nodes
- * @api public
- */
-
-function ComponentNode (component, props, key, children) {
-  this.key = key
-  this.props = props
-  this.type = 'component'
-  this.component = component
-  this.props.children = children || []
-}
-
-/**
- * Initialize a new `ElementNode`.
- *
- * @param {String} tagName
- * @param {Object} attributes
- * @param {String} key Used for sorting/replacing during diffing.
- * @param {Array} children Child virtual dom nodes.
- * @api public
- */
-
-function ElementNode (tagName, attributes, key, children) {
-  this.type = 'element'
-  this.attributes = parseAttributes(attributes)
-  this.tagName = tagName
-  this.children = children || []
-  this.key = key
-}
-
-/**
- * Initialize a new `TextNode`.
- *
- * This is just a virtual HTML text object.
- *
- * @param {String} text
- * @api public
- */
-
-function TextNode (text) {
-  this.type = 'text'
-  this.data = String(text)
-}
-
-/**
- * Parse attributes for some special cases.
- *
- * TODO: This could be more functional and allow hooks
- * into the processing of the attributes at a component-level
- *
- * @param {Object} attributes
- *
- * @return {Object}
- */
-
-function parseAttributes (attributes) {
-  // style: { 'text-align': 'left' }
-  if (attributes.style) {
-    attributes.style = parseStyle(attributes.style)
-  }
-
-  // class: { foo: true, bar: false, baz: true }
-  // class: ['foo', 'bar', 'baz']
-  if (attributes.class) {
-    attributes.class = parseClass(attributes.class)
-  }
-
-  // Remove attributes with false values
-  var filteredAttributes = {}
-  for (var key in attributes) {
-    var value = attributes[key]
-    if (value == null || value === false) continue
-    filteredAttributes[key] = value
-  }
-
-  return filteredAttributes
-}
-
-/**
- * Parse a block of styles into a string.
- *
- * TODO: this could do a lot more with vendor prefixing,
- * number values etc. Maybe there's a way to allow users
- * to hook into this?
- *
- * @param {Object} styles
- *
- * @return {String}
- */
-
-function parseStyle (styles) {
-  if (type(styles) === 'string') {
-    return styles
-  }
-  if ("production" === 'development') {
-    console.warn('deku: Using an object for the style attribute is deprecated. You should use another module to transform the object into a string.')
-  }
-  var str = ''
-  for (var name in styles) {
-    var value = styles[name]
-    str = str + name + ':' + value + ';'
-  }
-  return str;
-}
-
-/**
- * Parse the class attribute so it's able to be
- * set in a more user-friendly way
- *
- * @param {String|Object|Array} value
- *
- * @return {String}
- */
-
-function parseClass (value) {
-  // { foo: true, bar: false, baz: true }
-  if (type(value) === 'object') {
-    if ("production" === 'development') {
-      console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
-    }
-    var matched = []
-    for (var key in value) {
-      if (value[key]) matched.push(key)
-    }
-    value = matched
-  }
-
-  // ['foo', 'bar', 'baz']
-  if (type(value) === 'array') {
-    if ("production" === 'development') {
-      console.warn('deku: Using an objects and arrays for the class attribute is deprecated. You should use another module like https://www.npmjs.com/package/classnames')
-    }
-    if (value.length === 0) {
-      return
-    }
-    value = value.join(' ')
-  }
-
-  return value
-}
-
-},{"component-type":11,"sliced":27}],9:[function(_require,module,exports){
+},{}],9:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -2254,86 +1644,6 @@ module.exports = function(val){
 };
 
 },{}],12:[function(_require,module,exports){
-function Pool(params) {
-    if (typeof params !== 'object') {
-        throw new Error("Please pass parameters. Example -> new Pool({ tagName: \"div\" })");
-    }
-
-    if (typeof params.tagName !== 'string') {
-        throw new Error("Please specify a tagName. Example -> new Pool({ tagName: \"div\" })");
-    }
-
-    this.storage = [];
-    this.tagName = params.tagName.toLowerCase();
-    this.namespace = params.namespace;
-}
-
-Pool.prototype.push = function(el) {
-    if (el.tagName.toLowerCase() !== this.tagName) {
-        return;
-    }
-    
-    this.storage.push(el);
-};
-
-Pool.prototype.pop = function(argument) {
-    if (this.storage.length === 0) {
-        return this.create();
-    } else {
-        return this.storage.pop();
-    }
-};
-
-Pool.prototype.create = function() {
-    if (this.namespace) {
-        return document.createElementNS(this.namespace, this.tagName);
-    } else {
-        return document.createElement(this.tagName);
-    }
-};
-
-Pool.prototype.allocate = function(size) {
-    if (this.storage.length >= size) {
-        return;
-    }
-
-    var difference = size - this.storage.length;
-    for (var poolAllocIter = 0; poolAllocIter < difference; poolAllocIter++) {
-        this.storage.push(this.create());
-    }
-};
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = Pool;
-}
-
-},{}],13:[function(_require,module,exports){
-var slice = Array.prototype.slice
-
-module.exports = iterativelyWalk
-
-function iterativelyWalk(nodes, cb) {
-    if (!('length' in nodes)) {
-        nodes = [nodes]
-    }
-    
-    nodes = slice.call(nodes)
-
-    while(nodes.length) {
-        var node = nodes.shift(),
-            ret = cb(node)
-
-        if (ret) {
-            return ret
-        }
-
-        if (node.childNodes && node.childNodes.length) {
-            nodes = slice.call(node.childNodes).concat(nodes)
-        }
-    }
-}
-
-},{}],14:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2356,7 +1666,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":17}],15:[function(_require,module,exports){
+},{"../function/bindInternal3":15}],13:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2393,7 +1703,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":18}],16:[function(_require,module,exports){
+},{"../function/bindInternal4":16}],14:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -2416,7 +1726,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":14,"./object/forEach":20}],17:[function(_require,module,exports){
+},{"./array/forEach":12,"./object/forEach":18}],15:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2429,7 +1739,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],18:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2442,7 +1752,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],19:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -2478,7 +1788,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],20:[function(_require,module,exports){
+},{}],18:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -2503,7 +1813,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":17}],21:[function(_require,module,exports){
+},{"../function/bindInternal3":15}],19:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -2542,7 +1852,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":18}],22:[function(_require,module,exports){
+},{"../function/bindInternal4":16}],20:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -2567,14 +1877,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":15,"./object/reduce":21}],23:[function(_require,module,exports){
+},{"./array/reduce":13,"./object/reduce":19}],21:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],24:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -2591,11 +1901,110 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],25:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 module.exports = isPromise;
 
 function isPromise(obj) {
   return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}
+
+},{}],24:[function(_require,module,exports){
+/**
+ * Supported SVG attributes
+ */
+
+exports.attributes = {
+  'cx': true,
+  'cy': true,
+  'd': true,
+  'dx': true,
+  'dy': true,
+  'fill': true,
+  'fillOpacity': true,
+  'fontFamily': true,
+  'fontSize': true,
+  'fx': true,
+  'fy': true,
+  'gradientTransform': true,
+  'gradientUnits': true,
+  'markerEnd': true,
+  'markerMid': true,
+  'markerStart': true,
+  'offset': true,
+  'opacity': true,
+  'patternContentUnits': true,
+  'patternUnits': true,
+  'points': true,
+  'preserveAspectRatio': true,
+  'r': true,
+  'rx': true,
+  'ry': true,
+  'spreadMethod': true,
+  'stopColor': true,
+  'stopOpacity': true,
+  'stroke': true,
+  'strokeDasharray': true,
+  'strokeLinecap': true,
+  'strokeOpacity': true,
+  'strokeWidth': true,
+  'textAnchor': true,
+  'transform': true,
+  'version': true,
+  'viewBox': true,
+  'x1': true,
+  'x2': true,
+  'x': true,
+  'y1': true,
+  'y2': true,
+  'y': true
+}
+
+/**
+ * Are element's attributes SVG?
+ *
+ * @param {String} attr
+ */
+
+module.exports = function (attr) {
+  return attr in exports.attributes
+}
+
+},{}],25:[function(_require,module,exports){
+/**
+ * Supported SVG elements
+ *
+ * @type {Array}
+ */
+
+exports.elements = {
+  'animate': true,
+  'circle': true,
+  'defs': true,
+  'ellipse': true,
+  'g': true,
+  'line': true,
+  'linearGradient': true,
+  'mask': true,
+  'path': true,
+  'pattern': true,
+  'polygon': true,
+  'polyline': true,
+  'radialGradient': true,
+  'rect': true,
+  'stop': true,
+  'svg': true,
+  'text': true,
+  'tspan': true
+}
+
+/**
+ * Is element's namespace SVG?
+ *
+ * @param {String} name
+ */
+
+exports.isElement = function (name) {
+  return name in exports.elements
 }
 
 },{}],26:[function(_require,module,exports){
@@ -2868,44 +2277,6 @@ function isPromise(obj) {
 
   return objectPath;
 });
-
-},{}],27:[function(_require,module,exports){
-module.exports = exports = _require('./lib/sliced');
-
-},{"./lib/sliced":28}],28:[function(_require,module,exports){
-
-/**
- * An Array.prototype.slice.call(arguments) alternative
- *
- * @param {Object} args something with a length
- * @param {Number} slice
- * @param {Number} sliceEnd
- * @api public
- */
-
-module.exports = function (args, slice, sliceEnd) {
-  var ret = [];
-  var len = args.length;
-
-  if (0 === len) return ret;
-
-  var start = slice < 0
-    ? Math.max(0, slice + len)
-    : slice || 0;
-
-  if (sliceEnd !== undefined) {
-    len = sliceEnd < 0
-      ? sliceEnd + len
-      : sliceEnd
-  }
-
-  while (len-- > start) {
-    ret[len - start] = args[len];
-  }
-
-  return ret;
-}
-
 
 },{}]},{},[3])(3)
 });
