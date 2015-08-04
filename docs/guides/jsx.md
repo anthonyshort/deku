@@ -33,7 +33,7 @@ The easiest way is to add it to your `.babelrc` file:
 Then make sure you import the `element` function:
 
 ```js
-import {element} from 'deku'
+import element from 'virtual-element'
 
 export function render (component) {
   let {props, state, id} = component;
@@ -47,7 +47,7 @@ You can also add a comment to the top of your files that tells babel which funct
 
 ```js
 /** @jsx element */
-import {element} from 'deku'
+import element from 'virtual-element'
 
 export function render (component) {
   let {props, state, id} = component;

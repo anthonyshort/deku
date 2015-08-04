@@ -17,7 +17,8 @@ browserify -t babelify main.js > build.js
 ## Duo
 
 ```
-import {element,tree,render} from 'segmentio/deku@0.2.1'
+import {tree,render} from 'dekujs/deku@0.5.0'
+import element from 'dekujs/virtual-element@1.1.1'
 ```
 
 With Duo you can just import directly from Github, then build it:
