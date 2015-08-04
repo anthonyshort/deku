@@ -2,40 +2,12 @@
 0.5.0 / 2015-08-03
 ==================
 
- * Merge pull request #217 from dekujs/0.5.0pre
- * Added missing dep
- * Updated Readme
- * Removing dom
- * Fixing test for IE10
- * Reducing the concurrent tests. Seems to break Sauce.
- * Fixed broken test
- * Removed old test file
- * Merge branch 'master' into 0.5.0pre
- * Merge branch 'Yomguithereal-shadow-dom-events'
- * Merge branch 'shadow-dom-events' of https://github.com/Yomguithereal/deku into Yomguithereal-shadow-dom-events
- * Merge branch 'master' of ssh://github.com/dekujs/deku into 0.5.0pre
- * Updated virtual-element to 1.1.0
- * Revert "Remove Sources"
  * Adding a heuristic to determine the best HTMLElement on which to attach events listener. The intention here is to enable deku to render into document fragments such as Shadow DOM.
- * Test cleanup
- * Fixed bug with default props
  * Components can be functions instead of objects
- * Updated repo in package.json
- * Cleaned up some junk
- * Derp
- * Updated zuul location
  * Update dependencies
- * Updated zuul to work with tape
  * Fixed bug with replacing text nodes with undefined
  * Refactored the tests
- * Decoupled string renderer from DOM renderer dep
- * Added snazzy for better linting errors
- * Using object-defaults
- * Cleaned up the Makefile
- * Fixed lint issues
- * Removed sources
  * Removed DOM pooling
- * Using dependency for svg checking
  * Switch to use virtual-element
 
 0.4.12 / 2015-07-28
