@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.deku=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.deku = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _require=="function"&&_require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _require=="function"&&_require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_require,module,exports){
 /**
  * Module dependencies.
  */
@@ -20,6 +20,7 @@ module.exports = Application
 function Application (element) {
   if (!(this instanceof Application)) return new Application(element)
   this.options = {}
+  this.sources = {}
   this.element = element
 }
 
@@ -52,6 +53,16 @@ Application.prototype.option = function (name, val) {
 }
 
 /**
+ * Set value used somewhere in the IO network.
+ */
+
+Application.prototype.set = function (name, data) {
+  this.sources[name] = data
+  this.emit('source', name, data)
+  return this
+}
+
+/**
  * Mount a virtual element.
  *
  * @param {VirtualElement} element
@@ -74,7 +85,7 @@ Application.prototype.unmount = function () {
   return this
 }
 
-},{"component-emitter":9}],2:[function(_require,module,exports){
+},{"component-emitter":8}],2:[function(_require,module,exports){
 /**
  * All of the events can bind to
  */
@@ -139,7 +150,6 @@ if (typeof document !== 'undefined') {
  */
 
 exports.renderString = _require('./stringify')
-
 },{"./application":1,"./render":5,"./stringify":6}],4:[function(_require,module,exports){
 var type = _require('component-type')
 
@@ -158,7 +168,7 @@ module.exports = function nodeType (node) {
   return 'component'
 }
 
-},{"component-type":11}],5:[function(_require,module,exports){
+},{"component-type":10}],5:[function(_require,module,exports){
 /**
  * Dependencies.
  */
@@ -167,14 +177,12 @@ var raf = _require('component-raf')
 var isDom = _require('is-dom')
 var uid = _require('get-uid')
 var keypath = _require('object-path')
-var utils = _require('./utils')
-var svg = _require('./svg')
 var events = _require('./events')
-var defaults = utils.defaults
+var svg = _require('./svg')
+var defaults = _require('object-defaults')
 var forEach = _require('fast.js/forEach')
 var assign = _require('fast.js/object/assign')
 var reduce = _require('fast.js/reduce')
-var isPromise = _require('is-promise')
 var nodeType = _require('./node-type')
 
 /**
@@ -182,8 +190,6 @@ var nodeType = _require('./node-type')
  */
 
 module.exports = render
-
-var containers = {}
 
 /**
  * Render an app to the DOM
@@ -195,61 +201,23 @@ var containers = {}
  * @return {Object}
  */
 
-function render (element, node, opts) {
+function render (app, container, opts) {
+  var frameId
+  var isRendering
+  var rootId = 'root'
+  var currentElement
+  var currentNativeElement
+  var connections = {}
+  var components = {}
+  var entities = {}
+  var handlers = {}
+  var mountQueue = []
+  var children = {}
+  children[rootId] = {}
 
-  // Compatibility with Application
-  if (element.element) {
-    var app = element
-    element = app.element
-  }
-
-  if (!isDom(node)) {
+  if (!isDom(container)) {
     throw new Error('Container element must be a DOM element')
   }
-
-  var containerId = node.getAttribute('data-cid')
-
-  if (!containerId) {
-    if (node.children.length > 0) {
-      console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
-    }
-    if (node === document.body) {
-      console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
-    }
-    var containerId = uid()
-    node.setAttribute('data-cid', containerId)
-    containers[containerId] = {
-      node: node,
-      currentNativeElement: null,
-      currentElement: null,
-      isRendering: false,
-      frameId: null,
-      entities: {},
-      handlers: {},
-      mountQueue: [],
-      children: {
-        root: {}
-      }
-    }
-  }
-
-  /**
-   * Listen to DOM events
-   */
-
-  addNativeEventListeners()
-
-  var container = containers[containerId]
-  var frameId = container.frameId
-  var isRendering = container.isRendering
-  var rootId = 'root'
-  var currentElement = container.currentElement
-  var currentNativeElement = container.currentNativeElement
-  var entities = container.entities
-  var handlers = container.handlers
-  var mountQueue = container.mountQueue
-  var children = container.children
-  render()
 
   /**
    * Rendering options. Batching is only ever really disabled
@@ -257,9 +225,79 @@ function render (element, node, opts) {
    * is doing something stupid with the DOM in their components.
    */
 
-  var options = defaults(assign({}, opts || {}), {
+  var options = defaults(assign({}, app.options || {}, opts || {}), {
     batching: true
   })
+
+  /**
+   * Listen to DOM events
+   */
+  var rootElement = getRootElement(container)
+  addNativeEventListeners()
+
+  /**
+   * Watch for changes to the app so that we can update
+   * the DOM as needed.
+   */
+
+  app.on('unmount', onunmount)
+  app.on('mount', onmount)
+  app.on('source', onupdate)
+
+  /**
+   * If the app has already mounted an element, we can just
+   * render that straight away.
+   */
+
+  if (app.element) render()
+
+  /**
+   * Teardown the DOM rendering so that it stops
+   * rendering and everything can be garbage collected.
+   */
+
+  function teardown () {
+    removeNativeEventListeners()
+    removeNativeElement()
+    app.off('unmount', onunmount)
+    app.off('mount', onmount)
+    app.off('source', onupdate)
+  }
+
+  /**
+   * Swap the current rendered node with a new one that is rendered
+   * from the new virtual element mounted on the app.
+   *
+   * @param {VirtualElement} element
+   */
+
+  function onmount () {
+    invalidate()
+  }
+
+  /**
+   * If the app unmounts an element, we should clear out the current
+   * rendered element. This will remove all the entities.
+   */
+
+  function onunmount () {
+    removeNativeElement()
+    currentElement = null
+  }
+
+  /**
+   * Update all components that are bound to the source
+   *
+   * @param {String} name
+   * @param {*} data
+   */
+
+  function onupdate (name, data) {
+    if (!connections[name]) return;
+    connections[name].forEach(function(update) {
+      update(data)
+    })
+  }
 
   /**
    * Render and mount a component to the native dom.
@@ -269,6 +307,8 @@ function render (element, node, opts) {
    */
 
   function mountEntity (entity) {
+    register(entity)
+    setSources(entity)
     children[entity.id] = {}
     entities[entity.id] = entity
 
@@ -306,6 +346,9 @@ function render (element, node, opts) {
     trigger('beforeUnmount', entity, [entity.context, entity.nativeElement])
     unmountChildren(entityId)
     removeAllEvents(entityId)
+    var componentEntities = components[entityId].entities;
+    delete componentEntities[entityId]
+    delete components[entityId]
     delete entities[entityId]
     delete children[entityId]
   }
@@ -320,8 +363,9 @@ function render (element, node, opts) {
 
   function renderEntity (entity) {
     var component = entity.component
-    if (!component.render) throw new Error('Component needs a render function')
-    var result = component.render(entity.context, setState(entity))
+    var fn = typeof component === 'function' ? component : component.render
+    if (!fn) throw new Error('Component needs a render function')
+    var result = fn(entity.context, setState(entity))
     if (!result) throw new Error('Render function must return an element.')
     return result
   }
@@ -338,7 +382,7 @@ function render (element, node, opts) {
 
   function setState (entity) {
     return function (nextState) {
-      updateEntityStateAsync(entity, nextState)
+      updateEntityState(entity, nextState)
     }
   }
 
@@ -376,21 +420,27 @@ function render (element, node, opts) {
       frameId = raf(render)
       return
     } else {
-      container.isRendering = isRendering = true
+      isRendering = true
     }
 
     // 1. If there isn't a native element rendered for the current mounted element
     // then we need to create it from scratch.
     // 2. If a new element has been mounted, we should diff them.
     // 3. We should update check all child components for changes.
-    if (!container.currentNativeElement) {
-      container.currentElement = element
-      container.currentNativeElement = toNative(rootId, '0', element)
-      removeAllChildren(container.node)
-      container.node.appendChild(container.currentNativeElement)
-    } else if (container.currentElement !== element) {
-      container.currentNativeElement = patch(rootId, container.currentElement, element, container.currentNativeElement)
-      container.currentElement = element
+    if (!currentNativeElement) {
+      currentElement = app.element
+      currentNativeElement = toNative(rootId, '0', currentElement)
+      if (container.children.length > 0) {
+        console.info('deku: The container element is not empty. These elements will be removed. Read more: http://cl.ly/b0Sr')
+      }
+      if (container === document.body) {
+        console.warn('deku: Using document.body is allowed but it can cause some issues. Read more: http://cl.ly/b0SC')
+      }
+      removeAllChildren(container)
+      container.appendChild(currentNativeElement)
+    } else if (currentElement !== app.element) {
+      currentNativeElement = patch(rootId, currentElement, app.element, currentNativeElement)
+      currentElement = app.element
       updateChildren(rootId)
     } else {
       updateChildren(rootId)
@@ -401,6 +451,7 @@ function render (element, node, opts) {
 
     // Allow rendering again.
     isRendering = false
+
   }
 
   /**
@@ -410,7 +461,7 @@ function render (element, node, opts) {
 
   function flushMountQueue () {
     while (mountQueue.length > 0) {
-      var entityId = mountQueue.pop()
+      var entityId = mountQueue.shift()
       var entity = entities[entityId]
       trigger('afterRender', entity, [entity.context, entity.nativeElement])
       triggerUpdate('afterMount', entity, [entity.context, entity.nativeElement, setState(entity)])
@@ -424,7 +475,7 @@ function render (element, node, opts) {
   function clearFrame () {
     if (!frameId) return
     raf.cancel(frameId)
-    container.frameId = frameId = 0
+    frameId = 0
   }
 
   /**
@@ -437,6 +488,7 @@ function render (element, node, opts) {
 
   function updateEntity (entityId) {
     var entity = entities[entityId]
+    setSources(entity)
 
     if (!shouldUpdate(entity)) {
       commit(entity)
@@ -767,7 +819,7 @@ function render (element, node, opts) {
     // Reposition all the elements
     forEach(positions, function (childEl, newPosition) {
       var target = el.childNodes[newPosition]
-      if (childEl !== target) {
+      if (childEl && childEl !== target) {
         if (target) {
           el.insertBefore(childEl, target)
         } else {
@@ -1080,27 +1132,7 @@ function render (element, node, opts) {
   function triggerUpdate (name, entity, args) {
     var update = setState(entity)
     args.push(update)
-    var result = trigger(name, entity, args)
-    if (result) {
-      updateEntityStateAsync(entity, result)
-    }
-  }
-
-  /**
-   * Update the entity state using a promise
-   *
-   * @param {Entity} entity
-   * @param {Promise} promise
-   */
-
-  function updateEntityStateAsync (entity, value) {
-    if (isPromise(value)) {
-      value.then(function (newState) {
-        updateEntityState(entity, newState)
-      })
-    } else {
-      updateEntityState(entity, value)
-    }
+    trigger(name, entity, args)
   }
 
   /**
@@ -1117,7 +1149,7 @@ function render (element, node, opts) {
 
   function updateEntityProps (entityId, nextProps) {
     var entity = entities[entityId]
-    entity.pendingProps = nextProps
+    entity.pendingProps = defaults({}, nextProps, entity.component.defaultProps || {})
     entity.dirty = true
     invalidate()
   }
@@ -1166,12 +1198,109 @@ function render (element, node, opts) {
   }
 
   /**
+   * Register an entity.
+   *
+   * This is mostly to pre-preprocess component properties and values chains.
+   *
+   * The end result is for every component that gets mounted,
+   * you create a set of IO nodes in the network from the `value` definitions.
+   *
+   * @param {Component} component
+   */
+
+  function register (entity) {
+    registerEntity(entity)
+    var component = entity.component
+    if (component.registered) return
+
+    // initialize sources once for a component type.
+    registerSources(entity)
+    component.registered = true
+  }
+
+  /**
+   * Add entity to data-structures related to components/entities.
+   *
+   * @param {Entity} entity
+   */
+
+  function registerEntity(entity) {
+    var component = entity.component
+    // all entities for this component type.
+    var entities = component.entities = component.entities || {}
+    // add entity to component list
+    entities[entity.id] = entity
+    // map to component so you can remove later.
+    components[entity.id] = component
+  }
+
+  /**
+   * Initialize sources for a component by type.
+   *
+   * @param {Entity} entity
+   */
+
+  function registerSources(entity) {
+    var component = components[entity.id]
+    // get 'class-level' sources.
+    // if we've already hooked it up, then we're good.
+    var sources = component.sources
+    if (sources) return
+    var entities = component.entities
+
+    // hook up sources.
+    var map = component.sourceToPropertyName = {}
+    component.sources = sources = []
+    var propTypes = component.propTypes
+    for (var name in propTypes) {
+      var data = propTypes[name]
+      if (!data) continue
+      if (!data.source) continue
+      sources.push(data.source)
+      map[data.source] = name
+    }
+
+    // send value updates to all component instances.
+    sources.forEach(function (source) {
+      connections[source] = connections[source] || []
+      connections[source].push(update)
+
+      function update (data) {
+        var prop = map[source]
+        for (var entityId in entities) {
+          var entity = entities[entityId]
+          var changes = {}
+          changes[prop] = data
+          updateEntityProps(entityId, assign(entity.pendingProps, changes))
+        }
+      }
+    })
+  }
+
+  /**
+   * Set the initial source value on the entity
+   *
+   * @param {Entity} entity
+   */
+
+  function setSources (entity) {
+    var component = entity.component
+    var map = component.sourceToPropertyName
+    var sources = component.sources
+    sources.forEach(function (source) {
+      var name = map[source]
+      if (entity.pendingProps[name] != null) return
+      entity.pendingProps[name] = app.sources[source] // get latest value plugged into global store
+    })
+  }
+
+  /**
    * Add all of the DOM event listeners
    */
 
   function addNativeEventListeners () {
     forEach(events, function (eventType) {
-      document.addEventListener(eventType, handleEvent, true)
+      rootElement.addEventListener(eventType, handleEvent, true)
     })
   }
 
@@ -1181,7 +1310,7 @@ function render (element, node, opts) {
 
   function removeNativeEventListeners () {
     forEach(events, function (eventType) {
-      document.removeEventListener(eventType, handleEvent, true)
+      rootElement.removeEventListener(eventType, handleEvent, true)
     })
   }
 
@@ -1219,14 +1348,9 @@ function render (element, node, opts) {
     keypath.set(handlers, [entityId, path, eventType], function (e) {
       var entity = entities[entityId]
       if (entity) {
-        var update = setState(entity)
-        var result = fn.call(null, e, entity.context, update)
-        if (result) {
-          updateEntityStateAsync(entity, result)
-        }
-        return result
+        fn.call(null, e, entity.context, setState(entity))
       } else {
-        return fn.call(null, e)
+        fn.call(null, e)
       }
     })
   }
@@ -1253,6 +1377,36 @@ function render (element, node, opts) {
   function removeAllEvents (entityId) {
     keypath.del(handlers, [entityId])
   }
+
+  /**
+   * Used for debugging to inspect the current state without
+   * us needing to explicitly manage storing/updating references.
+   *
+   * @return {Object}
+   */
+
+  function inspect () {
+    return {
+      entities: entities,
+      handlers: handlers,
+      connections: connections,
+      currentElement: currentElement,
+      options: options,
+      app: app,
+      container: container,
+      children: children
+    }
+  }
+
+  /**
+   * Return an object that lets us completely remove the automatic
+   * DOM rendering and export debugging tools.
+   */
+
+  return {
+    remove: teardown,
+    inspect: inspect
+  }
 }
 
 /**
@@ -1269,6 +1423,7 @@ function Entity (component, props, ownerId) {
   this.id = uid()
   this.ownerId = ownerId
   this.component = component
+  this.propTypes = component.propTypes || {}
   this.context = {}
   this.context.id = this.id
   this.context.props = defaults(props || {}, component.defaultProps || {})
@@ -1281,11 +1436,33 @@ function Entity (component, props, ownerId) {
   this.displayName = component.name || 'Component'
 }
 
-},{"./events":2,"./node-type":4,"./svg":7,"./utils":8,"component-raf":10,"fast.js/forEach":14,"fast.js/object/assign":17,"fast.js/reduce":20,"get-uid":21,"is-dom":22,"is-promise":23,"object-path":26}],6:[function(_require,module,exports){
-var utils = _require('./utils')
-var events = _require('./events')
-var defaults = utils.defaults
+/**
+ * Retrieve the nearest 'body' ancestor of the given element or else the root
+ * element of the document in which stands the given element.
+ *
+ * This is necessary if you want to attach the events handler to the correct
+ * element and be able to dispatch events in document fragments such as
+ * Shadow DOM.
+ *
+ * @param  {HTMLElement} el The element on which we will render an app.
+ * @return {HTMLElement}    The root element on which we will attach the events
+ *                          handler.
+ */
+
+function getRootElement (el) {
+  while (el.parentElement) {
+    if (el.tagName === 'BODY' || !el.parentElement) {
+      return el
+    }
+    el = el.parentElement
+  }
+  return el
+}
+
+},{"./events":2,"./node-type":4,"./svg":7,"component-raf":9,"fast.js/forEach":13,"fast.js/object/assign":16,"fast.js/reduce":19,"get-uid":20,"is-dom":21,"object-defaults":24,"object-path":25}],6:[function(_require,module,exports){
+var defaults = _require('object-defaults')
 var nodeType = _require('./node-type')
+var type = _require('component-type')
 
 /**
  * Expose `stringify`.
@@ -1305,8 +1482,17 @@ module.exports = function (app) {
    */
 
   function stringify (component, optProps) {
+    var propTypes = component.propTypes || {}
     var props = defaults(optProps || {}, component.defaultProps || {})
     var state = component.initialState ? component.initialState(props) : {}
+
+    for (var name in propTypes) {
+      var options = propTypes[name]
+      if (options.source) {
+        props[name] = app.sources[options.source]
+      }
+    }
+
     if (component.beforeMount) component.beforeMount({ props: props, state: state })
     if (component.beforeRender) component.beforeRender({ props: props, state: state })
     var node = component.render({ props: props, state: state })
@@ -1363,9 +1549,9 @@ module.exports = function (app) {
 function attrs (attributes) {
   var str = ''
   for (var key in attributes) {
+    var value = attributes[key]
     if (key === 'innerHTML') continue
-    if (events[key]) continue
-    str += attr(key, attributes[key])
+    if (isValidAttributeValue(value)) str += attr(key, attributes[key])
   }
   return str
 }
@@ -1383,32 +1569,27 @@ function attr (key, val) {
   return ' ' + key + '="' + val + '"'
 }
 
-},{"./events":2,"./node-type":4,"./utils":8}],7:[function(_require,module,exports){
-exports.isElement = _require('is-svg-element').isElement
-exports.isAttribute = _require('is-svg-attribute')
-exports.namespace = 'http://www.w3.org/2000/svg'
-
-},{"is-svg-attribute":24,"is-svg-element":25}],8:[function(_require,module,exports){
 /**
- * The npm 'defaults' module but without clone because
- * it was requiring the 'Buffer' module which is huge.
+ * Is a value able to be set a an attribute value?
  *
- * @param {Object} options
- * @param {Object} defaults
+ * @param {Any} value
  *
- * @return {Object}
+ * @return {Boolean}
  */
 
-exports.defaults = function (options, defaults) {
-  Object.keys(defaults).forEach(function (key) {
-    if (typeof options[key] === 'undefined') {
-      options[key] = defaults[key]
-    }
-  })
-  return options
+function isValidAttributeValue (value) {
+  var valueType = type(value)
+  return (valueType === 'string' || valueType === 'boolean' || valueType === 'number')
 }
 
-},{}],9:[function(_require,module,exports){
+},{"./node-type":4,"component-type":10,"object-defaults":24}],7:[function(_require,module,exports){
+module.exports = {
+  isElement: _require('is-svg-element').isElement,
+  isAttribute: _require('is-svg-attribute'),
+  namespace: 'http://www.w3.org/2000/svg'
+}
+
+},{"is-svg-attribute":22,"is-svg-element":23}],8:[function(_require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -1571,7 +1752,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],10:[function(_require,module,exports){
+},{}],9:[function(_require,module,exports){
 /**
  * Expose `requestAnimationFrame()`.
  */
@@ -1607,7 +1788,7 @@ exports.cancel = function(id){
   cancel.call(window, id);
 };
 
-},{}],11:[function(_require,module,exports){
+},{}],10:[function(_require,module,exports){
 /**
  * toString ref.
  */
@@ -1643,7 +1824,7 @@ module.exports = function(val){
   return typeof val;
 };
 
-},{}],12:[function(_require,module,exports){
+},{}],11:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -1666,7 +1847,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":15}],13:[function(_require,module,exports){
+},{"../function/bindInternal3":14}],12:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -1703,7 +1884,7 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
   return result;
 };
 
-},{"../function/bindInternal4":16}],14:[function(_require,module,exports){
+},{"../function/bindInternal4":15}],13:[function(_require,module,exports){
 'use strict';
 
 var forEachArray = _require('./array/forEach'),
@@ -1726,7 +1907,7 @@ module.exports = function fastForEach (subject, fn, thisContext) {
     return forEachObject(subject, fn, thisContext);
   }
 };
-},{"./array/forEach":12,"./object/forEach":18}],15:[function(_require,module,exports){
+},{"./array/forEach":11,"./object/forEach":17}],14:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -1739,7 +1920,7 @@ module.exports = function bindInternal3 (func, thisContext) {
   };
 };
 
-},{}],16:[function(_require,module,exports){
+},{}],15:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -1752,7 +1933,7 @@ module.exports = function bindInternal4 (func, thisContext) {
   };
 };
 
-},{}],17:[function(_require,module,exports){
+},{}],16:[function(_require,module,exports){
 'use strict';
 
 /**
@@ -1788,7 +1969,7 @@ module.exports = function fastAssign (target) {
   return target;
 };
 
-},{}],18:[function(_require,module,exports){
+},{}],17:[function(_require,module,exports){
 'use strict';
 
 var bindInternal3 = _require('../function/bindInternal3');
@@ -1813,7 +1994,7 @@ module.exports = function fastForEachObject (subject, fn, thisContext) {
   }
 };
 
-},{"../function/bindInternal3":15}],19:[function(_require,module,exports){
+},{"../function/bindInternal3":14}],18:[function(_require,module,exports){
 'use strict';
 
 var bindInternal4 = _require('../function/bindInternal4');
@@ -1852,7 +2033,7 @@ module.exports = function fastReduceObject (subject, fn, initialValue, thisConte
   return result;
 };
 
-},{"../function/bindInternal4":16}],20:[function(_require,module,exports){
+},{"../function/bindInternal4":15}],19:[function(_require,module,exports){
 'use strict';
 
 var reduceArray = _require('./array/reduce'),
@@ -1877,14 +2058,14 @@ module.exports = function fastReduce (subject, fn, initialValue, thisContext) {
     return reduceObject(subject, fn, initialValue, thisContext);
   }
 };
-},{"./array/reduce":13,"./object/reduce":19}],21:[function(_require,module,exports){
+},{"./array/reduce":12,"./object/reduce":18}],20:[function(_require,module,exports){
 /** generate unique id for selector */
 var counter = Date.now() % 1e9;
 
 module.exports = function getUid(){
 	return (Math.random() * 1e9 >>> 0) + (counter++);
 };
-},{}],22:[function(_require,module,exports){
+},{}],21:[function(_require,module,exports){
 /*global window*/
 
 /**
@@ -1901,14 +2082,7 @@ module.exports = function isNode(val){
   return 'number' == typeof val.nodeType && 'string' == typeof val.nodeName;
 }
 
-},{}],23:[function(_require,module,exports){
-module.exports = isPromise;
-
-function isPromise(obj) {
-  return obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
-}
-
-},{}],24:[function(_require,module,exports){
+},{}],22:[function(_require,module,exports){
 /**
  * Supported SVG attributes
  */
@@ -1969,7 +2143,7 @@ module.exports = function (attr) {
   return attr in exports.attributes
 }
 
-},{}],25:[function(_require,module,exports){
+},{}],23:[function(_require,module,exports){
 /**
  * Supported SVG elements
  *
@@ -2007,7 +2181,26 @@ exports.isElement = function (name) {
   return name in exports.elements
 }
 
-},{}],26:[function(_require,module,exports){
+},{}],24:[function(_require,module,exports){
+'use strict'
+
+module.exports = function(target) {
+  target = target || {}
+
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i]
+    if (!source) continue
+
+    Object.getOwnPropertyNames(source).forEach(function(key) {
+      if (undefined === target[key])
+        target[key] = source[key]
+    })
+  }
+
+  return target
+}
+
+},{}],25:[function(_require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -2033,15 +2226,16 @@ exports.isElement = function (name) {
       return true;
     }
     if (isArray(value) && value.length === 0) {
-      return true;
-    } else {
-      for (var i in value) {
-        if (_hasOwnProperty.call(value, i)) {
-          return false;
+        return true;
+    } else if (!isString(value)) {
+        for (var i in value) {
+            if (_hasOwnProperty.call(value, i)) {
+                return false;
+            }
         }
-      }
-      return true;
+        return true;
     }
+    return false;
   }
 
   function toString(type){
@@ -2144,7 +2338,15 @@ exports.isElement = function (name) {
     return obj;
   }
 
-  var objectPath = {};
+  var objectPath = function(obj) {
+    return Object.keys(objectPath).reduce(function(proxy, prop) {
+      if (typeof objectPath[prop] === 'function') {
+        proxy[prop] = objectPath[prop].bind(objectPath, obj);
+      }
+
+      return proxy;
+    }, {});
+  };
 
   objectPath.has = function (obj, path) {
     if (isEmpty(obj)) {
