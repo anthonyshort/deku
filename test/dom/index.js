@@ -1340,8 +1340,8 @@ test('running multiple apps at once', ({equal,end}) => {
   app1.mount(<Test text="Hello" punc="," />)
   app2.mount(<Test text="World" punc="!" />)
 
-  equal(app1.el.firstElementChild.innerText, 'Hello,', 'first app rendered correctly')
-  equal(app2.el.firstElementChild.innerText, 'World!', 'second app rendered correctly')
+  equal(app1.el.firstElementChild.textContent, 'Hello,', 'first app rendered correctly')
+  equal(app2.el.firstElementChild.textContent, 'World!', 'second app rendered correctly')
 
   teardown({ renderer: app1.renderer, el: app1.el })
   teardown({ renderer: app2.renderer, el: app2.el })
