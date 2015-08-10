@@ -1324,3 +1324,26 @@ test('should handle two-way updating with multiple components depending on the s
   teardown({renderer,el})
   end()
 })
+
+test('running multiple apps at once', ({equal,end}) => {
+  var app1 = setup(equal);
+  var app2 = setup(equal);
+
+  var Punc = {
+    render: ({props}) => <span>{props.punc}</span>
+  }
+
+  var Test = {
+    render: ({props}) => <span>{props.text}<Punc {...props} /></span>
+  }
+
+  app1.mount(<Test text="Hello" punc="," />)
+  app2.mount(<Test text="World" punc="!" />)
+
+  equal(app1.el.firstElementChild.textContent, 'Hello,', 'first app rendered correctly')
+  equal(app2.el.firstElementChild.textContent, 'World!', 'second app rendered correctly')
+
+  teardown({ renderer: app1.renderer, el: app1.el })
+  teardown({ renderer: app2.renderer, el: app2.el })
+  end()
+})
