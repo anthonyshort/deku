@@ -229,6 +229,9 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
   equal(input.selectionStart, 5, 'selection start')
   equal(input.selectionEnd, 7, 'selection end')
 
+  comment('input cursor position on inputs that don\'t support text selection')
+  mount(<input type="email" value="a@b.com" />)
+
   comment('input.checked')
   mount(<input checked={true} />)
   ok(checkbox.checked, 'checked with a true value')
