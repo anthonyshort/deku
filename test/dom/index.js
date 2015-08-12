@@ -208,7 +208,7 @@ test('innerHTML attribute', ({equal,end}) => {
   end()
 })
 
-test('input attributes', ({equal,end,ok,test,comment}) => {
+test('input attributes', ({equal,notEqual,end,ok,test,comment}) => {
   var {html,mount,el,renderer,$} = setup(equal)
   mount(<input />)
   var checkbox = $('input')
@@ -224,6 +224,7 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
   comment('input cursor position')
   mount(<input type="text" value="Game of Thrones" />)
   var input = $('input')
+  input.focus()
   input.setSelectionRange(5,7)
   mount(<input type="text" value="Way of Kings" />)
   equal(input.selectionStart, 5, 'selection start')
@@ -231,6 +232,16 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
 
   comment('input cursor position on inputs that don\'t support text selection')
   mount(<input type="email" value="a@b.com" />)
+
+  comment('input cursor position only the active element')
+  mount(<input type="text" value="Hello World" />)
+  var input = $('input')
+  input.setSelectionRange(5,7)
+  if (input.setActive) document.body.setActive()
+  else input.blur()
+  mount(<input type="text" value="Hello World!" />)
+  notEqual(input.selectionStart, 5, 'selection start')
+  notEqual(input.selectionEnd, 7, 'selection end')
 
   comment('input.checked')
   mount(<input checked={true} />)
