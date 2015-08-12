@@ -208,7 +208,7 @@ test('innerHTML attribute', ({equal,end}) => {
   end()
 })
 
-test('input attributes', ({equal,end,ok,test,comment}) => {
+test('input attributes', ({equal,notEqual,end,ok,test,comment}) => {
   var {html,mount,el,renderer,$} = setup(equal)
   mount(<input />)
   var checkbox = $('input')
@@ -237,10 +237,11 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
   mount(<input type="text" value="Hello World" />)
   var input = $('input')
   input.setSelectionRange(5,7)
-  input.blur()
+  if (input.setActive) document.body.setActive()
+  else input.blur()
   mount(<input type="text" value="Hello World!" />)
-  equal(input.selectionStart, 12, 'selection start')
-  equal(input.selectionEnd, 12, 'selection end')
+  notEqual(input.selectionStart, 5, 'selection start')
+  notEqual(input.selectionEnd, 7, 'selection end')
 
   comment('input.checked')
   mount(<input checked={true} />)
