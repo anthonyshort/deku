@@ -1,4 +1,22 @@
 
+0.5.1 / 2015-08-11
+==================
+
+ * Merge pull request #228 from dekujs/form-events
+ * adding some helpful form-related events
+ * Merge pull request #227 from dekujs/revert-223-move-internal-component-data-off-of-component-definitions
+ * Revert "Move internal component data off of components"
+ * Merge pull request #223 from stevenhauser/move-internal-component-data-off-of-component-definitions
+ * Corrected afterMount arity. Fixes #225.
+ * Use textContent instead of innerText in test
+ * Test that multiple apps can be run simultaneously
+ * Move internal component data off of components
+ * Merge pull request #220 from dekujs/fix/input-cursor-position
+ * Keep cursor position when changing input value
+ * Merge pull request #219 from stevenhauser/update-element-import-in-docs
+ * Update element import in docs
+ * Updated history
+
 0.5.0 / 2015-08-03
 ==================
 
