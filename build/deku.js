@@ -1456,14 +1456,14 @@ function getRootElement (el) {
  */
 
 function setElementValue (el, value) {
-  if (!canSelectText(el)) {
+  if (el === document.activeElement && canSelectText(el)) {
+    var start = el.selectionStart
+    var end = el.selectionEnd
     el.value = value
-    return
+    el.setSelectionRange(start, end)
+  } else {
+    el.value = value
   }
-  var start = el.selectionStart
-  var end = el.selectionEnd
-  el.value = value
-  el.setSelectionRange(start, end)
 }
 
 /**
@@ -1477,6 +1477,7 @@ function setElementValue (el, value) {
 function canSelectText (el) {
   return el.tagName === 'INPUT' && ['text','search','password','tel','url'].indexOf(el.type) > -1
 }
+
 },{"./events":2,"./node-type":4,"./svg":7,"component-raf":9,"fast.js/forEach":13,"fast.js/object/assign":16,"fast.js/reduce":19,"get-uid":20,"is-dom":21,"object-defaults":24,"object-path":25}],6:[function(_require,module,exports){
 var defaults = _require('object-defaults')
 var nodeType = _require('./node-type')

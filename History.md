@@ -1,4 +1,11 @@
 
+0.5.3 / 2015-08-12
+==================
+
+ * Merge pull request #230 from dekujs/text-selection-active-only
+ * ie handles focus differently, so gotta make sure we account for that
+ * only adjust text selection for the active element
+
 0.5.2 / 2015-08-12
 ==================
 
