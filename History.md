@@ -1,4 +1,10 @@
 
+0.5.2 / 2015-08-12
+==================
+
+ * Fixed issue selecting text with some input types
+ * Update history. I'll fix that makefile one day
+
 0.5.1 / 2015-08-11
 ==================
 
