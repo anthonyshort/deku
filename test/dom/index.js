@@ -224,6 +224,7 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
   comment('input cursor position')
   mount(<input type="text" value="Game of Thrones" />)
   var input = $('input')
+  input.focus()
   input.setSelectionRange(5,7)
   mount(<input type="text" value="Way of Kings" />)
   equal(input.selectionStart, 5, 'selection start')
@@ -231,6 +232,15 @@ test('input attributes', ({equal,end,ok,test,comment}) => {
 
   comment('input cursor position on inputs that don\'t support text selection')
   mount(<input type="email" value="a@b.com" />)
+
+  comment('input cursor position only the active element')
+  mount(<input type="text" value="Hello World" />)
+  var input = $('input')
+  input.setSelectionRange(5,7)
+  input.blur()
+  mount(<input type="text" value="Hello World!" />)
+  equal(input.selectionStart, 12, 'selection start')
+  equal(input.selectionEnd, 12, 'selection end')
 
   comment('input.checked')
   mount(<input checked={true} />)
