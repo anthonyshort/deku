@@ -30,6 +30,17 @@ test('rendering virtual element to a string', ({equal,end}) => {
   end()
 })
 
+test('rendering components with children', ({equal,notEqual,end}) => {
+  var Component = {
+    render: function ({ props, state }) {
+      return <div>{props.children}</div>;
+    }
+  }
+  notEqual(render(<Component />), '<div>undefined</div>');
+  equal(render(<Component>test</Component>), '<div>test</div>');
+  end()
+})
+
 test('renderString: components', ({equal,end}) => {
   var Component = {
     defaultProps: {
@@ -59,7 +70,7 @@ test('renderString: lifecycle hooks', assert => {
       assert.ok(props, 'beforeRender has props')
       assert.ok(state, 'beforeRender has state')
     },
-    render: function(props, state){
+    render: function({ props, state }){
       return <div />
     }
   }
