@@ -106,6 +106,7 @@ module.exports = {
   onDragOver: 'dragover',
   onDragStart: 'dragstart',
   onDrop: 'drop',
+  onError: 'error',
   onFocus: 'focus',
   onInput: 'input',
   onInvalid: 'invalid',
@@ -1500,10 +1501,11 @@ module.exports = function (app) {
    * @return {String}
    */
 
-  function stringify (component, optProps) {
+  function stringify (component, optProps, children) {
     var propTypes = component.propTypes || {}
     var props = defaults(optProps || {}, component.defaultProps || {})
     var state = component.initialState ? component.initialState(props) : {}
+    props.children = children;
 
     for (var name in propTypes) {
       var options = propTypes[name]
@@ -1548,7 +1550,7 @@ module.exports = function (app) {
 
         str += '</' + tagName + '>'
         return str
-      case 'component': return stringify(node.type, node.attributes)
+      case 'component': return stringify(node.type, node.attributes, node.children)
     }
 
     throw new Error('Invalid type')
@@ -1598,7 +1600,17 @@ function attr (key, val) {
 
 function isValidAttributeValue (value) {
   var valueType = type(value)
-  return (valueType === 'string' || valueType === 'boolean' || valueType === 'number')
+  switch (valueType) {
+  case 'string':
+  case 'number':
+    return true;
+
+  case 'boolean':
+    return value;
+
+  default:
+    return false;
+  }
 }
 
 },{"./node-type":4,"component-type":10,"object-defaults":24}],7:[function(_require,module,exports){

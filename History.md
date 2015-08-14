@@ -1,4 +1,13 @@
 
+0.5.4 / 2015-08-14
+==================
+
+ * Merge pull request #232 from dekujs/stringify/empty-attrs
+ * properly handling empty attrs, with tests to prevent regression
+ * Merge pull request #231 from dekujs/stringify/no-children
+ * fixing stringify for components with children
+ * Update events.js
+
 0.5.3 / 2015-08-12
 ==================
 
