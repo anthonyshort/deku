@@ -103,6 +103,26 @@ test('renderString: function attributes', assert => {
   assert.end()
 })
 
+test('renderString: empty attributes', assert => {
+  var app = deku(<input type="checkbox" value="" />)
+  assert.equal(renderString(app), '<input type="checkbox" value=""></input>', 'empty string attribute not rendered')
+
+  var app = deku(<input type="checkbox" value={0} />)
+  assert.equal(renderString(app), '<input type="checkbox" value="0"></input>', 'zero attribute not rendered')
+
+  var app = deku(<input type="checkbox" disabled={false} />)
+  assert.equal(renderString(app), '<input type="checkbox"></input>', 'false attribute unexpectedly rendered')
+
+  var app = deku(<input type="checkbox" disabled={null} />)
+  assert.equal(renderString(app), '<input type="checkbox"></input>', 'null attribute unexpectedly rendered')
+
+  var disabled;
+  var app = deku(<input type="checkbox" disabled={disabled} />)
+  assert.equal(renderString(app), '<input type="checkbox"></input>', 'undefined attribute unexpectedly rendered')
+
+  assert.end()
+})
+
 test('rendering data sources to a string', ({equal,end}) => {
   var Component = {
     propTypes: {
