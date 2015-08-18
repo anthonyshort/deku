@@ -879,9 +879,11 @@ test('adding, removing and updating events', ({equal,end}) => {
 
 test('should bubble events', ({equal,end,fail,ok}) => {
   var {mount,renderer,el,$} = setup(equal)
+  var state = {}
 
   var Test = {
-    render: function ({props,state}) {
+    render: function ({props}) {
+      let state = props.state
       return (
         <div onClick={onParentClick}>
           <div class={state.active ? 'active' : ''} onClick={onClickTest}>
@@ -892,18 +894,20 @@ test('should bubble events', ({equal,end,fail,ok}) => {
     }
   }
 
-  var onClickTest = function (event, component, setState) {
-    setState({ active: true })
-    equal(el.firstChild.firstChild, event.delegateTarget, 'event.delegateTarget is set')
-    return false
+  var onClickTest = function (event) {
+    state.active = true
+    equal(el.firstChild.firstChild.firstChild, event.target, 'event.target is set')
+    event.stopImmediatePropagation()
   }
 
   var onParentClick = function () {
-    // fail('event bubbling was not stopped')
+    fail('event bubbling was not stopped')
   }
 
-  mount(<Test />)
+  mount(<Test state={state} />)
   trigger($('a'), 'click')
+  equal(state.active, true, 'state was changed')
+  mount(<Test state={state} />)
   ok($('.active'), 'event fired on parent element')
   teardown({renderer,el})
   end()
