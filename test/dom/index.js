@@ -355,10 +355,6 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     beforeMount ({props}) {
       log.push(props.name + ' beforeMount')
     },
-    shouldUpdate ({props}) {
-      log.push(props.name + ' shouldUpdate')
-      return true
-    },
     beforeUpdate ({props}) {
       log.push(props.name + ' beforeUpdate')
     },
@@ -432,17 +428,14 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
   )
 
   deepEqual(log, [
-    'GrandParent shouldUpdate',
     'GrandParent beforeUpdate',
     'GrandParent beforeRender',
     'GrandParent validate',
     'GrandParent render',
-    'Parent shouldUpdate',
     'Parent beforeUpdate',
     'Parent beforeRender',
     'Parent validate',
     'Parent render',
-    'Child shouldUpdate',
     'Child beforeUpdate',
     'Child beforeRender',
     'Child validate',
@@ -502,13 +495,6 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
       ok(props.count === 0, 'beforeMount has default props')
       ok(state.open === true, 'beforeMount has initial state')
       ok(id, 'beforeMount has id')
-    },
-    shouldUpdate ({props, state, id}, nextProps, nextState) {
-      ok(props.count === 0, 'shouldUpdate has current props')
-      ok(state.open === true, 'shouldUpdate has current state')
-      ok(nextProps.count === 0, 'shouldUpdate has next props')
-      ok(nextState.open === false, 'shouldUpdate has next state')
-      return true
     },
     beforeUpdate ({props, state, id}, nextProps, nextState) {
       ok(props.count === 0, 'beforeUpdate has props')
@@ -714,21 +700,6 @@ test('rendering new elements should be batched with state changes', ({equal,end}
       end()
     })
   })
-})
-
-test('skipping updates with shouldUpdate', ({equal,end,fail}) => {
-  var {mount,renderer,el} = setup(equal)
-
-  var Test = {
-    afterUpdate:  () => fail('component was updated'),
-    shouldUpdate: () => false,
-    render:       () => <div/>
-  }
-
-  mount(<Test foo="bar" />)
-  mount(<Test foo="baz" />)
-  teardown({renderer,el})
-  end()
 })
 
 test('skipping updates when the same virtual element is returned', ({equal,end,fail,pass}) => {
