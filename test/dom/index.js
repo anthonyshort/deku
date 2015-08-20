@@ -14,22 +14,6 @@ var ListItem        = ({props}) => <li>{props.children}</li>
 var Wrapper         = ({props}) => <div>{props.children}</div>
 var TwoWords        = ({props}) => <span>{props.one} {props.two}</span>
 
-var StateChangeOnMount = {
-  initialState: p => ({text: 'foo'}),
-  afterMount: (c,el,setState) => setState({ text: 'bar' }),
-  render: ({state}) => <span>{state.text}</span>
-}
-
-var Delegate = function ({props,state}) {
-  var active = state.active || 0
-  var items = [1,2,3].map(i => {
-    <li class={active === i ? 'active' : false} onClick={(e,c,setState) => setState({ active: i })}>
-      <a>link</a>
-    </li>
-  })
-  return <ul>{items}</ul>
-}
-
 // Test helpers
 
 var div = function(){
@@ -314,20 +298,17 @@ test('components', ({equal,end}) => {
   var Test = {
     defaultProps: { name: 'Amanda' },
     initialState: (props) => ({ text: 'Hello World' }),
-    render: ({props,state}) => <span count={props.count} name={props.name}>{state.text}</span>,
-    afterMount: (c, el, updateState) => updateState({ text: 'Hello Pluto' })
+    render: ({props}) => <span count={props.count} name={props.name}>Hello World</span>,
   }
 
   mount(<Test count={2} />)
   var root = el.firstElementChild
   equal(root.getAttribute('count'), '2', 'rendered with props')
   equal(root.getAttribute('name'), 'Amanda', 'has default props')
-  equal(root.innerHTML, 'Hello World', 'rendered with initial state')
 
   mount(<Test count={3} />)
   equal(root.getAttribute('count'), '3', 'props updated')
   equal(root.getAttribute('name'), 'Amanda', 'default props still exist')
-  equal(root.innerHTML, 'Hello Pluto', 'rendered updated state')
 
   teardown({renderer,el})
   equal(el.innerHTML, '', 'the element is removed')
@@ -393,17 +374,14 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
   )
 
   deepEqual(log, [
-    'GrandParent initialState',
     'GrandParent validate',
     'GrandParent beforeMount',
     'GrandParent beforeRender',
     'GrandParent render',
-    'Parent initialState',
     'Parent validate',
     'Parent beforeMount',
     'Parent beforeRender',
     'Parent render',
-    'Child initialState',
     'Child validate',
     'Child beforeMount',
     'Child beforeRender',
@@ -486,64 +464,45 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
     defaultProps: {
       count: 0
     },
-    initialState () {
-      return {
-        open: true
-      }
-    },
-    beforeMount ({props, state, id}) {
+    beforeMount ({props, id}) {
       ok(props.count === 0, 'beforeMount has default props')
-      ok(state.open === true, 'beforeMount has initial state')
       ok(id, 'beforeMount has id')
     },
-    beforeUpdate ({props, state, id}, nextProps, nextState) {
+    beforeUpdate ({props, id}, nextProps) {
       ok(props.count === 0, 'beforeUpdate has props')
-      ok(state.open === true, 'beforeUpdate has state')
       ok(id, 'beforeUpdate has id')
     },
-    beforeRender ({props, state, id}) {
+    beforeRender ({props, id}) {
       ok(props, 'beforeRender has props')
-      ok(state, 'beforeRender has state')
       ok(id, 'beforeRender has id')
     },
-    validate ({props, state, id}) {
+    validate ({props, id}) {
       ok(props, 'validate has props')
-      ok(state, 'validate has state')
       ok(id, 'validate has id')
     },
-    render ({props, state, id}, setState) {
+    render ({props, id}) {
       ok(props, 'render has props')
-      ok(state, 'render has state')
       ok(id, 'render has id')
-      ok(typeof setState === 'function', 'render has state mutator')
       return <div id="foo" />
     },
-    afterRender ({props, state, id}, el) {
+    afterRender ({props, id}, el) {
       ok(props, 'afterRender has props')
-      ok(state, 'afterRender has state')
       ok(id, 'afterRender has id')
       ok(el, 'afterRender has DOM element')
     },
-    afterUpdate ({props, state, id}, prevProps, prevState, setState) {
+    afterUpdate ({props, id}, prevProps) {
       ok(props.count === 0, 'afterUpdate has current props')
-      ok(state.open === false, 'afterUpdate has current state')
       ok(prevProps.count === 0, 'afterUpdate has previous props')
-      ok(prevState.open === true, 'afterUpdate has previous state')
-      ok(typeof setState === 'function', 'afterUpdate can update state')
       ok(id, 'afterUpdate has id')
     },
-    afterMount ({props, state, id}, el, setState) {
+    afterMount ({props, id}, el) {
       ok(props, 'afterMount has props')
-      ok(state, 'afterMount has state')
       ok(id, 'afterMount has id')
       ok(el, 'afterMount has DOM element')
-      ok(typeof setState === 'function', 'afterMount can update state')
       ok(document.getElementById('foo'), 'element is in the DOM')
-      setState({ open: false })
     },
-    beforeUnmount ({props, state, id}, el) {
+    beforeUnmount ({props, id}, el) {
       ok(props, 'beforeUnmount has props')
-      ok(state, 'beforeUnmount has state')
       ok(id, 'beforeUnmount has id')
       ok(el, 'beforeUnmount has el')
       end()
@@ -569,14 +528,14 @@ test(`should update all children when a parent component changes`, ({equal,end})
   var childCalls = 0
 
   var Child = {
-    render: function({props, state}){
+    render: function({props}){
       childCalls++
       return <span>{props.text}</span>
     }
   }
 
   var Parent = {
-    render: function({props, state}){
+    render: function({props}){
       parentCalls++
       return (
         <div name={props.character}>
@@ -594,20 +553,7 @@ test(`should update all children when a parent component changes`, ({equal,end})
   end()
 })
 
-test('update nested components when state changes', assert => {
-  var app = deku();
-  app.mount(<Wrapper><StateChangeOnMount /></Wrapper>)
-  var container = div()
-  var rendered = render(app, container)
-  assert.equal(container.innerHTML, '<div><span>foo</span></div>', 'initial render')
-  raf(function(){
-    assert.equal(container.innerHTML, '<div><span>bar</span></div>', 'updated on the next frame')
-    rendered.remove()
-    assert.end()
-  })
-})
-
-test('batched rendering', assert => {
+test.skip('batched rendering', assert => {
   var i = 0
   var IncrementAfterUpdate = {
     render: function(){
@@ -657,51 +603,6 @@ test('rendering nested components', ({equal,end}) => {
   end()
 })
 
-test('rendering new elements should be batched with state changes', ({equal,end}) => {
-  var app = deku()
-  var el = div()
-  var renderer = render(app, el)
-  var mount = app.mount.bind(app)
-  var unmount = app.unmount.bind(app)
-  var emitter = new Emitter()
-  var i = 0
-
-  var ComponentA = {
-    initialState: function(){
-      return {
-        text: 'Deku Shield'
-      }
-    },
-    afterMount: function(component, el, updateState) {
-      emitter.on('data', text => updateState({ text: text }))
-    },
-    render: function({props,state}){
-      i++
-      return <div>{props.text} {state.text}</div>
-    }
-  }
-
-  var ComponentB = {
-    render: function({props,state}){
-      i++
-      return <div><ComponentA text={props.text} /></div>
-    }
-  }
-
-  mount(<ComponentB text='2x' />)
-
-  raf(function(){
-    emitter.emit('data', 'Mirror Shield')
-    mount(<ComponentB text='3x' />)
-    raf(function(){
-      equal(i, 4, 'rendering was batched')
-      equal(el.innerHTML, `<div><div>3x Mirror Shield</div></div>`, 'rendered correctly')
-      teardown({renderer,el})
-      end()
-    })
-  })
-})
-
 test('skipping updates when the same virtual element is returned', ({equal,end,fail,pass}) => {
   var {mount,renderer,el} = setup(equal)
   var el = <div/>
@@ -749,7 +650,7 @@ test('unmount sub-components that move themselves in the DOM', ({equal,end}) => 
   }
 
   var Parent = {
-    render: ({props, state}) => {
+    render: ({props}) => {
       if (props.show) {
         return (
           <div>
@@ -809,7 +710,7 @@ test('replacing components with other components', ({equal,end}) => {
   var ComponentA = () => <div>A</div>
   var ComponentB = () => <div>B</div>
 
-  var ComponentC = ({props,state}) => {
+  var ComponentC = ({props}) => {
     if (props.type === 'A') {
       return <ComponentA />
     } else {
