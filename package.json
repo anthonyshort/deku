@@ -29,7 +29,6 @@
     "is-dom": "^1.0.5",
     "is-svg-attribute": "^1.0.2",
     "is-svg-element": "^1.0.1",
-    "object-defaults": "^0.1.0",
     "object-path": "^0.9.2"
   },
   "browserify": {
