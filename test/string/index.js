@@ -12,7 +12,7 @@ var render = function (vnode) {
 
 test('rendering virtual element to a string', ({equal,end}) => {
   var Other = {
-    render: function({ props }) {
+    render: function(props) {
       return <span>{props.text}</span>
     }
   }
@@ -32,7 +32,7 @@ test('rendering virtual element to a string', ({equal,end}) => {
 
 test('rendering components with children', ({equal,notEqual,end}) => {
   var Component = {
-    render: function ({ props, state }) {
+    render: function (props) {
       return <div>{props.children}</div>;
     }
   }
@@ -46,40 +46,12 @@ test('renderString: components', ({equal,end}) => {
     defaultProps: {
       hello: 'Hello'
     },
-    initialState: function (props) {
-      return { count: props.initialCount }
-    },
-    render: function ({ props, state }) {
-      return <div count={state.count}>{props.hello} {props.name}</div>
+    render: function (props) {
+      return <div>{props.hello} {props.name}</div>
     }
   }
-  equal(render(<Component name="Amanda" initialCount={0} />), '<div count="0">Hello Amanda</div>', 'rendered correctly')
+  equal(render(<Component name="Amanda" />), '<div>Hello Amanda</div>', 'rendered correctly')
   end()
-})
-
-test('renderString: lifecycle hooks', assert => {
-  var called = []
-  var Component = {
-    beforeMount: function({ props, state }) {
-      called.push('beforeMount')
-      assert.ok(props, 'beforeMount has props')
-      assert.ok(state, 'beforeMount has state')
-    },
-    beforeRender: function({ props, state }){
-      called.push('beforeRender')
-      assert.ok(props, 'beforeRender has props')
-      assert.ok(state, 'beforeRender has state')
-    },
-    render: function({ props, state }){
-      return <div />
-    }
-  }
-  var app = deku()
-  app.mount(<Component />)
-  renderString(app)
-  assert.ok(~called.indexOf('beforeRender'), 'beforeRender called')
-  assert.ok(~called.indexOf('beforeMount'), 'beforeMount called')
-  assert.end()
 })
 
 test('renderString: innerHTML', assert => {
