@@ -24,6 +24,7 @@ standalone: $(src)
 	@mkdir -p build
 	@NODE_ENV=production browserify \
 		--standalone deku \
+		-t babelify \
 		-t envify \
 		-e lib/index.js | bfc > build/deku.js
 
