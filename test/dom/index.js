@@ -324,6 +324,20 @@ test('simple components', ({equal,end}) => {
   end()
 })
 
+test.skip('nested root components should not have an element', ({deepEqual,mount,end,equal}) => {
+  var {el,renderer,mount,html} = setup(equal)
+  var Box = props => <div>{props.text}</div>
+  var Container = {
+    render: props => <Box text="hello" />,
+    afterMount: (props, el) => {
+      equal(el, undefined)
+    }
+  }
+  mount(<Container />)
+  teardown({renderer,el})
+  end()
+})
+
 test('nested component lifecycle hooks fire in the correct order', ({deepEqual,mount,end,equal}) => {
   var {el,renderer,mount} = setup(equal)
   var log = []
@@ -440,13 +454,11 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
       ok(props, 'render has props')
       return <div id="foo" />
     },
-    afterRender (props, el) {
+    afterRender (props) {
       ok(props, 'afterRender has props')
-      ok(el, 'afterRender has DOM element')
     },
-    afterMount (props, el) {
+    afterMount (props) {
       ok(props, 'afterMount has props')
-      ok(el, 'afterMount has DOM element')
       ok(document.getElementById('foo'), 'element is in the DOM')
     },
     beforeUnmount (props, el) {
@@ -587,14 +599,11 @@ test('unmount sub-components that move themselves in the DOM', ({equal,end}) => 
   var arr = []
 
   var Overlay = {
-    afterMount: (component, el) => {
-      document.body.appendChild(el)
-    },
     beforeUnmount: function(){
       arr.push('A')
     },
     render: function(){
-      return <div class='Overlay' />
+      return <div class='Overlay' onMount={ el => document.body.appendChild(el) } />
     }
   }
 
