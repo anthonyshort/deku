@@ -350,9 +350,6 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
       log.push(props.name + ' render')
       return <div>{props.children}</div>
     },
-    afterRender (props) {
-      log.push(props.name + ' afterRender')
-    },
     afterMount (props) {
       log.push(props.name + ' afterMount')
     },
@@ -378,11 +375,8 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     'Parent render',
     'Child validate',
     'Child render',
-    'Child afterRender',
     'Child afterMount',
-    'Parent afterRender',
     'Parent afterMount',
-    'GrandParent afterRender',
     'GrandParent afterMount'
   ], 'initial render')
   log = []
@@ -404,9 +398,6 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     'Parent render',
     'Child validate',
     'Child render',
-    'Child afterRender',
-    'Parent afterRender',
-    'GrandParent afterRender'
   ], 'updated')
   log = []
 
@@ -453,9 +444,6 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
     render (props) {
       ok(props, 'render has props')
       return <div id="foo" />
-    },
-    afterRender (props) {
-      ok(props, 'afterRender has props')
     },
     afterMount (props) {
       ok(props, 'afterMount has props')
@@ -563,22 +551,18 @@ test('rendering nested components', ({equal,end}) => {
 
 test('skipping updates when the same virtual element is returned', ({equal,end,fail,pass}) => {
   var {mount,renderer,el} = setup(equal)
-  var el = <div/>
   var i = 0
+  var el = <div onUpdate={el => i++} />
 
   var Component = {
     render (component) {
-      i++
       return el
-    },
-    afterRender () {
-      if (i === 2) fail('component was updated')
     }
   }
 
-  mount(<Component count={0} />)
-  mount(<Component count={1} />)
-  pass('component not updated')
+  mount(<Component />)
+  mount(<Component />)
+  equal(i, 1, 'component not updated')
   teardown({renderer,el})
   end()
 })
