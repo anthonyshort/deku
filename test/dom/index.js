@@ -9,10 +9,10 @@ import test from 'tape'
 
 // Test Components
 
-var RenderChildren  = ({props}) => props.children[0]
-var ListItem        = ({props}) => <li>{props.children}</li>
-var Wrapper         = ({props}) => <div>{props.children}</div>
-var TwoWords        = ({props}) => <span>{props.one} {props.two}</span>
+var RenderChildren  = props => props.children[0]
+var ListItem        = props => <li>{props.children}</li>
+var Wrapper         = props => <div>{props.children}</div>
+var TwoWords        = props => <span>{props.one} {props.two}</span>
 
 // Test helpers
 
@@ -298,7 +298,7 @@ test('components', ({equal,end}) => {
   var Test = {
     defaultProps: { name: 'Amanda' },
     initialState: (props) => ({ text: 'Hello World' }),
-    render: ({props}) => <span count={props.count} name={props.name}>Hello World</span>,
+    render: (props) => <span count={props.count} name={props.name}>Hello World</span>,
   }
 
   mount(<Test count={2} />)
@@ -317,7 +317,7 @@ test('components', ({equal,end}) => {
 
 test('simple components', ({equal,end}) => {
   var {el,renderer,mount,html} = setup(equal)
-  var Box = ({props}) => <div>{props.text}</div>
+  var Box = (props) => <div>{props.text}</div>
   mount(<Box text="Hello World" />)
   html('<div>Hello World</div>', 'function component rendered')
   teardown({renderer,el})
@@ -329,36 +329,20 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
   var log = []
 
   var LifecycleLogger = {
-    initialState (props) {
-      log.push(props.name + ' initialState')
-      return {}
-    },
-    beforeMount ({props}) {
-      log.push(props.name + ' beforeMount')
-    },
-    beforeUpdate ({props}) {
-      log.push(props.name + ' beforeUpdate')
-    },
-    beforeRender ({props}) {
-      log.push(props.name + ' beforeRender')
-    },
-    validate ({props}) {
+    validate (props) {
       log.push(props.name + ' validate')
     },
-    render ({props}) {
+    render (props) {
       log.push(props.name + ' render')
       return <div>{props.children}</div>
     },
-    afterRender ({props}) {
+    afterRender (props) {
       log.push(props.name + ' afterRender')
     },
-    afterUpdate ({props}) {
-      log.push(props.name + ' afterUpdate')
-    },
-    afterMount ({props}) {
+    afterMount (props) {
       log.push(props.name + ' afterMount')
     },
-    beforeUnmount ({props}, el) {
+    beforeUnmount (props, el) {
       log.push(props.name + ' beforeUnmount')
     }
   }
@@ -375,16 +359,10 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
 
   deepEqual(log, [
     'GrandParent validate',
-    'GrandParent beforeMount',
-    'GrandParent beforeRender',
     'GrandParent render',
     'Parent validate',
-    'Parent beforeMount',
-    'Parent beforeRender',
     'Parent render',
     'Child validate',
-    'Child beforeMount',
-    'Child beforeRender',
     'Child render',
     'Child afterRender',
     'Child afterMount',
@@ -406,24 +384,15 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
   )
 
   deepEqual(log, [
-    'GrandParent beforeUpdate',
-    'GrandParent beforeRender',
     'GrandParent validate',
     'GrandParent render',
-    'Parent beforeUpdate',
-    'Parent beforeRender',
     'Parent validate',
     'Parent render',
-    'Child beforeUpdate',
-    'Child beforeRender',
     'Child validate',
     'Child render',
     'Child afterRender',
-    'Child afterUpdate',
     'Parent afterRender',
-    'Parent afterUpdate',
-    'GrandParent afterRender',
-    'GrandParent afterUpdate'
+    'GrandParent afterRender'
   ], 'updated')
   log = []
 
@@ -464,46 +433,24 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
     defaultProps: {
       count: 0
     },
-    beforeMount ({props, id}) {
-      ok(props.count === 0, 'beforeMount has default props')
-      ok(id, 'beforeMount has id')
-    },
-    beforeUpdate ({props, id}, nextProps) {
-      ok(props.count === 0, 'beforeUpdate has props')
-      ok(id, 'beforeUpdate has id')
-    },
-    beforeRender ({props, id}) {
-      ok(props, 'beforeRender has props')
-      ok(id, 'beforeRender has id')
-    },
-    validate ({props, id}) {
+    validate (props) {
       ok(props, 'validate has props')
-      ok(id, 'validate has id')
     },
-    render ({props, id}) {
+    render (props) {
       ok(props, 'render has props')
-      ok(id, 'render has id')
       return <div id="foo" />
     },
-    afterRender ({props, id}, el) {
+    afterRender (props, el) {
       ok(props, 'afterRender has props')
-      ok(id, 'afterRender has id')
       ok(el, 'afterRender has DOM element')
     },
-    afterUpdate ({props, id}, prevProps) {
-      ok(props.count === 0, 'afterUpdate has current props')
-      ok(prevProps.count === 0, 'afterUpdate has previous props')
-      ok(id, 'afterUpdate has id')
-    },
-    afterMount ({props, id}, el) {
+    afterMount (props, el) {
       ok(props, 'afterMount has props')
-      ok(id, 'afterMount has id')
       ok(el, 'afterMount has DOM element')
       ok(document.getElementById('foo'), 'element is in the DOM')
     },
-    beforeUnmount ({props, id}, el) {
+    beforeUnmount (props, el) {
       ok(props, 'beforeUnmount has props')
-      ok(id, 'beforeUnmount has id')
       ok(el, 'beforeUnmount has el')
       end()
     }
@@ -528,14 +475,14 @@ test(`should update all children when a parent component changes`, ({equal,end})
   var childCalls = 0
 
   var Child = {
-    render: function({props}){
+    render: function(props){
       childCalls++
       return <span>{props.text}</span>
     }
   }
 
   var Parent = {
-    render: function({props}){
+    render: function(props){
       parentCalls++
       return (
         <div name={props.character}>
@@ -579,10 +526,10 @@ test.skip('batched rendering', assert => {
 test('rendering nested components', ({equal,end}) => {
   var {mount,renderer,el,html} = setup(equal)
 
-  var ComponentA = ({props}) => <div name="ComponentA">{props.children}</div>
-  var ComponentB = ({props}) => <div name="ComponentB">{props.children}</div>
+  var ComponentA = (props) => <div name="ComponentA">{props.children}</div>
+  var ComponentB = (props) => <div name="ComponentB">{props.children}</div>
 
-  var ComponentC = ({props}) => {
+  var ComponentC = (props) => {
     return (
       <div name="ComponentC">
         <ComponentB>
@@ -606,13 +553,15 @@ test('rendering nested components', ({equal,end}) => {
 test('skipping updates when the same virtual element is returned', ({equal,end,fail,pass}) => {
   var {mount,renderer,el} = setup(equal)
   var el = <div/>
+  var i = 0
 
   var Component = {
     render (component) {
+      i++
       return el
     },
-    afterUpdate () {
-      fail('component was updated')
+    afterRender () {
+      if (i === 2) fail('component was updated')
     }
   }
 
@@ -650,7 +599,7 @@ test('unmount sub-components that move themselves in the DOM', ({equal,end}) => 
   }
 
   var Parent = {
-    render: ({props}) => {
+    render: (props) => {
       if (props.show) {
         return (
           <div>
@@ -678,11 +627,10 @@ test('firing mount events on sub-components created later', ({equal,pass,end,pla
   var ComponentA = {
     render: () => <div />,
     beforeUnmount: () => pass('beforeUnmount called'),
-    beforeMount: () => pass('beforeMount called'),
     afterMount: () => pass('afterMount called')
   }
 
-  plan(3)
+  plan(2)
   mount(<ComponentA />)
   mount(<div />)
   teardown({renderer,el})
@@ -692,8 +640,8 @@ test('firing mount events on sub-components created later', ({equal,pass,end,pla
 test('should change root node and still update correctly', ({equal,end}) => {
   var {mount,html,renderer,el} = setup(equal)
 
-  var ComponentA  = ({props}) => dom(props.type, null, props.text)
-  var Test        = ({props}) => <ComponentA type={props.type} text={props.text} />
+  var ComponentA  = (props) => dom(props.type, null, props.text)
+  var Test        = (props) => <ComponentA type={props.type} text={props.text} />
 
   mount(<Test type="span" text="test" />)
   html('<span>test</span>')
@@ -710,7 +658,7 @@ test('replacing components with other components', ({equal,end}) => {
   var ComponentA = () => <div>A</div>
   var ComponentB = () => <div>B</div>
 
-  var ComponentC = ({props}) => {
+  var ComponentC = (props) => {
     if (props.type === 'A') {
       return <ComponentA />
     } else {
@@ -733,7 +681,7 @@ test('adding, removing and updating events', ({equal,end}) => {
   var onclickb = () => count -= 1
 
   var Page = {
-    render: ({props}) => <span onClick={props.clicker} />
+    render: (props) => <span onClick={props.clicker} />
   }
 
   mount(<Page clicker={onclicka} />)
@@ -754,7 +702,7 @@ test('should bubble events', ({equal,end,fail,ok}) => {
   var state = {}
 
   var Test = {
-    render: function ({props}) {
+    render: function (props) {
       let state = props.state
       return (
         <div onClick={onParentClick}>
@@ -804,7 +752,7 @@ test('update sub-components with the same element', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
 
   let Page1 = {
-    render({ props }) {
+    render(props) {
       return (
         <Wrapper>
           <Wrapper>
@@ -827,7 +775,7 @@ test('update sub-components with the same element', ({equal,end}) => {
     }
   }
 
-  let Page2 = ({props}) => {
+  let Page2 = (props) => {
     return (
       <div>
         <span>{props.title}</span>
@@ -835,7 +783,7 @@ test('update sub-components with the same element', ({equal,end}) => {
     )
   }
 
-  let App = ({props}) => props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
+  let App = (props) => props.page === 1 ? <Page1 show={props.show} /> : <Page2 title={props.title} />
 
   mount(<App page={1} show={true} />)
   mount(<App page={1} show={false} />)
@@ -979,7 +927,7 @@ test('updating event handlers when children are removed', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
   var items = ['foo','bar','baz']
 
-  var ListItem = ({props}) => {
+  var ListItem = (props) => {
     return (
       <li>
         <a onClick={e => items.splice(props.index, 1)} />
@@ -987,7 +935,7 @@ test('updating event handlers when children are removed', ({equal,end}) => {
     )
   }
 
-  var List = ({props}) => {
+  var List = (props) => {
     return (
       <ul>
         {props.items.map((_,i) => <ListItem index={i} />)}
@@ -1012,7 +960,7 @@ test('updating event handlers when children are removed', ({equal,end}) => {
 if (document.body.createShadowRoot) {
   test('change the root listener node so we can render into document fragments', ({equal,end}) => {
     var Button = {
-      render: function(comp) {
+      render: props => {
         return dom('button', { onClick: () => end() })
       }
     }
