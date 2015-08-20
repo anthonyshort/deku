@@ -43,14 +43,11 @@ test('rendering components with children', ({equal,notEqual,end}) => {
 
 test('renderString: components', ({equal,end}) => {
   var Component = {
-    defaultProps: {
-      hello: 'Hello'
-    },
     render: function (props) {
-      return <div>{props.hello} {props.name}</div>
+      return <div>{props.name}</div>
     }
   }
-  equal(render(<Component name="Amanda" />), '<div>Hello Amanda</div>', 'rendered correctly')
+  equal(render(<Component name="Amanda" />), '<div>Amanda</div>', 'rendered correctly')
   end()
 })
 

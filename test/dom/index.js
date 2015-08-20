@@ -296,19 +296,16 @@ test('components', ({equal,end}) => {
 
   // Object Component
   var Test = {
-    defaultProps: { name: 'Amanda' },
     initialState: (props) => ({ text: 'Hello World' }),
-    render: (props) => <span count={props.count} name={props.name}>Hello World</span>,
+    render: (props) => <span count={props.count}>Hello World</span>,
   }
 
   mount(<Test count={2} />)
   var root = el.firstElementChild
   equal(root.getAttribute('count'), '2', 'rendered with props')
-  equal(root.getAttribute('name'), 'Amanda', 'has default props')
 
   mount(<Test count={3} />)
   equal(root.getAttribute('count'), '3', 'props updated')
-  equal(root.getAttribute('name'), 'Amanda', 'default props still exist')
 
   teardown({renderer,el})
   equal(el.innerHTML, '', 'the element is removed')
@@ -435,9 +432,6 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
   var {mount,renderer,el} = setup(equal)
 
   var MyComponent = {
-    defaultProps: {
-      count: 0
-    },
     validate (props) {
       ok(props, 'validate has props')
     },
