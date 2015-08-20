@@ -356,7 +356,7 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
     afterMount (props) {
       log.push(props.name + ' afterMount')
     },
-    beforeUnmount (props, el) {
+    beforeUnmount (props) {
       log.push(props.name + ' beforeUnmount')
     }
   }
@@ -461,9 +461,8 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
       ok(props, 'afterMount has props')
       ok(document.getElementById('foo'), 'element is in the DOM')
     },
-    beforeUnmount (props, el) {
+    beforeUnmount (props) {
       ok(props, 'beforeUnmount has props')
-      ok(el, 'beforeUnmount has el')
       end()
     }
   }
