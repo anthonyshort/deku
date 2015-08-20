@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "component-emitter": "^1.1.3",
-    "component-raf": "^1.2.0",
     "component-type": "^1.1.0",
     "fast.js": "^0.1.1",
     "get-uid": "^1.0.1",
