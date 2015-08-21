@@ -441,7 +441,6 @@ test('component lifecycle hook signatures', ({ok,end,equal}) => {
     },
     afterMount (props) {
       ok(props, 'afterMount has props')
-      ok(document.getElementById('foo'), 'element is in the DOM')
     },
     beforeUnmount (props) {
       ok(props, 'beforeUnmount has props')
