@@ -48,7 +48,7 @@ var createAssertHTML = function(container, equal) {
 
 // Tests
 
-test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
+test.only('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
   var {renderer,el,mount,unmount,html} = setup(equal)
   var rootEl
 
