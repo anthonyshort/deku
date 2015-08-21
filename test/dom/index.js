@@ -293,12 +293,7 @@ test('option[selected]', ({ok,end,equal}) => {
 
 test('components', ({equal,end}) => {
   var {el,renderer,mount,html} = setup(equal)
-
-  // Object Component
-  var Test = {
-    initialState: (props) => ({ text: 'Hello World' }),
-    render: (props) => <span count={props.count}>Hello World</span>,
-  }
+  var Test = props => <span count={props.count}>Hello World</span>
 
   mount(<Test count={2} />)
   var root = el.firstElementChild
@@ -348,10 +343,10 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
       return <div>{props.children}</div>
     },
     afterMount (props) {
-      log.push(props.name + ' afterMount')
+      // log.push(props.name + ' afterMount')
     },
     beforeUnmount (props) {
-      log.push(props.name + ' beforeUnmount')
+      // log.push(props.name + ' beforeUnmount')
     }
   }
 
