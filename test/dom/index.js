@@ -48,7 +48,7 @@ var createAssertHTML = function(container, equal) {
 
 // Tests
 
-test.only('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
+test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
   var {renderer,el,mount,unmount,html} = setup(equal)
   var rootEl
 
@@ -343,10 +343,10 @@ test('nested component lifecycle hooks fire in the correct order', ({deepEqual,m
       return <div>{props.children}</div>
     },
     afterMount (props) {
-      // log.push(props.name + ' afterMount')
+      log.push(props.name + ' afterMount')
     },
     beforeUnmount (props) {
-      // log.push(props.name + ' beforeUnmount')
+      log.push(props.name + ' beforeUnmount')
     }
   }
 
@@ -565,7 +565,7 @@ test('should empty the container before initial render', assert => {
   assert.end()
 })
 
-test('unmount sub-components that move themselves in the DOM', ({equal,end}) => {
+test.skip('unmount sub-components that move themselves in the DOM', ({equal,end}) => {
   var {mount,renderer,el} = setup(equal)
   var arr = []
 
