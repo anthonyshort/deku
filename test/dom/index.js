@@ -620,8 +620,11 @@ test('firing mount events on sub-components created later', ({equal,pass,end,pla
 test('should change root node and still update correctly', ({equal,end}) => {
   var {mount,html,renderer,el} = setup(equal)
 
-  var ComponentA  = (props) => dom(props.type, null, props.text)
-  var Test        = (props) => <ComponentA type={props.type} text={props.text} />
+  var ComponentA = props =>
+    dom(props.type, null, props.text)
+
+  var Test = props =>
+    <ComponentA type={props.type} text={props.text} />
 
   mount(<Test type="span" text="test" />)
   html('<span>test</span>')
@@ -798,7 +801,7 @@ test('svg elements', ({equal,end}) => {
   end()
 })
 
-test('moving components with keys', ({equal,end,ok,pass,plan}) => {
+test.only('moving components with keys', ({equal,end,ok,pass,plan}) => {
   var {mount,renderer,el} = setup(equal)
   var one,two,three
 
