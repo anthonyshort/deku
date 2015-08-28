@@ -29,7 +29,8 @@
     "fast.js": "^0.1.1",
     "is-dom": "^1.0.5",
     "is-svg-attribute": "^1.0.2",
-    "is-svg-element": "^1.0.1"
+    "is-svg-element": "^1.0.1",
+    "ramda": "^0.17.1"
   },
   "browserify": {
     "transform": [
