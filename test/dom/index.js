@@ -899,7 +899,7 @@ test('should bubble events', ({equal,end,fail,ok}) => {
   }
 
   var onParentClick = function () {
-    // fail('event bubbling was not stopped')
+    fail('event bubbling was not stopped')
   }
 
   mount(<Test />)
