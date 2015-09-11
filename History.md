@@ -1,4 +1,9 @@
 
+0.5.5 / 2015-09-11
+==================
+
+ * return result of calling event handler (return `false` to cancel bubbling)
+
 0.5.4 / 2015-08-14
 ==================
 
