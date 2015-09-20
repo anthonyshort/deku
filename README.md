@@ -20,54 +20,30 @@ render(
 )
 ```
 
-## Table of contents
-
-* [Download](#Download)
-* [Why?](#Why)
-* [Basics](#basics)
-  * [Overview](#overview)
-  * [Virtual elements](#virtual-elements)
-    * [Event handlers](#event-handlers)
-    * [Attribute hooks](#attribute-hooks)
-    * [Keys](#keys)
-  * [Components](#components)
-    * [Model](#model)
-    * [Context](#context)
-    * [Hooks](#hooks)
-    * [Validation](#validation)
-    * [State](#state)
-      * [Accessing previous model](#previous-state)
-    * [Performance](#performance)
-* [Advanced](#advanced)
-  * [Elm architecture](#elm-architecture)
-  * [Server rendering](#server-rendering)
-  * [Animation](#animation)
-  * [Styling](#styling)
-  * [Custom renderers](#custom-renderers)
-  * [Magic attributes](#magic-attributes)
-  * [Routing](#routing)
-* [API Reference](#api-reference)
-  * [render](#render)
-  * [renderString](#renderstring)
-* [FAQ](#faq)
-* [Thanks](#thanks)
-* [How to contribute](#how-to-contribute)
-* [Community resources](#community-resources)
-
-## Download
+### Install
 
 ```
-npm install deku
+npm install --save deku
 ```
 
-You can also use Duo, Bower or [download the files manually](https://github.com/dekujs/deku/releases).
+We've decided not support Bower or downloading the releases individually to keep things simple.
 
-## Tests
+### Documentation
+
+
+### Running tests
 
 Deku is built with Browserify. You can run the tests in a browser by running `make test`. Learn how to build and work on Deku [in the documentation](https://github.com/dekujs/deku/blob/master/docs/guides/development.md).
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
-## License
+### Thanks
+
+* React: For initially creating the concept of virtual DOM rendering.
+* virtual-dom: For bringing the virtual DOM approach to smaller modules.
+* Redux: For making it possible to remove state from the components and simplify life x10. Also, your docs are incredible. Totally borrowed the style of documentation.
+* Elm:
+
+### License
 
 The MIT License (MIT) Copyright (c) 2015 Anthony Short

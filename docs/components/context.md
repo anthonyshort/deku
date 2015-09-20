@@ -16,4 +16,4 @@ render(document.body, <App />, context)
 
 Every component in the tree is passed in the context object. This is ideal for theming, storing actions, storing global data, or storing routers.  
 
-Unlike React you can't change the context in components. This is ok because components have no state, so we have a much simpler implementation. This means we don't need to check if the context has changed to know if a component should re-render.
+Unlike React you can't modify the context within the tree. Components have no state, so we have a much simpler implementation. This means we don't need to check if the context has changed to know if a component should re-render.

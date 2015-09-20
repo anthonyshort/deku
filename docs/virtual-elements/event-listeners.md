@@ -110,3 +110,17 @@ function App (model) {
 ```
 
 This is useful if you want to support any events that aren't built into the DOM renderer, like custom events.
+
+If you were to create a functional version of `addEventListener`, you could do this:
+
+```js
+function event (fn, type) {
+  return function (el) {
+    el.addEventListener(type, fn)
+  }
+}
+
+function App (model) {
+  return <input hook={event(fn, 'input')} />
+}
+```
