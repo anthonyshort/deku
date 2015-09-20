@@ -1,8 +1,8 @@
-# Installation
+# Download
 
 There are multiple ways to install and use Deku. No matter which option you choose, you should probably look at using an ES6 transformer like [Babel](https://babeljs.io).
 
-## Browserify 
+## Browserify
 
 ```
 npm install deku
@@ -17,8 +17,8 @@ browserify -t babelify main.js > build.js
 ## Duo
 
 ```
-import {tree,render} from 'dekujs/deku@0.5.0'
-import element from 'dekujs/virtual-element@1.1.1'
+import {render} from 'dekujs/deku@1.0.0'
+import element from 'dekujs/virtual-element'
 ```
 
 With Duo you can just import directly from Github, then build it:
@@ -31,12 +31,6 @@ To use ES6 and JSX you'll need to install the [duo-babel](https://github.com/bab
 
 ```
 duo --use duo-babel main.js > build.js
-```
-
-## Bower
-
-```
-bower install deku
 ```
 
 ## Manual Download
