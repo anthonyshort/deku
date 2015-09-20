@@ -14,25 +14,6 @@ Browserify is the easiest way to use Deku if you're planning on doing server and
 browserify -t babelify main.js > build.js
 ```
 
-## Duo
-
-```
-import {render} from 'dekujs/deku@1.0.0'
-import element from 'dekujs/virtual-element'
-```
-
-With Duo you can just import directly from Github, then build it:
-
-```
-duo main.js > build.js
-```
-
-To use ES6 and JSX you'll need to install the [duo-babel](https://github.com/babel/duo-babel) transform:
-
-```
-duo --use duo-babel main.js > build.js
-```
-
 ## Manual Download
 
 You can download the files manually from the [releases page](https://github.com/segmentio/deku/releases).

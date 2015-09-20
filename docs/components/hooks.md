@@ -4,10 +4,10 @@ These are functions you can add to your component to hook into different parts o
 
 ```js
 export default function MyComponent (model) {
-  return <div>{model.text}</div>
+  return <div>{model.attributes.text}</div>
 }
 
-export function onCreate () {
+export function onCreate (model, context) {
   console.log('A MyComponent entity was created!')
 }
 ```

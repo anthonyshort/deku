@@ -17,7 +17,7 @@
   * Animation
   * Architecture
   * Custom Renderers
-  * Magic Attributes
+  * Custom Attributes
   * Performance
   * Routing
   * Server Routing
