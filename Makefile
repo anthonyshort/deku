@@ -31,8 +31,8 @@ standalone: $(src)
 test: $(src) $(tests)
 	@NODE_ENV=development hihat test/index.js -- \
 		--debug \
-		-t envify \
 		-t babelify \
+		-t envify \
 		-p tap-dev-tool
 
 test-cloud: node_modules

@@ -48,7 +48,7 @@ var createAssertHTML = function(container, equal) {
 
 // Tests
 
-test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
+test.only('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
   var {renderer,el,mount,unmount,html} = setup(equal)
   var rootEl
 
@@ -82,6 +82,7 @@ test('rendering DOM', ({equal,end,notEqual,pass,fail}) => {
 
   // Update
   mount(<span>Hello World</span>)
+  debugger
   html(`<span>Hello World</span>`, 'text rendered')
 
   rootEl = el.firstChild
@@ -801,7 +802,7 @@ test('svg elements', ({equal,end}) => {
   end()
 })
 
-test.only('moving components with keys', ({equal,end,ok,pass,plan}) => {
+test('moving components with keys', ({equal,end,ok,pass,plan}) => {
   var {mount,renderer,el} = setup(equal)
   var one,two,three
 
