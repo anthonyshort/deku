@@ -1337,9 +1337,9 @@ function render (app, container, opts) {
     keypath.set(handlers, [entityId, path, eventType], function (e) {
       var entity = entities[entityId]
       if (entity) {
-        fn.call(null, e, entity.context, setState(entity))
+        return fn.call(null, e, entity.context, setState(entity))
       } else {
-        fn.call(null, e)
+        return fn.call(null, e)
       }
     })
   }
