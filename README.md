@@ -68,7 +68,7 @@ You can define your own custom elements that can contain their own state. These 
 Here's an example `App` component that renders a paragraph:
 
 ```js
-import {render,app} from 'deku'
+import {render,tree} from 'deku'
 
 // Define our custom element. The render method should
 // return a new virtual element.
