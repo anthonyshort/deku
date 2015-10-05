@@ -10,7 +10,10 @@
     "bfc": "0.3.1",
     "browserify": "11.2.0",
     "bump": "0.2.5",
+    "duo-babel": "^6.0.0",
+    "duo-serve": "^0.14.5",
     "envify": "3.4.0",
+    "express": "^4.13.3",
     "hihat": "2.4.3",
     "minify": "1.4.21",
     "snazzy": "1.0.3",
@@ -32,5 +35,8 @@
     "is-svg-element": "1.0.1",
     "object-defaults": "0.1.0",
     "object-path": "0.9.2"
+  },
+  "scripts": {
+    "start": "node docs/examples/server.js"
   }
 }

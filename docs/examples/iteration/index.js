@@ -1,4 +1,5 @@
-import { tree, render, element } from 'deku';
+import element from 'dekujs/virtual-element'
+import { render, tree } from 'dekujs/deku'
 
 var ListItem = {
   render (component) {

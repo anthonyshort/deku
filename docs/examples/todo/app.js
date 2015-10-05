@@ -1,3 +1,6 @@
+/** @jsx element */
+
+import element from 'dekujs/virtual-element'
 import List from './list'
 
 // Optionally set prop types that will validate
