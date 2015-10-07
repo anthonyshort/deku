@@ -1,6 +1,7 @@
 /** @jsx element */
 
-import {element,render,tree} from 'deku'
+import element from 'dekujs/virtual-element'
+import { render, tree } from 'dekujs/deku'
 
 // Create a component
 var HelloWorld = {

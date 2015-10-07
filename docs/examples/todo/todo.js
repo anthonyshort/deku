@@ -1,3 +1,7 @@
+/** @jsx element */
+
+import element from 'dekujs/virtual-element'
+
 let propTypes = {
   'item': {
     'type': 'object'

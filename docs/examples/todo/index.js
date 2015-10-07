@@ -1,7 +1,8 @@
 /** @jsx element */
 
 import App from './app'
-import {render, element} from 'deku'
+import element from 'dekujs/virtual-element'
+import { render, tree } from 'dekujs/deku'
 
 // Initial todos
 var todos = [

@@ -1,3 +1,6 @@
+/** @jsx element */
+
+import element from 'dekujs/virtual-element'
 import Todo from './todo'
 
 // These are shared across all instances on the page

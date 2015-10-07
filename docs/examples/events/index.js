@@ -1,6 +1,9 @@
 /** @jsx element */
 
-import {element,render,tree} from 'deku'
+import element from 'dekujs/magic-virtual-element'
+import { render, tree } from 'dekujs/deku'
+
+let timers = {};
 
 var MouseOver = {
   render (component, setState) {
@@ -23,7 +26,8 @@ var MouseOver = {
   }
 }
 
-var MouseDown = component(function(props, state, send){
+var MouseDown = function(component, send){
+  let {props, state} = component
   function down() {
     send({ down: true });
   }
@@ -31,34 +35,40 @@ var MouseDown = component(function(props, state, send){
     send({ down: false });
   }
   var classes = {
+    box: true,
     'active': state.down === true
   };
-  return dom('div.box', { class: classes, onMouseDown: down, onMouseUp: up }, [
+  return element('div', { class: classes, onMouseDown: down, onMouseUp: up }, [
     'Mousedown / Mouseup'
   ]);
-});
+};
 
-var MouseMove = component(function(props, state, send){
-  var self = this;
+var MouseMove = function(component, send){
+  let {props, state, id} = component
   function move() {
-    if (self.timer) clearTimeout(self.timer);
-    self.timer = setTimeout(function(){
+    if (timers[id]) {
+      clearTimeout(timers[id]);
+      delete timers[id];
+    }
+    timers[id] = setTimeout(function(){
       send({ moving: false });
-      self.timer = null;
+      delete timers[id];
     }, 50);
     send({
       moving: true
     });
   }
   var classes = {
+    box: true,
     'active': state.moving === true
   };
-  return dom('div.box', { class: classes, onMouseMove: move }, [
+  return element('div', { class: classes, onMouseMove: move }, [
     'Mousemove'
   ]);
-});
+};
 
-var BlurFocus = component(function(props, state, send){
+var BlurFocus = function(component, send){
+  let {props, state} = component
   function focus(event) {
     send({ focused: true });
   }
@@ -66,174 +76,203 @@ var BlurFocus = component(function(props, state, send){
     send({ focused: false });
   }
   var classes = {
+    box: true,
     'active': state.focused === true
   };
-  return dom('div.box', { class: classes }, [
-    dom('input', {
+  return element('div', { class: classes }, [
+    element('input', {
       type: 'text',
       onFocus: focus,
       onBlur: blur
     })
   ]);
-});
+};
 
-var Click = component({
+var Click = {
   initialState: function(){
     return {
       count: 0
     };
   },
-  render: function(props, state, send){
+  render: function(component, send){
+    let {props, state} = component
     function click() {
       var count = state.count + 1;
       send({ count: count });
     }
     var classes = {
+      box: true,
       'active': state.count % 2
     };
-    return dom('div.box', { class: classes }, [
+    return element('div', { class: classes }, [
       'Clicked ' + state.count + ' times',
-      dom('button', { onClick: click }, 'Click Me')
+      element('button', { onClick: click }, 'Click Me')
     ]);
   }
-});
+};
 
-var DblClick = component({
+var DblClick = {
   initialState: function(){
     return {
       count: 0
     };
   },
-  render: function(props, state, send){
+  render: function(component, send){
+    let {props, state} = component
     function click() {
       var count = state.count + 1;
       send({ count: count });
     }
     var classes = {
+      box: true,
       'active': state.count % 2
     };
-    return dom('div.box', { class: classes, onDoubleClick: click }, [
+    return element('div', { class: classes, onDoubleClick: click }, [
       'Double clicked ' + state.count + ' times'
     ]);
   }
-});
+};
 
-var FormSubmit = component({
-  render: function(props, state, send){
+var FormSubmit = {
+  render: function(component, send){
+    let {props, state} = component
     function submit(e) {
       e.preventDefault();
       send({ submitted: !state.submitted });
     }
     var classes = {
+      box: true,
       'active': state.submitted
     };
-    return dom('form.box', { class: classes, onSubmit: submit }, [
-      dom('button', { type: 'submit' }, 'Submit')
+    return element('form', { class: classes, onSubmit: submit }, [
+      element('button', { type: 'submit' }, 'Submit')
     ]);
   }
-});
+};
 
-var KeyDown = component(function(props, state, send){
-  var self = this;
+var KeyDown = function(component, send){
+  let {props, state, id} = component
   function down(event) {
-    if (self.timer) clearTimeout(self.timer);
+    if (timers[id]) {
+      clearTimeout(timers[id]);
+      delete timers[id];
+    }
     send({ active: true });
-    self.timer = setTimeout(function(){
+    timers[id] = setTimeout(function(){
       send({ active: false });
+      delete timers[id];
     }, 100);
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes }, [
+  return element('div', { class: classes }, [
     'onKeyDown',
-    dom('input', {
+    element('input', {
       type: 'text',
       onKeyDown: down
     })
   ]);
-});
+};
 
-var KeyUp = component(function(props, state, send){
-  var self = this;
+var KeyUp = function(component, send){
+  let {props, state, id} = component
   function down(event) {
-    if (self.timer) clearTimeout(self.timer);
+    if (timers[id]) {
+      clearTimeout(timers[id]);
+      delete timers[id];
+    }
     send({ active: true });
-    self.timer = setTimeout(function(){
+    timers[id] = setTimeout(function(){
       send({ active: false });
+      delete timers[id];
     }, 100);
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes }, [
+  return element('div', { class: classes }, [
     'onKeyUp',
-    dom('input', {
+    element('input', {
       type: 'text',
       onKeyUp: down
     })
   ]);
-});
+};
 
-var Input = component(function(props, state, send){
-  var self = this;
+var Input = function(component, send){
+  let {props, state, id} = component
   function down(event) {
-    if (self.timer) clearTimeout(self.timer);
+    if (timers[id]) {
+      clearTimeout(timers[id]);
+      delete timers[id];
+    }
     send({ active: true });
-    self.timer = setTimeout(function(){
+    timers[id] = setTimeout(function(){
       send({ active: false });
+      delete timers[id];
     }, 100);
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes }, [
+  return element('div', { class: classes }, [
     'onInput',
-    dom('input', {
+    element('input', {
       type: 'text',
       onInput: down
     })
   ]);
-});
+};
 
-var ContextMenu = component(function(props, state, send){
+var ContextMenu = function(component, send){
+  let {props, state} = component
   function down(event) {
     event.preventDefault();
     send({ active: !state.active });
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes, onContextMenu: down }, [
+  return element('div', { class: classes, onContextMenu: down }, [
     'Context Menu (Right click on me)'
   ]);
-});
+};
 
-var Copy = component(function(props, state, send){
+var Copy = function(component, send){
+  let {props, state} = component
   function run(event) {
     send({ active: !state.active });
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes, onCopy: run }, [
+  return element('div', { class: classes, onCopy: run }, [
     'Copy Me'
   ]);
-});
+};
 
-var CutPaste = component(function(props, state, send){
+var CutPaste = function(component, send){
+  let {props, state} = component
   function run(event) {
     send({ active: !state.active });
   }
   var classes = {
+    box: true,
     'active': state.active
   };
-  return dom('div.box', { class: classes }, [
-    dom('input', { onPaste: run, onCut: run, onCopy: run, value: 'Cut/Copy/Paste Here' })
+  return element('div', { class: classes }, [
+    element('input', { onPaste: run, onCut: run, onCopy: run, value: 'Cut/Copy/Paste Here' })
   ]);
-});
+};
 
-var Draggable = component(function(props, state, send){
+var Draggable = function(component, send){
+  let {props, state} = component
   function start(event) {
     event.dataTransfer.setData('text', 'asdasd');
     send({ active: true });
@@ -243,18 +282,20 @@ var Draggable = component(function(props, state, send){
   }
   var attrs = {
     classes: {
+      box: true,
       'active': state.active
     },
     draggable: true,
     onDragStart: start,
     onDragEnd: end
   };
-  return dom('div.box', attrs, [
+  return element('div', attrs, [
     'Drag Me'
   ]);
-});
+};
 
-var Droppable = component(function(props, state, send){
+var Droppable = function(component, send){
+  let {props, state} = component
   function over(event) {
     event.preventDefault();
     //console.log('droppable', 'over', event.target);
@@ -275,6 +316,7 @@ var Droppable = component(function(props, state, send){
   }
   var attrs = {
     classes: {
+      box: true,
       'active': state.active
     },
     onDragOver: over,
@@ -282,12 +324,13 @@ var Droppable = component(function(props, state, send){
     onDragEnter: enter,
     onDragLeave: leave
   };
-  return dom('div.box', attrs, [
+  return element('div', attrs, [
     state.dropped ? 'Dropped' : 'Drop Here'
   ]);
-});
+};
 
-var Scroll = component(function(props, state, send){
+var Scroll = function(component, send){
+  let {props, state} = component
   function scroll(event) {
     send({ position: event.target.scrollTop });
   }
@@ -301,15 +344,16 @@ var Scroll = component(function(props, state, send){
     }
   };
   var innerAttrs = {
+    class: 'box',
     style: {
       height: '500px',
       width: '100%'
     }
   };
-  return dom('div.box', attrs, [
-    dom('div', innerAttrs, 'Scroll Me')
+  return element('div', attrs, [
+    element('div', innerAttrs, 'Scroll Me')
   ]);
-});
+};
 
 var Examples = {
   render() {
@@ -337,4 +381,4 @@ var Examples = {
 }
 
 var app = tree(<Examples />)
-render(app, document.querySelector('main'));
+render(app, document.body);
