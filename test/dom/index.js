@@ -218,6 +218,8 @@ test('input attributes', ({equal,notEqual,end,ok,test,comment}) => {
   equal(checkbox.value, 'Bob', 'value property set')
   mount(<input value="Tom" />)
   equal(checkbox.value, 'Tom', 'value property updated')
+  mount(<input value={0} />)
+  equal(checkbox.value, '0', 'value property updated')
   mount(<input />)
   equal(checkbox.value, '', 'value property removed')
 
