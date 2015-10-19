@@ -93,25 +93,49 @@ test('creating DOM elements from virtual elements', t => {
 test('diffing two elements', t => {
   let actions, element, content
 
-  actions = diff(<div />, <div active={true} />)
+  actions = diff(<div />, <div color="red" />)
   t.deepEqual(actions[0], {
     type: 'addAttribute',
-    name: 'active',
-    value: true
+    name: 'color',
+    value: 'red'
   }, 'add attribute action')
 
-  actions = diff(<div active={true} />, <div active={false} />)
+  actions = diff(<div color="red" />, <div color="blue" />)
   t.deepEqual(actions[0], {
     type: 'updateAttribute',
-    name: 'active',
-    value: false
+    name: 'color',
+    value: 'blue'
   }, 'update attribute action')
 
-  actions = diff(<div active={true} />, <div />)
+  actions = diff(<div color="red" />, <div />)
   t.deepEqual(actions[0], {
     type: 'removeAttribute',
-    name: 'active'
+    name: 'color'
   }, 'remove attribute action')
+
+  actions = diff(<div color="red" />, <div color={false} />)
+  t.deepEqual(actions[0], {
+    type: 'updateAttribute',
+    name: 'color',
+    value: false
+  }, 'update attribute action with false')
+
+  actions = diff(<div color="red" />, <div color={null} />)
+  t.deepEqual(actions[0], {
+    type: 'updateAttribute',
+    name: 'color',
+    value: null
+  }, 'update attribute action with null')
+
+  actions = diff(<div color="red" />, <div color={undefined} />)
+  t.deepEqual(actions[0], {
+    type: 'updateAttribute',
+    name: 'color',
+    value: undefined
+  }, 'update attribute action with undefined')
+
+  actions = diff(<div color="red" />, <div color="red" />)
+  t.deepEqual(actions, [], 'no actions for same attribute values')
 
   element = 'Hello'
   actions = diff(<div/>, <div>{element}</div>)
@@ -175,10 +199,6 @@ test('diffing two elements', t => {
     type: 'moveChild',
     from: 1,
     to: 0
-  }, {
-    type: 'updateChild',
-    index: 0,
-    actions: []
   }], 'move child action')
 
   t.end()
@@ -201,6 +221,35 @@ test('patching an element', t => {
     value: 'blue'
   }])
   t.equal(DOMElement.getAttribute('color'), 'blue', 'update attribute')
+
+  patch(DOMElement, [{
+    type: 'updateAttribute',
+    name: 'color',
+    value: false
+  }])
+  t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with false')
+
+  patch(DOMElement, [{
+    type: 'addAttribute',
+    name: 'color',
+    value: 'red'
+  }, {
+    type: 'updateAttribute',
+    name: 'color',
+    value: null
+  }])
+  t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with null')
+
+  patch(DOMElement, [{
+    type: 'addAttribute',
+    name: 'color',
+    value: 'red'
+  }, {
+    type: 'updateAttribute',
+    name: 'color',
+    value: undefined
+  }])
+  t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with undefined')
 
   patch(DOMElement, [{
     type: 'removeAttribute',

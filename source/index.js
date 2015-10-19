@@ -281,11 +281,14 @@ let diffChildren = (previous, next) => {
           to: nextChild.index
         })
       }
-      changes.push({
-        type: 'updateChild',
-        actions: diff(previousChild.element, nextChild.element),
-        index: nextChild.index
-      })
+      let childActions = diff(previousChild.element, nextChild.element)
+      if (childActions.length) {
+        changes.push({
+          type: 'updateChild',
+          actions: childActions,
+          index: nextChild.index
+        })
+      }
     }
   }
 
@@ -305,7 +308,7 @@ export let diff = (previousElement, nextElement) => {
       for (let name in nextElement.attributes) {
         let nextValue = nextElement.attributes[name]
         let previousValue = previousElement.attributes[name]
-        if (!previousValue) {
+        if (!(name in previousElement.attributes)) {
           changes.push({
             type: 'addAttribute',
             name: name,
@@ -321,7 +324,7 @@ export let diff = (previousElement, nextElement) => {
       }
 
       for (let name in previousElement.attributes) {
-        if (!nextElement.attributes[name]) {
+        if (!(name in nextElement.attributes)) {
           changes.push({
             type: 'removeAttribute',
             name: name
