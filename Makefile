@@ -9,7 +9,7 @@ BIN := ./node_modules/.bin
 # Wildcards.
 #
 
-src = $(shell find lib/*.js)
+src = $(shell find source/*.js)
 tests = $(shell find test/**/*.js)
 
 #

@@ -1,21 +1,25 @@
 # Deku
 
-Deku is a functional library for rendering user interfaces. It's small (~6kb) and doesn't support legacy browsers.
+Deku is a library for rendering user interfaces in a pure, functional way. It's tiny at around ~500LOC and doesn't support legacy browsers. It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.
 
-[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku) [![Circle CI](https://img.shields.io/circleci/project/BrightFlair/PHP.Gt.svg?style=flat-square)](https://circleci.com/gh/dekujs/deku) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard) [![Slack](https://img.shields.io/badge/Slack-Join%20Chat%20→-blue.svg?style=flat-square)](https://dekujs.herokuapp.com)
+[![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
+[![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
+[![Slack](https://img.shields.io/badge/Slack-Join%20Chat%20→-blue.svg?style=flat-square)](https://dekujs.herokuapp.com)
 
 ### Example
 
 ```js
 import h from 'virtual-element'
-import {render} from 'deku'
+import {createRenderer} from 'deku'
 
-function MyButton (model) {
-  return <button class="my-button">{model.children}</button>
+let MyButton = (model) => {
+  return h('button', { class: "my-button" }, [model.children])
 }
 
+let render = createRenderer(document.body)
+
 render(
-  document.body,
   <div class="App">
     <MyButton>Hello World!</MyButton>
   </div>
@@ -28,7 +32,11 @@ render(
 npm install --save deku
 ```
 
-We've decided not support Bower or downloading the releases individually to keep things simple.
+You'll also want to install a module for creating virtual elements:
+
+```
+npm install --save virtual-element
+```
 
 ### Documentation
 
@@ -46,7 +54,7 @@ These projects were all an inspiration for Deku.
 
 * **React**: For initially creating the concept of virtual DOM rendering.
 * **virtual-dom**: For bringing the virtual DOM approach to smaller modules.
-* **snabbdom**: An extremely simple vdom implementation. Many ideas.
+* **snabbdom**: An extremely simple vdom implementation.
 * **Redux**: Totally borrowed the ideas for the documentation.
 * **Elm**: Understanding how actions can flow through a system without state.
 
