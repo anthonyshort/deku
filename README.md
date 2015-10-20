@@ -32,7 +32,7 @@ render(
 npm install --save deku
 ```
 
-You'll also want to install a module for creating virtual elements:
+You'll probably also want to install a module for creating virtual elements:
 
 ```
 npm install --save virtual-element
@@ -40,13 +40,23 @@ npm install --save virtual-element
 
 ### Documentation
 
-You can find all the documentation at https://dekujs.github.io/deku.
+The documentation is hosted on gitbook: https://dekujs.github.io/deku.
 
 ### Browser support
 
 We try to support the latest two versions of a browser. This allows us to push the boundaries and keep moving the library forward. Usage on older browsers isn't guaranteed, but let's face it, you'll probably be fine on anything other than < IE 10.
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
+
+### Development
+
+#### Testing
+
+The tests are run using [hihat](https://github.com/Jam3/hihat). This runs the tape tests in an Electron window with just the console. To run the tests, run `make test`.
+
+#### Releasing
+
+Releases are created using [release-it](https://github.com/webpro/release-it). You'll need to install the `release-it` CLI tool. e.g. `release-it 2.1.3`
 
 ### Thanks
 

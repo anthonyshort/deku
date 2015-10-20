@@ -1,9 +1,9 @@
-node_modules
-test/
-docs/
-.npmignore
-.zuul
-History.md
-LICENSE.md
-Makefile
+docs
+examples
+test
+.babelrc
+.gitignore
+.zuul.yml
 book.json
+Makefile
+README.md

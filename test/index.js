@@ -1,5 +1,3 @@
-/** @jsx h */
-
 require('babelify/polyfill')
 
 import test from 'tape'

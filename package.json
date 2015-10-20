@@ -1,10 +1,13 @@
 {
   "name": "deku",
-  "version": "0.5.4",
+  "version": "2.0.0",
   "license": "MIT",
   "repository": "dekujs/deku",
   "description": "Create view components using a virtual DOM",
-  "main": "source/index.js",
+  "main": "dist/deku.js",
+  "scripts": {
+    "prepublish": "make dist"
+  },
   "devDependencies": {
     "babelify": "^6.2.0",
     "bfc": "~0.3.1",
@@ -22,9 +25,7 @@
     "zuul": "^3.2.0"
   },
   "dependencies": {
-    "is-dom": "^1.0.5",
-    "is-svg-attribute": "^1.0.2",
-    "is-svg-element": "^1.0.1"
+    "is-dom": "^1.0.5"
   },
   "browserify": {
     "transform": [
