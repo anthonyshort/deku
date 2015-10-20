@@ -388,12 +388,13 @@ export let patch = (DOMElement, actions, context = {}) => {
       case 'insertChild': {
         let child = createElement(action.element, action.path, context)
         insertAtIndex(DOMElement, action.index, child)
+        // Walk action.element and call all onInsert/onChange hooks
         offset = offset + 1
         break
       }
       case 'removeChild': {
         removeAtIndex(DOMElement, action.index)
-        // Traverse action.element and call remove hooks
+        // Walk action.element and call onRemove hooks
         offset = offset - 1
         break
       }
@@ -494,9 +495,6 @@ export let createElement = (element, context = {}, path = '0') => {
     case 'custom':
       var customElement = renderCustomElement(element, path, context)
       DOMElement = createElement(customElement, context, path)
-      if (element.type.onCreate) {
-        element.type.onCreate(DOMElement, context)
-      }
       break
     default:
       throw new Error('Cannot create unknown element type')
