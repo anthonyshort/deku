@@ -3,7 +3,7 @@ require('babelify/polyfill')
 import test from 'tape'
 import h from 'virtual-element'
 import isDOM from 'is-dom'
-import {createRenderer, renderString, groupByKey, diff, patch, updateAttribute, createElement} from '../'
+import {createRenderer, renderString, groupByKey, diff, patch, updateAttribute, createElement} from '../src'
 
 test('grouping virtual nodes', t => {
   let one = <div/>
@@ -74,8 +74,8 @@ test('creating DOM elements from virtual elements', t => {
   t.equal(DOMElement.value, 'foo', 'has a value')
   t.equal(DOMElement.disabled, true, 'is disabled')
 
-  let MyButton = (model) => {
-    return <button name={model.attributes.name} color={model.context.theme} path={model.path}>{model.children[0]}</button>
+  let MyButton = (model, context) => {
+    return <button name={model.attributes.name} color={context.theme} path={model.path}>{model.children[0]}</button>
   }
 
   DOMElement = createElement(<MyButton name="foo">Submit</MyButton>, { theme: 'red' }, '0.5')
@@ -108,7 +108,8 @@ test('diffing two elements', t => {
   actions = diff(<div color="red" />, <div />)
   t.deepEqual(actions[0], {
     type: 'removeAttribute',
-    name: 'color'
+    name: 'color',
+    previousValue: 'red'
   }, 'remove attribute action')
 
   actions = diff(<div color="red" />, <div color={false} />)
@@ -198,6 +199,27 @@ test('diffing two elements', t => {
     from: 1,
     to: 0
   }], 'move child action')
+
+  let MyButton = m => <button>Submit</button>
+
+  actions = diff(
+    <div>
+      <MyButton color="red" key="foo" />
+    </div>,
+    <div>
+      <MyButton color="blue" key="foo" />
+    </div>
+  )
+  t.deepEqual(actions, [{
+    index: 0,
+    type: "updateChild",
+    actions: [{
+      type: 'updateCustomElement',
+      previousElement: <MyButton color="red" key="foo" />,
+      nextElement: <MyButton color="blue" key="foo" />,
+      path: '0.foo'
+    }]
+  }], 'update custom element')
 
   t.end()
 })
@@ -328,6 +350,27 @@ test('patching an element', t => {
   }])
   t.equal(DOMElement.innerHTML, '<span>2</span><span>1</span>', 'element moved')
 
+  var MyButton = m => <button>{m.attributes.text}</button>
+  var initial = <MyButton text="Reset" key="foo" />
+
+  DOMElement = createElement(
+    <div>
+      {initial}
+    </div>
+  )
+
+  patch(DOMElement, [{
+    type: 'updateChild',
+    index: 0,
+    actions: [{
+      type: 'updateCustomElement',
+      previousElement: initial,
+      nextElement: <MyButton text="Submit" key="foo" />,
+      path: 'foo'
+    }]
+  }])
+  t.equal(DOMElement.innerHTML, '<button>Submit</button>', 'element update')
+
   t.end()
 })
 
@@ -353,6 +396,15 @@ test('rendering native DOM elements', t => {
 })
 
 test('rendering custom DOM elements', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  var MyButton = m => <button>{m.attributes.text}</button>
+  MyButton.onCreate = (model, context, el) => t.pass('onCreate')
+  MyButton.onUpdate = (model, context, el) => t.pass('onUpdate')
+  // MyButton.onRemove = el => t.assert(el)
+  render(<MyButton text="hello" />)
+  render(<MyButton text="goodbye" />)
+  render(<div />)
   t.end()
 })
 

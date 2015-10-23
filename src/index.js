@@ -137,49 +137,46 @@ let getAttributeNamespace = (type) => {
   }
 }
 
-let getEvent = (() => {
-  let events = {
-    onBlur: 'blur',
-    onChange: 'change',
-    onClick: 'click',
-    onContextMenu: 'contextmenu',
-    onCopy: 'copy',
-    onCut: 'cut',
-    onDoubleClick: 'dblclick',
-    onDrag: 'drag',
-    onDragEnd: 'dragend',
-    onDragEnter: 'dragenter',
-    onDragExit: 'dragexit',
-    onDragLeave: 'dragleave',
-    onDragOver: 'dragover',
-    onDragStart: 'dragstart',
-    onDrop: 'drop',
-    onError: 'error',
-    onFocus: 'focus',
-    onInput: 'input',
-    onInvalid: 'invalid',
-    onKeyDown: 'keydown',
-    onKeyPress: 'keypress',
-    onKeyUp: 'keyup',
-    onMouseDown: 'mousedown',
-    onMouseEnter: 'mouseenter',
-    onMouseLeave: 'mouseleave',
-    onMouseMove: 'mousemove',
-    onMouseOut: 'mouseout',
-    onMouseOver: 'mouseover',
-    onMouseUp: 'mouseup',
-    onPaste: 'paste',
-    onReset: 'reset',
-    onScroll: 'scroll',
-    onSubmit: 'submit',
-    onTouchCancel: 'touchcancel',
-    onTouchEnd: 'touchend',
-    onTouchMove: 'touchmove',
-    onTouchStart: 'touchstart',
-    onWheel: 'wheel'
-  }
-  return (name) => events[name]
-})()
+let events = {
+  onBlur: 'blur',
+  onChange: 'change',
+  onClick: 'click',
+  onContextMenu: 'contextmenu',
+  onCopy: 'copy',
+  onCut: 'cut',
+  onDoubleClick: 'dblclick',
+  onDrag: 'drag',
+  onDragEnd: 'dragend',
+  onDragEnter: 'dragenter',
+  onDragExit: 'dragexit',
+  onDragLeave: 'dragleave',
+  onDragOver: 'dragover',
+  onDragStart: 'dragstart',
+  onDrop: 'drop',
+  onError: 'error',
+  onFocus: 'focus',
+  onInput: 'input',
+  onInvalid: 'invalid',
+  onKeyDown: 'keydown',
+  onKeyPress: 'keypress',
+  onKeyUp: 'keyup',
+  onMouseDown: 'mousedown',
+  onMouseEnter: 'mouseenter',
+  onMouseLeave: 'mouseleave',
+  onMouseMove: 'mousemove',
+  onMouseOut: 'mouseout',
+  onMouseOver: 'mouseover',
+  onMouseUp: 'mouseup',
+  onPaste: 'paste',
+  onReset: 'reset',
+  onScroll: 'scroll',
+  onSubmit: 'submit',
+  onTouchCancel: 'touchcancel',
+  onTouchEnd: 'touchend',
+  onTouchMove: 'touchmove',
+  onTouchStart: 'touchstart',
+  onWheel: 'wheel'
+}
 
 let createDOMElement = (type) => {
   let namespace = getElementNamespace(type)
@@ -244,10 +241,11 @@ let postOrderWalk = (fn, element) => {
   fn(element)
 }
 
+
 // Core
 // -----------------------------------------------------------------------------
 
-let diffChildren = (previous, next) => {
+let diffChildren = (previous, next, path) => {
   let changes = []
   let previousChildren = groupByKey(previous)
   let nextChildren = groupByKey(next)
@@ -281,7 +279,7 @@ let diffChildren = (previous, next) => {
           to: nextChild.index
         })
       }
-      let childActions = diff(previousChild.element, nextChild.element)
+      let childActions = diff(previousChild.element, nextChild.element, path + '.' + key)
       if (childActions.length) {
         changes.push({
           type: 'updateChild',
@@ -295,7 +293,7 @@ let diffChildren = (previous, next) => {
   return changes
 }
 
-export let diff = (previousElement, nextElement) => {
+export let diff = (previousElement, nextElement, path = '0') => {
   let changes = []
 
   if (previousElement === nextElement) {
@@ -327,13 +325,14 @@ export let diff = (previousElement, nextElement) => {
         if (!(name in nextElement.attributes)) {
           changes.push({
             type: 'removeAttribute',
-            name: name
+            name: name,
+            previousValue: previousElement.attributes[name]
           })
         }
       }
 
       changes = changes.concat(
-        diffChildren(previousElement.children, nextElement.children)
+        diffChildren(previousElement.children, nextElement.children, path)
       )
 
       break
@@ -348,7 +347,8 @@ export let diff = (previousElement, nextElement) => {
       changes.push({
         type: 'updateCustomElement',
         previousElement: previousElement,
-        nextElement: nextElement
+        nextElement: nextElement,
+        path: path
       })
       break
     default:
@@ -363,12 +363,13 @@ export let patch = (DOMElement, actions, context = {}) => {
   actions.forEach(action => {
     switch (action.type) {
       case 'updateCustomElement': {
+        let model = createModel(action.nextElement, action.path)
         let cachedElement = action.previousElement._cache
-        let updatedElement = renderCustomElement(action.nextElement, action.path, context)
+        let updatedElement = renderCustomElement(action.nextElement, model, context)
         let actions = diff(cachedElement, updatedElement)
         DOMElement = patch(DOMElement, actions, context)
         if (typeof action.nextElement.type.onUpdate === 'function') {
-          action.nextElement.type.onUpdate(DOMElement, context)
+          action.nextElement.type.onUpdate(model, context, DOMElement)
         }
         break
       }
@@ -378,7 +379,7 @@ export let patch = (DOMElement, actions, context = {}) => {
         break
       }
       case 'removeAttribute': {
-        updateAttribute(DOMElement, action.name, null)
+        updateAttribute(DOMElement, action.name, action.value, action.previousValue)
         break
       }
       case 'updateText': {
@@ -388,7 +389,6 @@ export let patch = (DOMElement, actions, context = {}) => {
       case 'insertChild': {
         let child = createElement(action.element, action.path, context)
         insertAtIndex(DOMElement, action.index, child)
-        // Walk action.element and call all onInsert/onChange hooks
         offset = offset + 1
         break
       }
@@ -414,12 +414,14 @@ export let patch = (DOMElement, actions, context = {}) => {
   })
 }
 
-export let updateAttribute = (DOMElement, name, value) => {
+export let updateAttribute = (DOMElement, name, value, previousValue) => {
   if (typeof value === 'function') {
     value = value(DOMElement, name)
   }
   if (!isActiveAttribute(value)) {
     switch (name) {
+      case events[name]:
+        DOMElement.addEventListener(events[name], value)
       case 'checked':
       case 'disabled':
       case 'selected':
@@ -437,6 +439,8 @@ export let updateAttribute = (DOMElement, name, value) => {
     return
   } else {
     switch (name) {
+      case events[name]:
+        DOMElement.removeEventListener(events[name], previousValue)
       case 'checked':
       case 'disabled':
       case 'selected':
@@ -460,18 +464,19 @@ export let updateAttribute = (DOMElement, name, value) => {
   }
 }
 
-let renderCustomElement = (element, path, context) => {
+let renderCustomElement = (element, model, context) => {
   let render = element.type
-  let {attributes,children} = element
-  let model = {
-    attributes: attributes,
-    children: children,
-    path: path,
-    context: context
-  }
-  let rootElement = render(model)
+  let rootElement = render(model, context)
   element._cache = rootElement
   return rootElement
+}
+
+let createModel = (element, path) => {
+  return {
+    attributes: element.attributes,
+    children: element.children,
+    path: path,
+  }
 }
 
 export let createElement = (element, context = {}, path = '0') => {
@@ -493,8 +498,12 @@ export let createElement = (element, context = {}, path = '0') => {
       })
       break
     case 'custom':
-      var customElement = renderCustomElement(element, path, context)
+      var model = createModel(element, path)
+      var customElement = renderCustomElement(element, model, context)
       DOMElement = createElement(customElement, context, path)
+      if (typeof element.type.onCreate === 'function') {
+        element.type.onCreate(model, context, DOMElement)
+      }
       break
     default:
       throw new Error('Cannot create unknown element type')
