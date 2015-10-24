@@ -1,7 +1,3 @@
-import {isElement as isSVGElement} from 'is-svg-element'
-
-export const svgNamespace = 'http://www.w3.org/2000/svg'
-
 export let events = {
   onBlur: 'blur',
   onChange: 'change',
@@ -44,6 +40,41 @@ export let events = {
   onWheel: 'wheel'
 }
 
+/**
+ * Determine if two virtual nodes are the same type
+ */
+
+export let isSameType = (left, right) => {
+  return nodeType(left) === nodeType(right) && left.type === right.type
+}
+
+/**
+ * Given a virtual element that is a function, we can render it using a model
+ * and a context object. It caches the result on the node so we can optimize
+ * the diffing later.
+ */
+
+export let renderCustomElement = (element, model, context) => {
+  let render = element.type
+  let rootElement = render(model, context)
+  element.cache = rootElement
+  return rootElement
+}
+
+/**
+ * Create a model from a virtual element. The model is used in the render functions
+ * of custom elements. Whatever we assign here, users will have access to.
+ */
+
+export let createModel = (element, path) => {
+  return {
+    attributes: element.attributes,
+    children: element.children,
+    path: path,
+  }
+}
+
+
 export let groupByKey = (children) => {
   return children.reduce((acc, child, i) => {
     if (child) {
@@ -60,23 +91,6 @@ export let getKey = (element) => {
   return element && element.attributes && element.attributes.key
 }
 
-export let setTextContent = (DOMElement, value) => {
-  DOMElement.data = value || ''
-}
-
-export let insertAtIndex = (parent, index, el) => {
-  var target = parent.childNodes[index]
-  if (target) {
-    parent.insertBefore(el, target)
-  } else {
-    parent.appendChild(el)
-  }
-}
-
-export let removeAtIndex = (DOMElement, index) => {
-  DOMElement.removeChild(DOMElement.childNodes[index])
-}
-
 export let isActiveAttribute = (value) => {
   if (typeof value === 'boolean') return value
   if (value === '') return true
@@ -84,28 +98,6 @@ export let isActiveAttribute = (value) => {
   if (value === null) return false
   if (value === false) return false
   return true
-}
-
-export let createDOMElement = (type) => {
-  if (isSVGElement(type)) {
-    return document.createElementNS(svgNamespace, type)
-  } else {
-    return document.createElement(type)
-  }
-}
-
-export let attributeToString = (key, val) => {
-  return ' ' + key + '="' + val + '"'
-}
-
-export let attributesToString = (attributes) => {
-  var str = ''
-  for (var name in attributes) {
-    var value = attributes[name]
-    if (name === 'innerHTML') continue
-    if (isActiveAttribute(value)) str += attributeToString(name, attributes[name])
-  }
-  return str
 }
 
 export let nodeType = (element) => {
@@ -117,12 +109,6 @@ export let nodeType = (element) => {
     default:
       return 'text'
   }
-}
-
-export let createTextNode = (value) => {
-  let node = document.createTextNode('')
-  setTextContent(node, value)
-  return node
 }
 
 export let preOrderWalk = (fn, element) => {

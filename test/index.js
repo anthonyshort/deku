@@ -4,21 +4,33 @@ import test from 'tape'
 import h from 'virtual-element'
 import isDOM from 'is-dom'
 import trigger from 'trigger-event'
-import {createRenderer, renderString, diff, patch, updateAttribute, createElement} from '../src'
-import {groupByKey} from '../src/helpers'
+import {createRenderer, diff, patch, updateAttribute, createElement} from '../src/client'
+import {renderString} from '../src/server'
+import {groupByKey} from '../src/shared'
 
 test('grouping virtual nodes', t => {
   let one = <div/>
   let two = <div key="foo"/>
   let three = <div/>
   let result = groupByKey([one,two,three,null,'foo'])
-  t.equal(result[0].element, one)
-  t.equal(result[0].index, 0)
-  t.equal(result['foo'].element, two)
-  t.equal(result['foo'].index, 1)
-  t.equal(result[2].element, three)
-  t.equal(result[2].index, 2)
-  t.equal(result[3], undefined)
+  t.deepEqual(result, {
+    '0': {
+      element: one,
+      index: 0
+    },
+    'foo': {
+      element: two,
+      index: 1
+    },
+    '2': {
+      element: three,
+      index: 2
+    },
+    '4': {
+      element: 'foo',
+      index: 4
+    }
+  })
   t.end()
 })
 
