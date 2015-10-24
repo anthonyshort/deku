@@ -3,7 +3,9 @@ require('babelify/polyfill')
 import test from 'tape'
 import h from 'virtual-element'
 import isDOM from 'is-dom'
-import {createRenderer, renderString, groupByKey, diff, patch, updateAttribute, createElement} from '../src'
+import trigger from 'trigger-event'
+import {createRenderer, renderString, diff, patch, updateAttribute, createElement} from '../src'
+import {groupByKey} from '../src/helpers'
 
 test('grouping virtual nodes', t => {
   let one = <div/>
@@ -214,9 +216,9 @@ test('diffing two elements', t => {
     index: 0,
     type: "updateChild",
     actions: [{
-      type: 'updateCustomElement',
-      previousElement: <MyButton color="red" key="foo" />,
-      nextElement: <MyButton color="blue" key="foo" />,
+      type: 'updateCustom',
+      cache: undefined,
+      element: <MyButton color="blue" key="foo" />,
       path: '0.foo'
     }]
   }], 'update custom element')
@@ -363,9 +365,9 @@ test('patching an element', t => {
     type: 'updateChild',
     index: 0,
     actions: [{
-      type: 'updateCustomElement',
-      previousElement: initial,
-      nextElement: <MyButton text="Submit" key="foo" />,
+      type: 'updateCustom',
+      cache: <button>Reset</button>,
+      element: <MyButton text="Submit" key="foo" />,
       path: 'foo'
     }]
   }])
@@ -378,20 +380,75 @@ test('rendering native DOM elements', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
   t.assert(typeof render === 'function')
-  render(<div />)
-  t.equal(el.innerHTML, '<div></div>')
-  render(<div active={true} />)
-  t.equal(el.innerHTML, '<div active="true"></div>')
-  render(<div class="button" />)
-  t.equal(el.innerHTML, '<div class="button"></div>')
-  render(<div class="box" />)
-  t.equal(el.innerHTML, '<div class="box"></div>')
-  render(<div />)
-  t.equal(el.innerHTML, '<div></div>')
+  render(<span />)
+  t.equal(el.innerHTML, '<span></span>', 'no attribute')
   render(<div><span /></div>)
   t.equal(el.innerHTML, '<div><span></span></div>')
   render(<div><div /></div>)
   t.equal(el.innerHTML, '<div><div></div></div>')
+  t.end()
+})
+
+test('not touching the DOM', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<span name="Bob" />)
+  el.children[0].setAttribute = () => t.fail('DOM was touched')
+  render(<span name="Bob" />)
+  t.pass('DOM not accessed')
+  t.end()
+})
+
+test('rendering HTML attributes', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<span name="Bob" />)
+  t.equal(el.innerHTML, '<span name="Bob"></span>', 'string')
+  render(<span name={0} />)
+  t.equal(el.innerHTML, '<span name="0"></span>', 'number')
+  render(<span name={null} />)
+  t.equal(el.innerHTML, '<span></span>', 'null')
+  render(<span name={undefined} />)
+  t.equal(el.innerHTML, '<span></span>', 'undefined')
+  render(<span name={false} />)
+  t.equal(el.innerHTML, '<span></span>', 'false')
+  render(<span name={true} />)
+  t.equal(el.innerHTML, '<span name="true"></span>', 'true')
+  render(<span name="" />)
+  t.equal(el.innerHTML, '<span name=""></span>', 'empty string')
+  render(<input value={0} />)
+  t.equal(el.innerHTML, '<input>', 'input with 0 value')
+  t.equal(el.firstChild.value, "0", 'input value set')
+  t.end()
+})
+
+test('rendering text nodes', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<span>Hello World</span>)
+  t.equal(el.innerHTML, `<span>Hello World</span>`, 'text rendered')
+  render(<span>Hello Pluto</span>)
+  t.equal(el.innerHTML, '<span>Hello Pluto</span>', 'text updated')
+  render(<span></span>)
+  t.equal(el.innerHTML, '<span></span>', 'text removed')
+  render(<span>{undefined} World</span>)
+  t.equal(el.innerHTML, '<span> World</span>', 'undefined is not rendered')
+  render(<span>{null} World</span>)
+  t.equal(el.innerHTML, '<span> World</span>', 'null is not rendered')
+  render(<span>{true} World</span>)
+  t.equal(el.innerHTML, '<span>true World</span>', 'boolean is rendered')
+  t.end()
+})
+
+test('not destroying parent elements', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<div/>)
+  let rootEl = el.firstChild
+  render(<div>Hello Pluto</div>)
+  t.equal(el.firstChild, rootEl, 'not replaced')
+  render(<span>Foo!</span>)
+  t.notEqual(el.firstChild, rootEl, 'replaced')
   t.end()
 })
 
@@ -405,6 +462,311 @@ test('rendering custom DOM elements', t => {
   render(<MyButton text="hello" />)
   render(<MyButton text="goodbye" />)
   render(<div />)
+  t.end()
+})
+
+test('context should be passed into all custom elements', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  let context = { color: 'red' }
+  let Container = (m) => <div>{m.children}</div>
+  let MyButton = (m,c) => {
+    t.equal(c, context, 'rendered with context')
+    return <button>{m.attributes.text}</button>
+  }
+  t.plan(1)
+  render(<Container><MyButton text="hello" /></Container>, context)
+  t.end()
+})
+
+test('removing sibling elements', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(
+    <div>
+      <span>one</span>
+      <span>two</span>
+      <span>three</span>
+    </div>
+  )
+  let span = el.firstChild.firstChild
+  let rootEl = el.firstChild
+  render(
+    <div>
+      <span>one</span>
+    </div>
+  )
+  t.equal(el.firstChild.firstChild, span, 'child element not replaced')
+  t.equal(rootEl.childNodes.length, 1, 'siblings removed')
+  t.equal(el.firstChild, rootEl, 'root element not replaced')
+  t.end()
+})
+
+test('input value', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<input/>)
+  var input = el.firstChild
+  render(<input value="Bob" />)
+  t.equal(input.value, 'Bob', 'value property set')
+  render(<input value="Tom" />)
+  t.equal(input.value, 'Tom', 'value property updated')
+  render(<input />)
+  t.equal(input.value, '', 'value property removed')
+  t.end()
+})
+
+test('cursor position', t => {
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+  let render = createRenderer(el)
+  render(<input />)
+  let input = el.firstChild
+  // Cursor position
+  render(<input type="text" value="Game of Thrones" />)
+  input.focus()
+  input.setSelectionRange(5,7)
+  render(<input type="text" value="Way of Kings" />)
+  t.equal(input.selectionStart, 5, 'selection start')
+  t.equal(input.selectionEnd, 7, 'selection end')
+  // Cursor on some fields, this throws an error in the
+  // browser if we haven't checked for the types correctly.
+  render(<input type="email" value="a@b.com" />)
+  // Remove focus
+  if (input.setActive) {
+    document.body.setActive()
+  } else {
+    input.blur()
+  }
+  // The selection should have changed
+  render(<input type="text" value="Hello World!" />)
+  t.notEqual(input.selectionStart, 5, 'selection start')
+  t.notEqual(input.selectionEnd, 7, 'selection end')
+  document.body.removeChild(el)
+  t.end()
+})
+
+test('input boolean attributes', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(<input />)
+  let input = el.firstChild
+  // Checked
+  render(<input checked={true} />)
+  t.ok(input.checked, 'checked with a true value')
+  t.equal(input.getAttribute('checked'), null, 'has checked attribute')
+  render(<input checked={false} />)
+  t.ok(!input.checked, 'unchecked with a false value')
+  t.ok(!input.hasAttribute('checked'), 'has no checked attribute')
+  render(<input checked />)
+  t.ok(input.checked, 'checked with a boolean attribute')
+  t.equal(input.getAttribute('checked'), null, 'has checked attribute')
+  render(<input />)
+  t.ok(!input.checked, 'unchecked when attribute is removed')
+  t.ok(!input.hasAttribute('checked'), 'has no checked attribute')
+  // Disabled
+  render(<input disabled={true} />)
+  t.ok(input.disabled, 'disabled with a true value')
+  t.equal(input.hasAttribute('disabled'), true, 'has disabled attribute')
+  render(<input disabled={false} />)
+  t.equal(input.disabled, false, 'disabled is false with false value')
+  t.equal(input.hasAttribute('disabled'), false, 'has no disabled attribute')
+  render(<input disabled />)
+  t.ok(input.disabled, 'disabled is true with a boolean attribute')
+  t.equal(input.hasAttribute('disabled'), true, 'has disabled attribute')
+  render(<input />)
+  t.equal(input.disabled, false, 'disabled is false when attribute is removed')
+  t.equal(input.hasAttribute('disabled'), false, 'has no disabled attribute')
+  t.end()
+})
+
+test('option[selected]', t => {
+  let options
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  render(
+    <select>
+      <option selected>one</option>
+      <option>two</option>
+    </select>
+  )
+  options = el.querySelectorAll('option')
+  t.ok(!options[1].selected, 'is not selected')
+  t.ok(options[0].selected, 'is selected')
+  render(
+    <select>
+      <option>one</option>
+      <option selected>two</option>
+    </select>
+  )
+  options = el.querySelectorAll('option')
+  t.ok(!options[0].selected, 'is not selected')
+  t.ok(options[1].selected, 'is selected')
+  t.end()
+})
+
+test('higher-order components should have an element', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  var Box = model => <div>{model.attributes.text}</div>
+  var Container = model => <Box text="hello" />
+  Container.onCreate = (model, context, el) => {
+    t.assert(el, 'element exists')
+  }
+  render(<Container />)
+  t.end()
+})
+
+test('memoizing the render function', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  var i = 0
+  var vnode = <div onUpdate={el => i++} />
+  var Component = model => vnode
+  render(<Component />)
+  render(<Component />)
+  t.equal(i, 1, 'component not updated')
+  t.end()
+})
+
+test('changing the root node', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  var ComponentA = model => h(model.attributes.type, null, model.attributes.text)
+  var Test = model => <ComponentA type={model.attributes.type} text={model.attributes.text} />
+  render(<Test type="span" text="test" />)
+  t.equal(el.innerHTML, '<span>test</span>')
+  render(<Test type="div" text="test" />)
+  t.equal(el.innerHTML, '<div>test</div>')
+  render(<Test type="div" text="foo" />)
+  t.equal(el.innerHTML, '<div>foo</div>')
+  t.end()
+})
+
+test.skip('moving components with keys', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  var one,two,three
+  let ListItem = model => <li>{model.children}</li>
+
+  t.plan(10)
+
+  render(
+    <ul>
+      <ListItem key="foo">One</ListItem>
+      <ListItem key="bar">Two</ListItem>
+    </ul>
+  )
+  var [one,two] = el.querySelectorAll('li')
+
+  // Moving
+  render(
+    <ul>
+      <ListItem key="bar">Two</ListItem>
+      <ListItem key="foo">One</ListItem>
+    </ul>
+  )
+  var updated = el.querySelectorAll('li')
+  t.ok(updated[1] === one, 'foo moved down')
+  t.ok(updated[0] === two, 'bar moved up')
+
+  // Removing
+  render(
+    <ul>
+      <ListItem key="bar">Two</ListItem>
+    </ul>
+  )
+  updated = el.querySelectorAll('li')
+  t.ok(updated[0] === two && updated.length === 1, 'foo was removed')
+
+  // Updating
+  render(
+    <ul>
+      <ListItem key="foo">One</ListItem>
+      <ListItem key="bar">Two</ListItem>
+      <ListItem key="baz">Three</ListItem>
+    </ul>
+  )
+  var [one,two,three] = el.querySelectorAll('li')
+  render(
+    <ul>
+      <ListItem key="foo">One</ListItem>
+      <ListItem key="baz">Four</ListItem>
+    </ul>
+  )
+  var updated = el.querySelectorAll('li')
+  t.ok(updated[0] === one, 'foo is the same')
+  t.ok(updated[1] === three, 'baz is the same')
+  t.ok(updated[1].innerHTML === 'Four', 'baz was updated')
+  var foo = updated[0]
+  var baz = updated[1]
+
+  // Adding
+  render(
+    <ul>
+      <ListItem key="foo">One</ListItem>
+      <ListItem key="bar">Five</ListItem>
+      <ListItem key="baz">Four</ListItem>
+    </ul>
+  )
+  var updated = el.querySelectorAll('li')
+  t.ok(updated[0] === foo, 'foo is the same')
+  t.ok(updated[2] === baz, 'baz is the same')
+  t.ok(updated[1].innerHTML === 'Five', 'bar was added')
+
+  // Moving event handlers
+  // var clicked = () => pass('event handler moved')
+  // render(
+  //   <ul>
+  //     <ListItem key="foo">One</ListItem>
+  //     <ListItem key="bar">
+  //       <span onClick={clicked}>Click Me!</span>
+  //     </ListItem>
+  //   </ul>
+  // )
+  // render(
+  //   <ul>
+  //     <ListItem key="bar">
+  //       <span onClick={clicked}>Click Me!</span>
+  //     </ListItem>
+  //     <ListItem key="foo">One</ListItem>
+  //   </ul>
+  // )
+  // trigger(el.querySelector('span'), 'click')
+
+  // Removing handlers. If the handler isn't removed from
+  // the path correctly, it will still fire the handler from
+  // the previous assertion.
+  render(
+    <ul>
+      <ListItem key="foo">
+        <span>One</span>
+      </ListItem>
+    </ul>
+  )
+  trigger(el.querySelector('span'), 'click')
+
+  t.end()
+})
+
+test('event handlers', t => {
+  let el = document.createElement('div')
+  let render = createRenderer(el)
+  let count = 0
+  let Page = (model) => <span onClick={model.attributes.clicker} />
+  render(<Page clicker={e => count += 1} />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 1, 'event added')
+  render(<Page clicker={e => count -= 1} />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 0, 'event updated')
+  render(<Page />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 0, 'event removed')
+  t.end()
+})
+
+test('replacing nodes in the DOM', t => {
   t.end()
 })
 

@@ -1,255 +1,26 @@
-export let groupByKey = (children) => {
-  return children.reduce((acc, child, i) => {
-    if (child) {
-      acc[getKey(child) || i] = {
-        index: i,
-        element: child
-      }
-    }
-    return acc
-  }, {})
-}
+import setElementValue from 'setify'
+import isSVGAttribute from 'is-svg-attribute'
+import {
+  events,
+  groupByKey,
+  getKey,
+  setTextContent,
+  insertAtIndex,
+  removeAtIndex,
+  isActiveAttribute,
+  createDOMElement,
+  attributeToString,
+  attributesToString,
+  nodeType,
+  createTextNode,
+  preOrderWalk,
+  postOrderWalk
+} from './helpers'
 
-let getKey = (element) => {
-  return element && element.attributes && element.attributes.key
-}
-
-let appendTo = (container, el) => {
-  if (el.parentNode !== container) {
-    container.appendChild(el)
-  }
-}
-
-let setTextContent = (DOMElement, value) => {
-  DOMElement.data = value || ''
-}
-
-let insertAtIndex = (parent, index, el) => {
-  var target = parent.childNodes[index]
-  if (target) {
-    parent.insertBefore(el, target)
-  } else {
-    appendTo(parent, el)
-  }
-}
-
-let removeAtIndex = (DOMElement, index) => {
-  DOMElement.removeChild(DOMElement.childNodes[index])
-}
-
-let isActiveAttribute = (value) => {
-  if (typeof value === 'boolean') return value
-  if (value === '') return false
-  if (value === undefined) return false
-  if (value === null) return false
-  if (value === false) return false
-  return true
-}
-
-let canSelectText = (DOMElement) => {
-  return DOMElement.tagName === 'INPUT' && ['text','search','password','tel','url'].indexOf(DOMElement.type) > -1
-}
-
-let setElementValue = (DOMElement, value) => {
-  if (DOMElement === document.activeElement && canSelectText(DOMElement)) {
-    var start = DOMElement.selectionStart
-    var end = DOMElement.selectionEnd
-    DOMElement.value = value
-    DOMElement.setSelectionRange(start, end)
-  } else {
-    DOMElement.value = value
-  }
-}
-
-let getElementNamespace = (type) => {
-  switch (type) {
-    case 'animate':
-    case 'circle':
-    case 'defs':
-    case 'ellipse':
-    case 'g':
-    case 'line':
-    case 'linearGradient':
-    case 'mask':
-    case 'path':
-    case 'pattern':
-    case 'polygon':
-    case 'radialGradient':
-    case 'rect':
-    case 'stop':
-    case 'svg':
-    case 'text':
-    case 'tspan':
-      return 'http://www.w3.org/2000/svg'
-    default:
-      return undefined
-  }
-}
-
-let getAttributeNamespace = (type) => {
-  switch (type) {
-    case 'cx':
-    case 'cy':
-    case 'd':
-    case 'dx':
-    case 'dy':
-    case 'fill':
-    case 'fillOpacity':
-    case 'fontFamily':
-    case 'fontSize':
-    case 'fx':
-    case 'fy':
-    case 'gradientTransform':
-    case 'gradientUnits':
-    case 'markerEnd':
-    case 'markerMid':
-    case 'markerStart':
-    case 'offset':
-    case 'opacity':
-    case 'patternContentUnits':
-    case 'patternUnits':
-    case 'points':
-    case 'preserveAspectRatio':
-    case 'r':
-    case 'rx':
-    case 'ry':
-    case 'spreadMethod':
-    case 'stopColor':
-    case 'stopOpacity':
-    case 'stroke':
-    case 'strokeDasharray':
-    case 'strokeLinecap':
-    case 'strokeOpacity':
-    case 'strokeWidth':
-    case 'textAnchor':
-    case 'transform':
-    case 'version':
-    case 'viewBox':
-    case 'x1':
-    case 'x2':
-    case 'x':
-    case 'y1':
-    case 'y2':
-    case 'y':
-      return 'http://www.w3.org/2000/svg'
-    default:
-      return undefined
-  }
-}
-
-let events = {
-  onBlur: 'blur',
-  onChange: 'change',
-  onClick: 'click',
-  onContextMenu: 'contextmenu',
-  onCopy: 'copy',
-  onCut: 'cut',
-  onDoubleClick: 'dblclick',
-  onDrag: 'drag',
-  onDragEnd: 'dragend',
-  onDragEnter: 'dragenter',
-  onDragExit: 'dragexit',
-  onDragLeave: 'dragleave',
-  onDragOver: 'dragover',
-  onDragStart: 'dragstart',
-  onDrop: 'drop',
-  onError: 'error',
-  onFocus: 'focus',
-  onInput: 'input',
-  onInvalid: 'invalid',
-  onKeyDown: 'keydown',
-  onKeyPress: 'keypress',
-  onKeyUp: 'keyup',
-  onMouseDown: 'mousedown',
-  onMouseEnter: 'mouseenter',
-  onMouseLeave: 'mouseleave',
-  onMouseMove: 'mousemove',
-  onMouseOut: 'mouseout',
-  onMouseOver: 'mouseover',
-  onMouseUp: 'mouseup',
-  onPaste: 'paste',
-  onReset: 'reset',
-  onScroll: 'scroll',
-  onSubmit: 'submit',
-  onTouchCancel: 'touchcancel',
-  onTouchEnd: 'touchend',
-  onTouchMove: 'touchmove',
-  onTouchStart: 'touchstart',
-  onWheel: 'wheel'
-}
-
-let createDOMElement = (type) => {
-  let namespace = getElementNamespace(type)
-  if (namespace) {
-    return document.createElementNS(namespace, type)
-  } else {
-    return document.createElement(type)
-  }
-}
-
-let attributeToString = (key, val) => {
-  return ' ' + key + '="' + val + '"'
-}
-
-let attributesToString = (attributes) => {
-  var str = ''
-  for (var name in attributes) {
-    var value = attributes[name]
-    if (name === 'innerHTML') continue
-    if (isActiveAttribute(value)) str += attributeToString(name, attributes[name])
-  }
-  return str
-}
-
-let nodeType = (element) => {
-  if (typeof element === 'string') {
-    return 'text'
-  }
-  switch (typeof element.type) {
-    case 'string':
-      return 'native'
-    case 'function':
-      return 'custom'
-    default:
-      throw new Error('Element type not supported')
-  }
-}
-
-let createTextNode = (value) => {
-  let node = document.createTextNode('')
-  setTextContent(node, value)
-  return node
-}
-
-let preOrderWalk = (fn, element) => {
-  fn(element)
-  switch (nodeType(element)) {
-    case 'native':
-      element.children.forEach(child => preOrderWalk(fn, child))
-      break
-    case 'custom':
-      preOrderWalk(fn, element._cache)
-      break
-    default:
-      break
-  }
-
-}
-
-let postOrderWalk = (fn, element) => {
-  element.children.forEach(child => postOrderWalk(fn, child))
-  fn(element)
-}
-
-
-// Core
-// -----------------------------------------------------------------------------
-
-let diffChildren = (previous, next, path) => {
+let diffChildren = (previous, next, path = '0') => {
   let changes = []
   let previousChildren = groupByKey(previous)
   let nextChildren = groupByKey(next)
-
   for (let key in previousChildren) {
     let nextChild = nextChildren[key]
     let previousChild = previousChildren[key]
@@ -261,7 +32,6 @@ let diffChildren = (previous, next, path) => {
       })
     }
   }
-
   for (let key in nextChildren) {
     let nextChild = nextChildren[key]
     let previousChild = previousChildren[key]
@@ -289,20 +59,16 @@ let diffChildren = (previous, next, path) => {
       }
     }
   }
-
   return changes
 }
 
 export let diff = (previousElement, nextElement, path = '0') => {
   let changes = []
-
   if (previousElement === nextElement) {
     return changes
   }
-
   switch (nodeType(nextElement)) {
     case 'native':
-
       for (let name in nextElement.attributes) {
         let nextValue = nextElement.attributes[name]
         let previousValue = previousElement.attributes[name]
@@ -320,7 +86,6 @@ export let diff = (previousElement, nextElement, path = '0') => {
           })
         }
       }
-
       for (let name in previousElement.attributes) {
         if (!(name in nextElement.attributes)) {
           changes.push({
@@ -330,11 +95,9 @@ export let diff = (previousElement, nextElement, path = '0') => {
           })
         }
       }
-
       changes = changes.concat(
         diffChildren(previousElement.children, nextElement.children, path)
       )
-
       break
     case 'text':
       changes.push({
@@ -345,16 +108,15 @@ export let diff = (previousElement, nextElement, path = '0') => {
       break
     case 'custom':
       changes.push({
-        type: 'updateCustomElement',
-        previousElement: previousElement,
-        nextElement: nextElement,
+        type: 'updateCustom',
+        cache: previousElement.cache,
+        element: nextElement,
         path: path
       })
       break
     default:
       throw new Error('Node type not supported')
   }
-
   return changes
 }
 
@@ -362,14 +124,13 @@ export let patch = (DOMElement, actions, context = {}) => {
   let offset = 0
   actions.forEach(action => {
     switch (action.type) {
-      case 'updateCustomElement': {
-        let model = createModel(action.nextElement, action.path)
-        let cachedElement = action.previousElement._cache
-        let updatedElement = renderCustomElement(action.nextElement, model, context)
-        let actions = diff(cachedElement, updatedElement)
-        DOMElement = patch(DOMElement, actions, context)
-        if (typeof action.nextElement.type.onUpdate === 'function') {
-          action.nextElement.type.onUpdate(model, context, DOMElement)
+      case 'updateCustom': {
+        let model = createModel(action.element, action.path)
+        let next = renderCustomElement(action.element, model, context)
+        let actions = diff(action.cache, next)
+        patch(DOMElement, actions, context)
+        if (typeof action.element.type.onUpdate === 'function') {
+          action.element.type.onUpdate(model, context, DOMElement)
         }
         break
       }
@@ -387,13 +148,13 @@ export let patch = (DOMElement, actions, context = {}) => {
         break
       }
       case 'insertChild': {
-        let child = createElement(action.element, action.path, context)
+        let child = createElement(action.element, context, action.path)
         insertAtIndex(DOMElement, action.index, child)
         offset = offset + 1
         break
       }
       case 'removeChild': {
-        removeAtIndex(DOMElement, action.index)
+        removeAtIndex(DOMElement, action.index + offset)
         // Walk action.element and call onRemove hooks
         offset = offset - 1
         break
@@ -453,9 +214,8 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
         setElementValue(DOMElement, value)
         break
       default:
-        let namespace = getAttributeNamespace(name)
-        if (namespace) {
-          DOMElement.setAttributeNS(namespace, name, value)
+        if (isSVGAttribute(name)) {
+          DOMElement.setAttributeNS(svgNamespace, name, value)
         } else {
           DOMElement.setAttribute(name, value)
         }
@@ -467,7 +227,7 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
 let renderCustomElement = (element, model, context) => {
   let render = element.type
   let rootElement = render(model, context)
-  element._cache = rootElement
+  element.cache = rootElement
   return rootElement
 }
 
@@ -481,7 +241,6 @@ let createModel = (element, path) => {
 
 export let createElement = (element, context = {}, path = '0') => {
   let DOMElement
-
   switch (nodeType(element)) {
     case 'text':
       DOMElement = createTextNode(element)
@@ -508,7 +267,6 @@ export let createElement = (element, context = {}, path = '0') => {
     default:
       throw new Error('Cannot create unknown element type')
   }
-
   return DOMElement
 }
 

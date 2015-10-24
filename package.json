@@ -25,7 +25,8 @@
     "zuul": "^3.2.0"
   },
   "dependencies": {
-    "is-dom": "^1.0.5"
+    "is-dom": "^1.0.5",
+    "setify": "^1.0.3"
   },
   "browserify": {
     "transform": [

@@ -42,6 +42,13 @@ npm install --save virtual-element
 
 The documentation is hosted on gitbook: https://dekujs.github.io/deku.
 
+### Features
+
+* State-less custom elements with lifecycle hooks (Similar to React's Components)
+* Render to a string instead of the DOM for server-side rendering
+* Abstracts away browser quirks, like text selection
+* SVG support
+
 ### Browser support
 
 We try to support the latest two versions of a browser. This allows us to push the boundaries and keep moving the library forward. Usage on older browsers isn't guaranteed, but let's face it, you'll probably be fine on anything other than < IE 10.
