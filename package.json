@@ -14,7 +14,7 @@
     "duo-serve": "^0.14.5",
     "envify": "3.4.0",
     "express": "^4.13.3",
-    "hihat": "2.4.3",
+    "hihat": "2.5.0",
     "minify": "1.4.22",
     "snazzy": "1.0.3",
     "standard": "4.5.4",
