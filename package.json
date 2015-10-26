@@ -8,7 +8,7 @@
   "devDependencies": {
     "babelify": "6.4.0",
     "bfc": "0.3.1",
-    "browserify": "11.2.0",
+    "browserify": "12.0.0",
     "bump": "0.2.5",
     "duo-babel": "^6.0.0",
     "duo-serve": "^0.14.5",
