@@ -22,7 +22,7 @@
     "tape": "4.2.2",
     "trigger-event": "1.0.2",
     "virtual-element": "1.2.0",
-    "zuul": "3.7.1"
+    "zuul": "3.7.2"
   },
   "dependencies": {
     "component-emitter": "1.2.0",
