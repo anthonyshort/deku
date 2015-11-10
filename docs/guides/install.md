@@ -14,6 +14,42 @@ Browserify is the easiest way to use Deku if you're planning on doing server and
 browserify -t babelify main.js > build.js
 ```
 
+## Webpack 
+
+```
+npm install deku
+```
+
+Like browserify, webpack analyzes all the require() calls in your app and builds a bundle that you can serve up to the browser.
+
+```
+webpack main.js build.js
+```
+
+The best way to configure webpack is with a `webpack.config.js`.
+
+```
+webpack --config webpack.config.js
+```
+
+Webpack uses loaders, and we can use the [babel loader](https://github.com/babel/babel-loader) to transform ES6 and JSX to ES5 as shown below in this example `webpack.config.js`.
+
+```js
+module.exports = {
+  entry: './main.js',
+  output: { path: __dirname, filename: 'bundle.js' },
+  module: {
+    loaders: [
+      {
+        test: /\.jsx?$/,
+        exclude: /(node_modules)/,
+        loader: 'babel'
+      }
+    ]
+  }
+}
+```
+
 ## Duo
 
 ```
