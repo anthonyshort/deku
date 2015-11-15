@@ -30,7 +30,7 @@ render(app, document.body)
 
 Deku is a DOM renderer for virtual elements that also allows us to define custom element types. It runs diffing algorithm on these virtual elements to update the real DOM in a performant way.
 
-**Heads up:** These examples are written using ES2015 syntax. You'll want to make sure you're familiar with modules and destructuring to follow along.
+**Heads up:** These examples are written using ES2015 syntax. You'll want to make sure you're familiar with [modules](https://babeljs.io/docs/learn-es2015/#modules) and [destructuring](https://babeljs.io/docs/learn-es2015/#destructuring) to follow along.
 
 Virtual elements are plain objects that represent real DOM elements:
 
