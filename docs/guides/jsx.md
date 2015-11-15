@@ -18,15 +18,31 @@ export function render (component) {
 }
 ```
 
-There are a number of libraries around now that can transpile JSX into JS that aren't tied to React. The easiest way to use JSX with Deku is to use [Babel](https://github.com/babel/babel). 
+There are a number of libraries around now that can transpile JSX into JS that aren't tied to React. The easiest way to use JSX with Deku is to use [Babel](https://github.com/babel/babel).
 
 ## .babelrc
 
 The easiest way is to add it to your `.babelrc` file:
 
+In Babel 5,
+
 ```
 {
   "jsxPragma": "element"
+}
+```
+
+However, in Babel 6, everything was modularized so you'll need to run
+
+`npm install babel-plugin-transform-react-jsx`
+
+and include the plugin in your `.babelrc` file-
+
+```
+{
+  "plugins": [
+    ["transform-react-jsx", { "pragma": "element" }]
+  ]
 }
 ```
 
