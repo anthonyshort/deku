@@ -67,22 +67,6 @@ let removeAtIndex = (DOMElement, index) => {
 }
 
 /**
- * Walk up a tree of virtual elements
- */
-
-// let walk = (fn) => {
-//   let next = (element) => {
-//     if (element.cache) {
-//       next(element.cache)
-//     } else {
-//       element.children.forEach(next)
-//     }
-//     fn(element)
-//   }
-//   return next
-// }
-
-/**
  * Compare two arrays of virtual nodes and return an array of actions
  * to transform the left into the right. A starting path is supplied that use
  * recursively to build up unique paths for each node.

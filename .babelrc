@@ -1,7 +1,6 @@
 {
   "presets": ["es2015", "stage-2"],
-  "optional": ["es7.objectRestSpread"],
-  "comments": false,
+  "sourceMaps": true,
   "plugins": [
     ["transform-react-jsx", {"pragma": "h"}]
   ]

@@ -1,4 +1,4 @@
-require('babelify/polyfill')
+require('babel-polyfill')
 
 import test from 'tape'
 import h from 'virtual-element'
