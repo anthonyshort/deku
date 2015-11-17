@@ -7,9 +7,7 @@
   "main": "dist/deku.js",
   "devDependencies": {
     "babelify": "^6.2.0",
-    "bfc": "~0.3.1",
     "browserify": "^11.0.0",
-    "bump": "*",
     "envify": "^3.4.0",
     "hihat": "^2.4.0",
     "minify": "^1.4.11",
@@ -28,10 +26,5 @@
     "is-svg-attribute": "^1.0.2",
     "is-svg-element": "^1.0.1",
     "setify": "^1.0.3"
-  },
-  "browserify": {
-    "transform": [
-      "babelify"
-    ]
   }
 }

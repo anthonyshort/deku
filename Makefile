@@ -28,7 +28,7 @@ dist: $(src)
 		-t envify \
 		-e src/index.js | bfc > dist/deku.js
 
-test: $(src) $(tests)
+test: lint
 	@NODE_ENV=development hihat test/index.js -- \
 		--debug \
 		-t babelify \

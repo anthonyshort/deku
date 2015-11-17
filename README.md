@@ -5,7 +5,6 @@ Deku is a library for rendering user interfaces in a pure, functional way. It's 
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
-[![Slack](https://img.shields.io/badge/Slack-Join%20Chat%20→-blue.svg?style=flat-square)](https://dekujs.herokuapp.com)
 
 ### Installation
 
@@ -27,7 +26,7 @@ npm install --save virtual-element
 * Abstracts away browser quirks, like text selection
 * SVG support
 
-### Example
+### Usage
 
 ```js
 import h from 'virtual-element'
@@ -37,7 +36,7 @@ let MyButton = (model) => {
   return h('button', { class: "my-button" }, [model.children])
 }
 
-let render = createRenderer(document.body)
+let render = createDOMRenderer(document.body)
 
 render(
   <div class="App">
@@ -46,35 +45,19 @@ render(
 )
 ```
 
+### Examples
+
+You can view examples in the [examples branch](https://github.com/dekujs/deku/tree/examples).
+
 ### Documentation
 
-The documentation is hosted on gitbook: https://dekujs.github.io/deku.
+The full documentation can be viewed here: https://dekujs.github.io/deku.
 
 ### Browser support
 
-We try to support the latest two versions of a browser. This allows us to push the boundaries and keep moving the library forward. Usage on older browsers isn't guaranteed, but let's face it, you'll probably be fine on anything other than < IE 10.
+We support the latest two versions of each browser. This means we only support IE10+.
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
-
-### Development
-
-#### Testing
-
-The tests are run using [hihat](https://github.com/Jam3/hihat). This runs the tape tests in an Electron window with just the console. To run the tests, run `make test`.
-
-#### Releasing
-
-Releases are created using [release-it](https://github.com/webpro/release-it). You'll need to install the `release-it` CLI tool. e.g. `release-it 2.1.3`
-
-### Thanks
-
-These projects were all an inspiration for Deku.
-
-* **React**: For initially creating the concept of virtual DOM rendering.
-* **virtual-dom**: For bringing the virtual DOM approach to smaller modules.
-* **snabbdom**: An extremely simple vdom implementation.
-* **Redux**: Totally borrowed the ideas for the documentation.
-* **Elm**: Understanding how actions can flow through a system without state.
 
 ### License
 
