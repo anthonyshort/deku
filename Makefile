@@ -1,13 +1,8 @@
 #
-# Binaries.
+# Vars.
 #
 
-export PATH := ./node_modules/.bin:${PATH}
 BIN := ./node_modules/.bin
-
-#
-# Wildcards.
-#
 
 src = $(shell find src/*.js)
 tests = $(shell find test/*.js)
@@ -22,41 +17,28 @@ $(tests): node_modules
 
 dist: $(src)
 	@mkdir -p dist
-	@NODE_ENV=production browserify \
+	@NODE_ENV=production ${BIN}/browserify \
 		--standalone deku \
 		-t babelify \
-		-t envify \
-		-e src/index.js | bfc > dist/deku.js
+		-e src/index.js | dist/deku.js
 
 test: lint
-	@NODE_ENV=development hihat test/index.js -- \
+	@NODE_ENV=development ${BIN}/hihat test/index.js -- \
 		--debug \
 		-t babelify \
-		-t envify \
 		-p tap-dev-tool
 
-test-cloud: node_modules
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
+test-cloud: node_modules lint
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) ${BIN}/zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
 
-clean:
-	@-rm -rf dist node_modules
-
 lint: $(src) $(tests)
-	standard src/*.js | snazzy
-
-size: dist
-	@minify dist/deku.js | gzip -9 | wc -c
+	${BIN}/standard src/*.js | snazzy
 
 #
-# These tasks will be run every time regardless of dependencies.
+# Always run these tasks.
 #
 
 .PHONY: dist
-.PHONY: clean
-.PHONY: lint
-.PHONY: size
-.PHONY: release
-.PHONY: test-cloud
