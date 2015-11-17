@@ -5,9 +5,6 @@
   "repository": "dekujs/deku",
   "description": "Create view components using a virtual DOM",
   "main": "dist/deku.js",
-  "scripts": {
-    "prepublish": "make dist"
-  },
   "devDependencies": {
     "babelify": "^6.2.0",
     "bfc": "~0.3.1",
@@ -25,7 +22,11 @@
     "zuul": "^3.2.0"
   },
   "dependencies": {
+    "component-raf": "^1.2.0",
+    "dift": "^0.1.2",
     "is-dom": "^1.0.5",
+    "is-svg-attribute": "^1.0.2",
+    "is-svg-element": "^1.0.1",
     "setify": "^1.0.3"
   },
   "browserify": {

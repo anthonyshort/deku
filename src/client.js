@@ -1,10 +1,12 @@
 import setElementValue from 'setify'
 import isSVGAttribute from 'is-svg-attribute'
 import {isElement as isSVGElement} from 'is-svg-element'
-import {events, groupByKey, getKey, isActiveAttribute, nodeType, isSameType, renderCustomElement, createModel} from './shared'
+import {events, groupByKey, getKey, isActiveAttribute, nodeType, renderCustomElement, createModel} from './shared'
+import raf from 'component-raf'
+import dift from 'dift'
 
 /**
- * Contants
+ * Used when we're creating SVG elements or attributes
  */
 
 const svgNamespace = 'http://www.w3.org/2000/svg'
@@ -34,7 +36,7 @@ let createTextNode = (value) => {
  * handle elements with any namespace.
  */
 
-let createDOMElement = (type) => {
+let createDOMElementByType = (type) => {
   if (isSVGElement(type)) {
     return document.createElementNS(svgNamespace, type)
   } else {
@@ -65,53 +67,73 @@ let removeAtIndex = (DOMElement, index) => {
 }
 
 /**
+ * Walk up a tree of virtual elements
+ */
+
+// let walk = (fn) => {
+//   let next = (element) => {
+//     if (element.cache) {
+//       next(element.cache)
+//     } else {
+//       element.children.forEach(next)
+//     }
+//     fn(element)
+//   }
+//   return next
+// }
+
+/**
  * Compare two arrays of virtual nodes and return an array of actions
  * to transform the left into the right. A starting path is supplied that use
  * recursively to build up unique paths for each node.
  */
 
-export let diffChildren = (previous, next, path = '0') => {
+export let diffChildren = (previousChildren, nextChildren, path = '0') => {
   let changes = []
-  let previousChildren = groupByKey(previous)
-  let nextChildren = groupByKey(next)
-  for (let key in previousChildren) {
-    let nextChild = nextChildren[key]
-    let previousChild = previousChildren[key]
-    if (!nextChildren[key] || !isSameType(previousChild.element, nextChild.element)) {
-      changes.push({
-        type: 'removeChild',
-        element: previousChild.element,
-        index: previousChild.index
-      })
-    }
-  }
-  for (let key in nextChildren) {
-    let nextChild = nextChildren[key]
-    let previousChild = previousChildren[key]
-    if (!previousChild || !isSameType(previousChild.element, nextChild.element)) {
-      changes.push({
-        type: 'insertChild',
-        element: nextChild.element,
-        index: nextChild.index
-      })
-    } else {
-      if (previousChild.index !== nextChild.index) {
+  let previous = groupByKey(previousChildren)
+  let next = groupByKey(nextChildren)
+
+  dift(previous, next, (type, prev, next) => {
+    switch (type) {
+      case dift.CREATE: {
         changes.push({
-          type: 'moveChild',
-          from: previousChild.index,
-          to: nextChild.index
+          type: 'insertChild',
+          element: next.item,
+          index: next.index
         })
+        break
       }
-      let childActions = diff(previousChild.element, nextChild.element, path + '.' + key)
-      if (childActions.length) {
+      case dift.UPDATE: {
         changes.push({
           type: 'updateChild',
-          actions: childActions,
-          index: nextChild.index
+          actions: diff(prev.item, next.item, path + '.' + prev.index),
+          index: prev.index
         })
+        break
+      }
+      case dift.MOVE: {
+        changes.push({
+          type: 'updateChild',
+          actions: diff(prev.item, next.item, path + '.' + prev.index),
+          index: prev.index
+        })
+        changes.push({
+          type: 'moveChild',
+          from: prev.index,
+          to: next.index
+        })
+        break
+      }
+      case dift.REMOVE: {
+        changes.push({
+          type: 'removeChild',
+          index: prev.index,
+          element: prev.item
+        })
+        break
       }
     }
-  }
+  })
   return changes
 }
 
@@ -136,7 +158,7 @@ export let diff = (previousElement, nextElement, path = '0') => {
             name: name,
             value: nextValue
           })
-        } else if (nextValue !== previousValue)  {
+        } else if (nextValue !== previousValue) {
           changes.push({
             type: 'updateAttribute',
             name: name,
@@ -167,7 +189,7 @@ export let diff = (previousElement, nextElement, path = '0') => {
     case 'custom':
       changes.push({
         type: 'updateCustom',
-        cache: previousElement.cache,
+        previousElement: previousElement,
         element: nextElement,
         path: path
       })
@@ -188,13 +210,15 @@ export let patch = (DOMElement, actions, context = {}) => {
   actions.forEach(action => {
     switch (action.type) {
       case 'updateCustom': {
-        let model = createModel(action.element, action.path)
-        let next = renderCustomElement(action.element, model, context)
-        let actions = diff(action.cache, next)
+        let CustomElement = action.element
+        let model = createModel(CustomElement, action.path)
+        let nextContent = renderCustomElement(CustomElement, model, context)
+        let previousContent = action.previousElement.cache
+        // TODO: Handle when there is no cached render
+        let actions = diff(previousContent, nextContent)
         patch(DOMElement, actions, context)
-        if (typeof action.element.type.onUpdate === 'function') {
-          action.element.type.onUpdate(model, context, DOMElement)
-        }
+        CustomElement.cache = nextContent
+        onUpdate(CustomElement, DOMElement, context)
         break
       }
       case 'addAttribute':
@@ -252,6 +276,7 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
     switch (name) {
       case events[name]:
         DOMElement.addEventListener(events[name], value)
+        break
       case 'checked':
       case 'disabled':
       case 'selected':
@@ -259,6 +284,7 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
         break
       case 'innerHTML':
         DOMElement.innerHTML = ''
+        break
       case 'value':
         setElementValue(DOMElement, null)
         break
@@ -271,6 +297,7 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
     switch (name) {
       case events[name]:
         DOMElement.removeEventListener(events[name], previousValue)
+        break
       case 'checked':
       case 'disabled':
       case 'selected':
@@ -302,11 +329,12 @@ export let updateAttribute = (DOMElement, name, value, previousValue) => {
 export let createElement = (element, context = {}, path = '0') => {
   let DOMElement
   switch (nodeType(element)) {
-    case 'text':
+    case 'text': {
       DOMElement = createTextNode(element)
       break
-    case 'native':
-      DOMElement = createDOMElement(element.type)
+    }
+    case 'native': {
+      DOMElement = createDOMElementByType(element.type)
       for (let name in element.attributes) {
         updateAttribute(DOMElement, name, element.attributes[name])
       }
@@ -316,19 +344,71 @@ export let createElement = (element, context = {}, path = '0') => {
         DOMElement.appendChild(child)
       })
       break
-    case 'custom':
-      var model = createModel(element, path)
-      var customElement = renderCustomElement(element, model, context)
-      DOMElement = createElement(customElement, context, path + '0')
-      if (typeof element.type.onCreate === 'function') {
-        element.type.onCreate(model, context, DOMElement)
-      }
+    }
+    case 'custom': {
+      let model = createModel(element, path)
+      let content = renderCustomElement(element, model, context)
+      element.cache = content
+      DOMElement = createElement(content, context, path + '0')
+      onCreate(element, DOMElement, context)
+      raf(onInsert(element, DOMElement, context))
       break
-    default:
+    }
+    default: {
       throw new Error('Cannot create unknown element type')
+    }
   }
   return DOMElement
 }
+
+/**
+ * Call the onCreate hook on a Custom Element
+ */
+
+let onCreate = (CustomElement, ...args) => {
+  let fn = CustomElement.type.onCreate
+  if (typeof fn === 'function') {
+    fn(...args)
+  }
+}
+
+/**
+ * Call the onUpdate hook on a Custom Element
+ */
+
+let onUpdate = (CustomElement, ...args) => {
+  let fn = CustomElement.type.onUpdate
+  if (typeof fn === 'function') {
+    fn(...args)
+  }
+}
+
+/**
+ * Call onInsert hook on a Custom Element
+ */
+
+let onInsert = (CustomElement, ...args) => {
+  return () => {
+    let fn = CustomElement.type.onInsert
+    if (typeof fn === 'function') {
+      fn(...args)
+    }
+  }
+}
+
+/**
+ * Call onRemove on an Custom Element and all nested custom elements
+ */
+
+// let onRemove = (element, ...args) => {
+//   if (element.cache) {
+//     walk(onRemove)(element.cache)
+//   }
+//   let fn = element.type.onRemove
+//   if (typeof fn === 'function') {
+//     fn(...args)
+//   }
+// }
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
@@ -337,10 +417,10 @@ export let createElement = (element, context = {}, path = '0') => {
  */
 
 export let createRenderer = (DOMElement) => {
-  var previousElement
-  return (nextElement, state) => {
+  let previousElement
+  return (nextElement, context) => {
     let changes = diffChildren([previousElement], [nextElement])
-    patch(DOMElement, changes, state)
+    patch(DOMElement, changes, context)
     previousElement = nextElement
   }
 }

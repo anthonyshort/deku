@@ -11,7 +11,7 @@ let attributesToString = (attributes) => {
   for (var name in attributes) {
     var value = attributes[name]
     if (name === 'innerHTML') continue
-    if (isActiveAttribute(value)) str +=  (' ' + name + '="' + attributes[name] + '"')
+    if (isActiveAttribute(value)) str += (' ' + name + '="' + attributes[name] + '"')
   }
   return str
 }
@@ -41,7 +41,7 @@ export let renderString = (element, context, path = '0') => {
       str += '</' + tagName + '>'
       return str
     case 'custom':
-      return renderString(renderCustomElement(element, path, context), context)
+      return renderString(renderCustomElement(createModel(element, path), context), context)
     default:
       return ''
   }

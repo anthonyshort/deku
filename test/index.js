@@ -4,7 +4,7 @@ import test from 'tape'
 import h from 'virtual-element'
 import isDOM from 'is-dom'
 import trigger from 'trigger-event'
-import {createRenderer, diff, patch, updateAttribute, createElement} from '../src/client'
+import {createRenderer, diff, patch, updateAttribute, createElement, diffChildren} from '../src/client'
 import {renderString} from '../src/server'
 import {groupByKey} from '../src/shared'
 
@@ -13,25 +13,36 @@ test('grouping virtual nodes', t => {
   let two = <div key="foo"/>
   let three = <div/>
   let result = groupByKey([one,two,three,null,'foo'])
-  t.deepEqual(result, {
-    '0': {
-      element: one,
-      index: 0
-    },
-    'foo': {
-      element: two,
-      index: 1
-    },
-    '2': {
-      element: three,
-      index: 2
-    },
-    '4': {
-      element: 'foo',
-      index: 4
-    }
-  })
+  t.deepEqual(result, [
+    { key: '0', item: one, index: 0 },
+    { key: 'foo', item: two, index: 1 },
+    { key: '2', item: three, index: 2 },
+    { key: '4', item: 'foo', index: 4 }
+  ])
   t.end()
+})
+
+test.skip('list diffing', t => {
+
+  // Move right
+  let changes = diffChildren(
+    [<div key="1" />, <div key="2" />],
+    [<div key="2" />, <div key="1" />]
+  )
+  t.deepEqual(changes, [{
+    type: 'moveChild',
+    from: 0,
+    to: 1
+  }, {
+    type: 'updateChild',
+    index: 0,
+    actions: []
+  }, {
+    type: 'updateChild',
+    index: 1,
+    actions: []
+  }])
+  debugger
 })
 
 test('updating attributes', t => {
