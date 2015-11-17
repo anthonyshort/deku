@@ -7,11 +7,31 @@ Deku is a library for rendering user interfaces in a pure, functional way. It's 
 [![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 [![Slack](https://img.shields.io/badge/Slack-Join%20Chat%20→-blue.svg?style=flat-square)](https://dekujs.herokuapp.com)
 
+### Installation
+
+```
+npm install --save deku
+```
+
+You'll probably also want to install a module for creating virtual elements:
+
+```
+npm install --save virtual-element
+```
+
+### Features
+
+* State-less custom elements
+* Lifecycle hooks (Similar to React's Components)
+* Render to a string instead of the DOM for server-side rendering
+* Abstracts away browser quirks, like text selection
+* SVG support
+
 ### Example
 
 ```js
 import h from 'virtual-element'
-import {createRenderer} from 'deku'
+import { createDOMRenderer } from 'deku'
 
 let MyButton = (model) => {
   return h('button', { class: "my-button" }, [model.children])
@@ -26,28 +46,9 @@ render(
 )
 ```
 
-### Install
-
-```
-npm install --save deku
-```
-
-You'll probably also want to install a module for creating virtual elements:
-
-```
-npm install --save virtual-element
-```
-
 ### Documentation
 
 The documentation is hosted on gitbook: https://dekujs.github.io/deku.
-
-### Features
-
-* State-less custom elements with lifecycle hooks (Similar to React's Components)
-* Render to a string instead of the DOM for server-side rendering
-* Abstracts away browser quirks, like text selection
-* SVG support
 
 ### Browser support
 
