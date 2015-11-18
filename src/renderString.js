@@ -1,4 +1,5 @@
-import {getKey, isActiveAttribute, nodeType, renderCustomElement, createModel} from './shared'
+import {getKey, nodeType, renderCustomElement, createModel} from './shared'
+import isValidAttribute from './isValidAttribute'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -6,12 +7,12 @@ import {getKey, isActiveAttribute, nodeType, renderCustomElement, createModel} f
  * should handle any other special cases specific to deku.
  */
 
-let attributesToString = (attributes) => {
+function attributesToString (attributes) {
   var str = ''
   for (var name in attributes) {
     var value = attributes[name]
     if (name === 'innerHTML') continue
-    if (isActiveAttribute(value)) str += (' ' + name + '="' + attributes[name] + '"')
+    if (isValidAttribute(value)) str += (' ' + name + '="' + attributes[name] + '"')
   }
   return str
 }
@@ -21,7 +22,7 @@ let attributesToString = (attributes) => {
  * object that will be given to all components.
  */
 
-export let renderString = (element, context, path = '0') => {
+export default function renderString (element, context, path = '0') {
   switch (nodeType(element)) {
     case 'text':
       return element
@@ -41,7 +42,7 @@ export let renderString = (element, context, path = '0') => {
       str += '</' + tagName + '>'
       return str
     case 'custom':
-      return renderString(renderCustomElement(createModel(element, path), context), context)
+      return renderString(renderCustomElement(createModel(element, context, path)), context)
     default:
       return ''
   }

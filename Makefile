@@ -35,7 +35,7 @@ node_modules: package.json
 	@npm install
 
 lint: $(src) $(tests)
-	${BIN}/standard src/*.js | snazzy
+	${BIN}/standard src/*.js | ${BIN}/snazzy
 
 #
 # Always run these tasks.

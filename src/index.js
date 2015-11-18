@@ -1,8 +1,8 @@
-import {renderString} from './server'
-import {createRenderer} from './client'
+import renderString from './renderString'
+import createDOMRenderer from './createDOMRenderer'
 
 if (typeof document !== 'undefined') {
-  exports.createRenderer = createRenderer
+  exports.createDOMRenderer = createDOMRenderer
 }
 
 exports.renderString = renderString

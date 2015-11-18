@@ -4,9 +4,13 @@ import test from 'tape'
 import h from 'virtual-element'
 import isDOM from 'is-dom'
 import trigger from 'trigger-event'
-import {createRenderer, diff, patch, updateAttribute, createElement, diffChildren} from '../src/client'
-import {renderString} from '../src/server'
+import {diffNode, diffChildren} from '../src/diff'
+import createRenderer from '../src/createDOMRenderer'
+import updateAttribute from '../src/updateAttribute'
+import createElement from '../src/createElement'
+import renderString from '../src/renderString'
 import {groupByKey} from '../src/shared'
+import patch from '../src/updateElement'
 
 test('grouping virtual nodes', t => {
   let one = <div/>
@@ -99,8 +103,8 @@ test('creating DOM elements from virtual elements', t => {
   t.equal(DOMElement.value, 'foo', 'has a value')
   t.equal(DOMElement.disabled, true, 'is disabled')
 
-  let MyButton = (model, context) => {
-    return <button name={model.attributes.name} color={context.theme} path={model.path}>{model.children[0]}</button>
+  let MyButton = ({ attributes, context, path, children }) => {
+    return <button name={attributes.name} color={context.theme} path={path}>{children[0]}</button>
   }
 
   DOMElement = createElement(<MyButton name="foo">Submit</MyButton>, { theme: 'red' }, '0.5')
@@ -116,60 +120,60 @@ test('creating DOM elements from virtual elements', t => {
 test('diffing two elements', t => {
   let actions, element, content
 
-  actions = diff(<div />, <div color="red" />)
+  actions = diffNode(<div />, <div color="red" />)
   t.deepEqual(actions[0], {
     type: 'addAttribute',
     name: 'color',
     value: 'red'
   }, 'add attribute action')
 
-  actions = diff(<div color="red" />, <div color="blue" />)
+  actions = diffNode(<div color="red" />, <div color="blue" />)
   t.deepEqual(actions[0], {
     type: 'updateAttribute',
     name: 'color',
     value: 'blue'
   }, 'update attribute action')
 
-  actions = diff(<div color="red" />, <div />)
+  actions = diffNode(<div color="red" />, <div />)
   t.deepEqual(actions[0], {
     type: 'removeAttribute',
     name: 'color',
     previousValue: 'red'
   }, 'remove attribute action')
 
-  actions = diff(<div color="red" />, <div color={false} />)
+  actions = diffNode(<div color="red" />, <div color={false} />)
   t.deepEqual(actions[0], {
     type: 'updateAttribute',
     name: 'color',
     value: false
   }, 'update attribute action with false')
 
-  actions = diff(<div color="red" />, <div color={null} />)
+  actions = diffNode(<div color="red" />, <div color={null} />)
   t.deepEqual(actions[0], {
     type: 'updateAttribute',
     name: 'color',
     value: null
   }, 'update attribute action with null')
 
-  actions = diff(<div color="red" />, <div color={undefined} />)
+  actions = diffNode(<div color="red" />, <div color={undefined} />)
   t.deepEqual(actions[0], {
     type: 'updateAttribute',
     name: 'color',
     value: undefined
   }, 'update attribute action with undefined')
 
-  actions = diff(<div color="red" />, <div color="red" />)
+  actions = diffNode(<div color="red" />, <div color="red" />)
   t.deepEqual(actions, [], 'no actions for same attribute values')
 
   element = 'Hello'
-  actions = diff(<div/>, <div>{element}</div>)
+  actions = diffNode(<div/>, <div>{element}</div>)
   t.deepEqual(actions[0], {
     type: 'insertChild',
     element: element,
     index: 0
   }, 'insert text child action')
 
-  actions = diff(<div>Hello</div>, <div>Goodbye</div>)
+  actions = diffNode(<div>Hello</div>, <div>Goodbye</div>)
   t.deepEqual(actions, [{
     type: 'updateChild',
     index: 0,
@@ -181,11 +185,11 @@ test('diffing two elements', t => {
   }], 'update text child action')
 
   element = <div />
-  actions = diff(element, element)
+  actions = diffNode(element, element)
   t.equal(actions.length, 0, 'equal elements')
 
   content = <span />
-  actions = diff(<div></div>,<div>{content}</div>)
+  actions = diffNode(<div></div>,<div>{content}</div>)
   t.deepEqual(actions[0], {
     type: 'insertChild',
     element: content,
@@ -193,7 +197,7 @@ test('diffing two elements', t => {
   }, 'insert child action')
 
   content = <span />
-  actions = diff(<div>{content}</div>,<div/>)
+  actions = diffNode(<div>{content}</div>,<div/>)
   t.deepEqual(actions, [{
     type: 'removeChild',
     element: content,
@@ -201,7 +205,7 @@ test('diffing two elements', t => {
   }], 'remove child action')
 
   content = <span />
-  actions = diff(
+  actions = diffNode(
     <div>
       <span />
       <span key="foo" />
@@ -227,7 +231,7 @@ test('diffing two elements', t => {
 
   let MyButton = m => <button>Submit</button>
 
-  actions = diff(
+  actions = diffNode(
     <div>
       <MyButton color="red" key="foo" />
     </div>,
@@ -239,7 +243,7 @@ test('diffing two elements', t => {
     index: 0,
     type: "updateChild",
     actions: [{
-      type: 'updateCustom',
+      type: 'updateThunk',
       cache: undefined,
       element: <MyButton color="blue" key="foo" />,
       path: '0.foo'
@@ -388,7 +392,7 @@ test('patching an element', t => {
     type: 'updateChild',
     index: 0,
     actions: [{
-      type: 'updateCustom',
+      type: 'updateThunk',
       cache: <button>Reset</button>,
       element: <MyButton text="Submit" key="foo" />,
       path: 'foo'
@@ -479,8 +483,8 @@ test('rendering custom DOM elements', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
   var MyButton = m => <button>{m.attributes.text}</button>
-  MyButton.onCreate = (model, context, el) => t.pass('onCreate')
-  MyButton.onUpdate = (model, context, el) => t.pass('onUpdate')
+  MyButton.onCreate = (model, el) => t.pass('onCreate')
+  MyButton.onUpdate = (model, el) => t.pass('onUpdate')
   // MyButton.onRemove = el => t.assert(el)
   render(<MyButton text="hello" />)
   render(<MyButton text="goodbye" />)
@@ -491,14 +495,14 @@ test('rendering custom DOM elements', t => {
 test('context should be passed into all custom elements', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
-  let context = { color: 'red' }
+  let rootContext = { color: 'red' }
   let Container = (m) => <div>{m.children}</div>
-  let MyButton = (m,c) => {
-    t.equal(c, context, 'rendered with context')
+  let MyButton = ({ context }) => {
+    t.equal(rootContext, context, 'rendered with context')
     return <button>{m.attributes.text}</button>
   }
   t.plan(1)
-  render(<Container><MyButton text="hello" /></Container>, context)
+  render(<Container><MyButton text="hello" /></Container>, rootContext)
   t.end()
 })
 
