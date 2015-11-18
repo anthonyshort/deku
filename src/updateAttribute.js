@@ -1,4 +1,4 @@
-import isValidAttribute from './isValidAttribute'
+import {isValidAttribute} from './utils'
 import setValue from 'setify'
 import events from './events'
 import svg from './svg'
@@ -7,7 +7,7 @@ import svg from './svg'
  * Remove an attribute.
  */
 
-export let removeAttribute = (DOMElement, name, value) => {
+let removeAttribute = (DOMElement, name, value) => {
   switch (name) {
     case events[name]:
       DOMElement.removeEventListener(events[name], value)
@@ -34,7 +34,7 @@ export let removeAttribute = (DOMElement, name, value) => {
  * Set an attribute
  */
 
-export let setAttribute = (DOMElement, name, value, previousValue) => {
+let setAttribute = (DOMElement, name, value, previousValue) => {
   switch (name) {
     case events[name]:
       if (previousValue) {

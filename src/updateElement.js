@@ -1,4 +1,4 @@
-import {createModel, renderThunk} from './shared'
+import {createModel, renderThunk} from './thunk'
 import updateAttribute from './updateAttribute'
 import createElement from './createElement'
 import {diffNode} from './diff'
@@ -49,7 +49,7 @@ export default function update (DOMElement, actions, context = {}) {
         let vnode = renderThunk(thunk, model)
         let actions = diffNode(previousThunk.vnode, vnode)
         update(DOMElement, actions, context)
-        thunk.vnode = vnode
+        thunk.data = vnode
         // onUpdate(thunk, DOMElement, context)
         break
       }

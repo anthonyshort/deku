@@ -1,5 +1,5 @@
-import {getKey, nodeType, renderCustomElement, createModel} from './shared'
-import isValidAttribute from './isValidAttribute'
+import {getKey, nodeType, isValidAttribute} from './utils'
+import {renderThunk, createModel} from './thunk'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -42,7 +42,7 @@ export default function renderString (element, context, path = '0') {
       str += '</' + tagName + '>'
       return str
     case 'custom':
-      return renderString(renderCustomElement(createModel(element, context, path)), context)
+      return renderString(renderThunk(createModel(element, context, path)), context, path)
     default:
       return ''
   }

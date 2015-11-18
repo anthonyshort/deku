@@ -31,17 +31,42 @@ export function addAttribute (name, value) {
   }
 }
 
-export function updateAttribute (name, value) {
+export function updateAttribute (name, value, previousValue) {
   return {
     type: 'updateAttribute',
     name,
-    value
+    value,
+    previousValue
   }
 }
 
 export function insertChild (element, index) {
   return {
     type: 'insertChild',
+    element,
+    index
+  }
+}
+
+export function updateChild (actions, index) {
+  return {
+    type: 'updateChild',
+    actions,
+    index
+  }
+}
+
+export function moveChild (from, to) {
+  return {
+    type: 'moveChild',
+    from,
+    to
+  }
+}
+
+export function removeChild (element, index) {
+  return {
+    type: 'removeChild',
     element,
     index
   }

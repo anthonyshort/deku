@@ -1,8 +1,9 @@
 import renderString from './renderString'
 import createDOMRenderer from './createDOMRenderer'
+import element from './element'
 
-if (typeof document !== 'undefined') {
-  exports.createDOMRenderer = createDOMRenderer
+export default {
+  createDOMRenderer,
+  renderString,
+  element
 }
-
-exports.renderString = renderString

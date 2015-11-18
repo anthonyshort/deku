@@ -1,5 +1,6 @@
-import {nodeType, renderThunk, createModel, getKey} from './shared'
-import {setAttribute} from './updateAttribute'
+import {createModel, renderThunk} from './thunk'
+import updateAttribute from './updateAttribute'
+import {nodeType, getKey} from './utils'
 import svg from './svg'
 
 /**
@@ -17,17 +18,15 @@ const cache = {}
 export default function createElement (element, context = {}, path = '0') {
   let type = nodeType(element)
 
-  if (type === 'text') {
-    return document.createTextNode(element || '')
+  if (element.type === '#text') {
+    return document.createTextNode(element.nodeValue || '')
   }
 
   if (type === 'thunk') {
     let model = createModel(element, context, path)
-    let vnode = renderThunk(element, model)
-    element.vnode = vnode
-    let DOMElement = createElement(vnode, context, path + '0')
-    // onCreate(element, DOMElement, context)
-    // raf(onInsert(element, DOMElement, context))
+    element.data = renderThunk(element, model)
+    let DOMElement = createElement(element.data, context, path + '0')
+    // onCreate(element, DOMElement)
     return DOMElement
   }
 
@@ -42,7 +41,7 @@ export default function createElement (element, context = {}, path = '0') {
   let DOMElement = cached.cloneNode(false)
 
   for (let name in element.attributes) {
-    setAttribute(DOMElement, name, element.attributes[name])
+    updateAttribute(DOMElement, name, element.attributes[name])
   }
 
   element.children.forEach((node, index) => {

@@ -1,6 +1,23 @@
-import {groupByKey, getKey, nodeType} from './shared'
+import {getKey, nodeType} from './utils'
 import * as actions from './actions'
 import dift from 'dift'
+
+/**
+ * Group an array of virtual elements by their key, using index as a fallback.
+ */
+
+export let groupByKey = (children) => {
+  return children.reduce((acc, child, i) => {
+    if (child != null && child !== false) {
+      acc.push({
+        key: String(getKey(child) || i),
+        item: child,
+        index: i
+      })
+    }
+    return acc
+  }, [])
+}
 
 /**
  * Diff two attribute objects and return an array of actions that represent
@@ -17,7 +34,7 @@ export default function diffAttributes (previous, next) {
     if (!(name in previous)) {
       changes.push(addAttribute(name, nextValue))
     } else if (nextValue !== previousValue) {
-      changes.push(updateAttribute(name, nextValue))
+      changes.push(updateAttribute(name, nextValue, previousValue))
     }
   }
 
@@ -40,50 +57,34 @@ export let diffChildren = (previousChildren, nextChildren, path = '0') => {
   let changes = []
   let previous = groupByKey(previousChildren)
   let next = groupByKey(nextChildren)
-  let { insertChild } = actions
+  let { insertChild, updateChild, moveChild, removeChild } = actions
   let { CREATE, UPDATE, MOVE, REMOVE } = dift
+  let key = a => a.key
 
   dift(previous, next, (type, prev, next) => {
     switch (type) {
-      // Add node
       case CREATE: {
         changes.push(insertChild(next.item, next.index))
         break
       }
-      // Update in place
       case UPDATE: {
-        changes.push({
-          type: 'updateChild',
-          actions: diffNode(prev.item, next.item, path + '.' + prev.index),
-          index: prev.index
-        })
+        let actions = diffNode(prev.item, next.item, path + '.' + prev.index)
+        changes.push(updateChild(actions, prev.index))
         break
       }
-      // Move + Update
       case MOVE: {
-        changes.push({
-          type: 'updateChild',
-          actions: diffNode(prev.item, next.item, path + '.' + prev.index),
-          index: prev.index
-        })
-        changes.push({
-          type: 'moveChild',
-          from: prev.index,
-          to: next.index
-        })
+        let actions = diffNode(prev.item, next.item, path + '.' + prev.index)
+        changes.push(updateChild(actions, prev.index))
+        changes.push(moveChild(prev.index, next.index))
         break
       }
-      // Remove Node
       case REMOVE: {
-        changes.push({
-          type: 'removeChild',
-          index: prev.index,
-          element: prev.item
-        })
+        changes.push(removeChild(prev.item, prev.index))
         break
       }
     }
-  }, getKey)
+  }, key)
+
   return changes
 }
 
@@ -119,52 +120,3 @@ export let diffNode = (previousElement, nextElement, path = '0') => {
 
   return changes
 }
-
-// /**
-//  * Call the onCreate hook on a Custom Element
-//  */
-//
-// let onCreate = ({ type }, ...args) => {
-//   let fn = type.onCreate
-//   if (typeof fn === 'function') {
-//     fn(...args)
-//   }
-// }
-//
-// /**
-//  * Call the onUpdate hook on a Custom Element
-//  */
-//
-// let onUpdate = ({ type }, ...args) => {
-//   let fn = type.onUpdate
-//   if (typeof fn === 'function') {
-//     fn(...args)
-//   }
-// }
-//
-// /**
-//  * Call onInsert hook on a Custom Element
-//  */
-//
-// let onInsert = ({ type }, ...args) => {
-//   let {onInsert} = type
-//   return () => {
-//     if (onInsert) {
-//       onInsert(...args)
-//     }
-//   }
-// }
-
-/**
- * Call onRemove on an Custom Element and all nested custom elements
- */
-
-// let onRemove = (element, ...args) => {
-//   if (element.cache) {
-//     walk(onRemove)(element.cache)
-//   }
-//   let fn = element.type.onRemove
-//   if (typeof fn === 'function') {
-//     fn(...args)
-//   }
-// }
