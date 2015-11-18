@@ -16,14 +16,14 @@ import flatten from 'array-flatten'
 export default function element (type, attributes = {}, ...children) {
   if (!type) throw new TypeError('element() needs a type.')
 
-  children = flatten(children, 2)
+  children = flatten(children || [], 2)
     .filter(i => typeof i !== 'undefined')
     .map(n => typeof n === 'string' ? createTextElement(n) : n)
 
   return {
     type: type,
     children: children,
-    attributes: attributes
+    attributes: attributes || []
   }
 }
 

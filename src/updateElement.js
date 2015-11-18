@@ -1,23 +1,9 @@
+import {setAttribute, removeAttribute} from './updateAttribute'
 import {createModel, renderThunk} from './thunk'
-import updateAttribute from './updateAttribute'
 import createElement from './createElement'
 import {diffNode} from './diff'
 
-/**
- * Set text content without worrying about toString. This function is responsible
- * for what can be shown as text content.
- */
-
-let setTextContent = (DOMElement, value) => {
-  DOMElement.data = value || ''
-}
-
-/**
- * Insert an element at an index. Normally we'd just use insertBefore, but
- * IE10 will cry if the target is undefined, other browsers just append it.
- */
-
-let insertAtIndex = (parent, index, el) => {
+function insertAtIndex (parent, index, el) {
   var target = parent.childNodes[index]
   if (target) {
     parent.insertBefore(el, target)
@@ -26,11 +12,7 @@ let insertAtIndex = (parent, index, el) => {
   }
 }
 
-/**
- * Remove a node at an index instead of using the element as the target.
- */
-
-let removeAtIndex = (DOMElement, index) => {
+function removeAtIndex (DOMElement, index) {
   DOMElement.removeChild(DOMElement.childNodes[index])
 }
 
@@ -55,15 +37,11 @@ export default function update (DOMElement, actions, context = {}) {
       }
       case 'addAttribute':
       case 'updateAttribute': {
-        updateAttribute(DOMElement, action.name, action.value)
-        break
+        let {name, value, previousValue} = action
+        setAttribute(DOMElement, name, value, previousValue)
       }
       case 'removeAttribute': {
-        updateAttribute(DOMElement, action.name, action.value, action.previousValue)
-        break
-      }
-      case 'updateText': {
-        setTextContent(DOMElement, action.value)
+        removeAttribute(DOMElement, action.name, action.previousValue)
         break
       }
       case 'insertChild': {

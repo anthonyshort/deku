@@ -1,12 +1,7 @@
 import {createModel, renderThunk} from './thunk'
-import updateAttribute from './updateAttribute'
+import {setAttribute} from './updateAttribute'
 import {nodeType, getKey} from './utils'
 import svg from './svg'
-
-/**
- * Cloning nodes is faster. Thanks @aschaffer.
- */
-
 const cache = {}
 
 /**
@@ -41,7 +36,7 @@ export default function createElement (element, context = {}, path = '0') {
   let DOMElement = cached.cloneNode(false)
 
   for (let name in element.attributes) {
-    updateAttribute(DOMElement, name, element.attributes[name])
+    setAttribute(DOMElement, name, element.attributes[name])
   }
 
   element.children.forEach((node, index) => {

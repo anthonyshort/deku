@@ -3,14 +3,12 @@ import setValue from 'setify'
 import events from './events'
 import svg from './svg'
 
-/**
- * Remove an attribute.
- */
-
-let removeAttribute = (DOMElement, name, value) => {
+export function removeAttribute (DOMElement, name, previousValue) {
   switch (name) {
     case events[name]:
-      DOMElement.removeEventListener(events[name], value)
+      if (typeof previousValue === 'function') {
+        DOMElement.removeEventListener(events[name], previousValue)
+      }
       break
     case 'checked':
     case 'disabled':
@@ -30,14 +28,17 @@ let removeAttribute = (DOMElement, name, value) => {
   }
 }
 
-/**
- * Set an attribute
- */
-
-let setAttribute = (DOMElement, name, value, previousValue) => {
+export function setAttribute (DOMElement, name, value, previousValue) {
+  if (typeof value === 'function') {
+    value = value(DOMElement, name)
+  }
+  if (!isValidAttribute(value)) {
+    removeAttribute(DOMElement, name, previousValue)
+    return
+  }
   switch (name) {
     case events[name]:
-      if (previousValue) {
+      if (typeof previousValue === 'function') {
         DOMElement.removeEventListener(events[name], previousValue)
       }
       DOMElement.addEventListener(events[name], value)
@@ -45,10 +46,9 @@ let setAttribute = (DOMElement, name, value, previousValue) => {
     case 'checked':
     case 'disabled':
     case 'selected':
-      DOMElement[name] = true
-      break
     case 'innerHTML':
-      DOMElement.innerHTML = value
+    case 'nodeValue':
+      DOMElement[name] = value
       break
     case 'value':
       setValue(DOMElement, value)
@@ -60,22 +60,5 @@ let setAttribute = (DOMElement, name, value, previousValue) => {
         DOMElement.setAttribute(name, value)
       }
       break
-  }
-}
-
-/**
- * Update an attribute on a DOM element. This handles special cases where we set
- * properties and events too. It is responsible for how attributes should be rendered
- * from the virtual elements.
- */
-
-export default function updateAttribute (DOMElement, name, value, previousValue) {
-  if (typeof value === 'function') {
-    value = value(DOMElement, name)
-  }
-  if (isValidAttribute(value)) {
-    setAttribute(DOMElement, name, value, previousValue)
-  } else {
-    removeAttribute(DOMElement, name, previousValue)
   }
 }

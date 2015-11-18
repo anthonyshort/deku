@@ -9,6 +9,14 @@ export let isSameThunk = (left, right) => {
 }
 
 /**
+ * Is a vnode a thunk?
+ */
+
+export let isThunk = (node) => {
+  return typeof node.type === 'function'
+}
+
+/**
  * Get the content for a custom element
  */
 

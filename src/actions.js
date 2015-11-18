@@ -7,17 +7,10 @@ export function updateThunk (thunk, previousThunk, path) {
   }
 }
 
-export function updateText (value, previousValue) {
-  return {
-    type: 'updateText',
-    value,
-    previousValue
-  }
-}
-
 export function removeAttribute (name, previousValue) {
   return {
     type: 'removeAttribute',
+    value: null,
     name,
     previousValue
   }
@@ -26,6 +19,7 @@ export function removeAttribute (name, previousValue) {
 export function addAttribute (name, value) {
   return {
     type: 'addAttribute',
+    previousValue: null,
     name,
     value
   }

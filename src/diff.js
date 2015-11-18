@@ -1,5 +1,6 @@
-import {getKey, nodeType} from './utils'
 import * as actions from './actions'
+import {isThunk} from './thunk'
+import {getKey} from './utils'
 import dift from 'dift'
 
 /**
@@ -24,7 +25,7 @@ export let groupByKey = (children) => {
  * changes to transform the old object into the new one.
  */
 
-export default function diffAttributes (previous, next) {
+export function diffAttributes (previous, next) {
   let { addAttribute, updateAttribute, removeAttribute } = actions
   let changes = []
 
@@ -53,7 +54,7 @@ export default function diffAttributes (previous, next) {
  * recursively to build up unique paths for each node.
  */
 
-export let diffChildren = (previousChildren, nextChildren, path = '0') => {
+export function diffChildren (previousChildren, nextChildren, path = '0') {
   let changes = []
   let previous = groupByKey(previousChildren)
   let next = groupByKey(nextChildren)
@@ -93,30 +94,23 @@ export let diffChildren = (previousChildren, nextChildren, path = '0') => {
  * into the right.
  */
 
-export let diffNode = (previousElement, nextElement, path = '0') => {
+export function diffNode (previousElement, nextElement, path = '0') {
   let changes = []
-  let {updateText, updateThunk} = actions
+  let {updateThunk} = actions
 
   // Bail out and skip updating this whole sub-tree
   if (previousElement === nextElement) {
     return changes
   }
 
-  switch (nodeType(nextElement)) {
-    case 'native':
-      let attrChanges = diffAttributes(nextElement.attributes, previousElement.attributes)
-      let childChanges = diffChildren(previousElement.children, nextElement.children, path)
-      changes = attrChanges.concat(childChanges)
-      break
-    case 'text':
-      changes.push(updateText(nextElement, previousElement))
-      break
-    case 'custom':
-      changes.push(updateThunk(nextElement, previousElement, path))
-      break
-    default:
-      throw new Error('Node type not supported')
+  if (isThunk(nextElement)) {
+    changes.push(updateThunk(nextElement, previousElement, path))
+    return changes
   }
+
+  let attrChanges = diffAttributes(previousElement.attributes, nextElement.attributes)
+  let childChanges = diffChildren(previousElement.children, nextElement.children, path)
+  changes = attrChanges.concat(childChanges)
 
   return changes
 }

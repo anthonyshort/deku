@@ -7,7 +7,7 @@ import isDOM from 'is-dom'
 import trigger from 'trigger-event'
 import {diffNode, groupByKey} from '../src/diff'
 import createRenderer from '../src/createDOMRenderer'
-import updateAttribute from '../src/updateAttribute'
+import {setAttribute, removeAttribute} from '../src/updateAttribute'
 import createElement from '../src/createElement'
 // import renderString from '../src/renderString'
 import * as actions from '../src/actions'
@@ -32,30 +32,30 @@ test('updating attributes', t => {
   let DOMElement
   DOMElement = document.createElement('input')
   DOMElement.setAttribute('type', 'checkbox')
-  updateAttribute(DOMElement, 'checked', true)
+  setAttribute(DOMElement, 'checked', true)
   t.assert(DOMElement.checked, 'element checked')
-  updateAttribute(DOMElement, 'checked', false)
+  setAttribute(DOMElement, 'checked', false)
   t.assert(!DOMElement.checked, 'element unchecked')
-  updateAttribute(DOMElement, 'disabled', true)
+  setAttribute(DOMElement, 'disabled', true)
   t.assert(DOMElement.disabled, 'element disabled')
-  updateAttribute(DOMElement, 'disabled', false)
+  setAttribute(DOMElement, 'disabled', false)
   t.assert(!DOMElement.disabled, 'element unchecked')
-  updateAttribute(DOMElement, 'selected', true)
+  setAttribute(DOMElement, 'selected', true)
   t.assert(DOMElement.selected, 'element selected')
-  updateAttribute(DOMElement, 'selected', false)
+  setAttribute(DOMElement, 'selected', false)
   t.assert(!DOMElement.selected, 'element unselected')
-  updateAttribute(DOMElement, 'value', 'foo')
+  setAttribute(DOMElement, 'value', 'foo')
   t.equal(DOMElement.value, 'foo', 'value set')
-  updateAttribute(DOMElement, 'value', 2)
+  setAttribute(DOMElement, 'value', 2)
   t.equal(DOMElement.value, '2', 'value updated')
-  updateAttribute(DOMElement, 'value', null)
+  setAttribute(DOMElement, 'value', null)
   t.equal(DOMElement.value, '', 'value removed')
   DOMElement = document.createElement('div')
-  updateAttribute(DOMElement, 'innerHTML', '<span></span>')
+  setAttribute(DOMElement, 'innerHTML', '<span></span>')
   t.equal(DOMElement.innerHTML, '<span></span>', 'innerHTML set')
-  updateAttribute(DOMElement, 'innerHTML', '')
+  setAttribute(DOMElement, 'innerHTML', '')
   t.equal(DOMElement.innerHTML, '', 'innerHTML removed')
-  updateAttribute(DOMElement, 'class', el => 'bar')
+  setAttribute(DOMElement, 'class', el => 'bar')
   t.equal(DOMElement.className, 'bar', 'function as a value')
   t.end()
 })
@@ -68,7 +68,7 @@ test('creating DOM elements from virtual elements', t => {
   t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
   t.equal(DOMElement.getAttribute('color'), 'red', 'has attributes')
 
-  DOMElement = createElement('Hello World')
+  DOMElement = createElement(h('#text', { nodeValue: 'Hello World' }))
   t.equal(DOMElement.nodeType, 3, 'is a text element')
   t.equal(DOMElement.data, 'Hello World', 'has text content')
 
@@ -97,7 +97,7 @@ test('creating DOM elements from virtual elements', t => {
 })
 
 test('diffing two elements', t => {
-  let {addAttribute, updateAttribute, removeAttribute, insertChild, updateChild} = actions
+  let {addAttribute, updateAttribute, removeAttribute, insertChild, updateChild, removeChild} = actions
   let span = <span />
   let div = <div />
 
@@ -108,7 +108,7 @@ test('diffing two elements', t => {
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color="blue" />),
+    diffNode(<div color='red' />, <div color='blue' />),
     [updateAttribute('color', 'blue', 'red')],
     'update attribute action'
   )
@@ -145,13 +145,13 @@ test('diffing two elements', t => {
 
   t.deepEqual(
     diffNode(<div/>, <div>hello</div>),
-    [insertChild('hello', 0)],
+    [insertChild(h('#text', { nodeValue: 'hello' }), 0)],
     'insert text child action'
   )
 
   t.deepEqual(
     diffNode(<div>Hello</div>, <div>Goodbye</div>),
-    [updateChild([updateText('Goodbye', 'Hello')], 0)],
+    [updateChild([updateAttribute('nodeValue', 'Hello')], 0)],
     'update text child action'
   )
 
@@ -178,14 +178,15 @@ test('diffing two elements', t => {
 
 test('updating keyed child elements', t => {
   let {removeChild, insertChild, updateChild, moveChild} = actions
+  let span = <span />
 
   let actual = diffNode(
     <div>
       <span />
-      <span key="foo" />
+      <span key='foo' />
     </div>,
     <div>
-      <span key="foo" />
+      <span key='foo' />
       <span />
     </div>
   )
@@ -197,15 +198,18 @@ test('updating keyed child elements', t => {
     updateChild([], 0)
   ]
 
-  t.deepEqual(actions, expected, 'move child action')
+  t.deepEqual(actual, expected, 'move child action')
+  t.end()
 })
 
 test('updating keyed child thunks', t => {
   let {updateChild, updateThunk} = actions
-  let left = <MyButton color='red' key="foo" />
-  let right = <MyButton color="blue" key="foo" />
+  let MyButton = m => <button>{m.children}</button>
+  let left = <MyButton color='red' key='foo' />
+  let right = <MyButton color='blue' key='foo' />
 
   let actual = diffNode(<div>{left}</div>, <div>{right}</div>)
+
   let expected = [
     updateChild([updateThunk(left, right, '0.foo')], 0)
   ]
@@ -240,7 +244,7 @@ test('patching element attributes', t => {
 })
 
 test('patching element children', t => {
-  let {insertChild, updateChild, removeChild, updateText, moveChild} = actions
+  let {insertChild, updateChild, removeChild, updateText, moveChild, addAttribute} = actions
   let DOMElement = createElement(<div/>)
 
   patch(DOMElement, [
@@ -304,9 +308,9 @@ test('rendering native DOM elements', t => {
 test('not touching the DOM', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
-  render(<span name="Bob" />)
+  render(<span name='Bob' />)
   el.children[0].setAttribute = () => t.fail('DOM was touched')
-  render(<span name="Bob" />)
+  render(<span name='Bob' />)
   t.pass('DOM not accessed')
   t.end()
 })
@@ -314,7 +318,7 @@ test('not touching the DOM', t => {
 test('rendering HTML attributes', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
-  render(<span name="Bob" />)
+  render(<span name='Bob' />)
   t.equal(el.innerHTML, '<span name="Bob"></span>', 'string')
   render(<span name={0} />)
   t.equal(el.innerHTML, '<span name="0"></span>', 'number')
@@ -326,11 +330,11 @@ test('rendering HTML attributes', t => {
   t.equal(el.innerHTML, '<span></span>', 'false')
   render(<span name={true} />)
   t.equal(el.innerHTML, '<span name="true"></span>', 'true')
-  render(<span name="" />)
+  render(<span name='' />)
   t.equal(el.innerHTML, '<span name=""></span>', 'empty string')
   render(<input value={0} />)
   t.equal(el.innerHTML, '<input>', 'input with 0 value')
-  t.equal(el.firstChild.value, "0", 'input value set')
+  t.equal(el.firstChild.value, '0', 'input value set')
   t.end()
 })
 
@@ -371,8 +375,8 @@ test('rendering thunks', t => {
   MyButton.onCreate = (model, el) => t.pass('onCreate')
   MyButton.onUpdate = (model, el) => t.pass('onUpdate')
   // MyButton.onRemove = el => t.assert(el)
-  render(<MyButton text="hello" />)
-  render(<MyButton text="goodbye" />)
+  render(<MyButton text='hello' />)
+  render(<MyButton text='goodbye' />)
   render(<div />)
   t.end()
 })
@@ -381,8 +385,8 @@ test('patching thunks', t => {
   let MyButton = m => <button>{m.attributes.text}</button>
   let el = document.createElement('div')
   let render = createRenderer(el)
-  render(<div><MyButton text="Reset" key="foo" /></div>)
-  render(<div><MyButton text="Submit" key="foo" /></div>)
+  render(<div><MyButton text='Reset' key='foo' /></div>)
+  render(<div><MyButton text='Submit' key='foo' /></div>)
   t.equal(el.innerHTML, '<div><button>Submit</button></div>', 'element update')
   t.end()
 })
@@ -392,12 +396,12 @@ test('context should be passed into all thunks', t => {
   let render = createRenderer(el)
   let rootContext = { color: 'red' }
   let Container = (m) => <div>{m.children}</div>
-  let MyButton = ({ context }) => {
+  let MyButton = ({ context, attributes }) => {
     t.equal(rootContext, context, 'rendered with context')
-    return <button>{m.attributes.text}</button>
+    return <button>{attributes.text}</button>
   }
   t.plan(1)
-  render(<Container><MyButton text="hello" /></Container>, rootContext)
+  render(<Container><MyButton text='hello' /></Container>, rootContext)
   t.end()
 })
 
@@ -429,9 +433,9 @@ test('input value', t => {
   let render = createRenderer(el)
   render(<input/>)
   var input = el.firstChild
-  render(<input value="Bob" />)
+  render(<input value='Bob' />)
   t.equal(input.value, 'Bob', 'value property set')
-  render(<input value="Tom" />)
+  render(<input value='Tom' />)
   t.equal(input.value, 'Tom', 'value property updated')
   render(<input />)
   t.equal(input.value, '', 'value property removed')
@@ -445,15 +449,15 @@ test('cursor position', t => {
   render(<input />)
   let input = el.firstChild
   // Cursor position
-  render(<input type="text" value="Game of Thrones" />)
+  render(<input type='text' value='Game of Thrones' />)
   input.focus()
-  input.setSelectionRange(5,7)
-  render(<input type="text" value="Way of Kings" />)
+  input.setSelectionRange(5, 7)
+  render(<input type='text' value='Way of Kings' />)
   t.equal(input.selectionStart, 5, 'selection start')
   t.equal(input.selectionEnd, 7, 'selection end')
   // Cursor on some fields, this throws an error in the
   // browser if we haven't checked for the types correctly.
-  render(<input type="email" value="a@b.com" />)
+  render(<input type='email' value='a@b.com' />)
   // Remove focus
   if (input.setActive) {
     document.body.setActive()
@@ -461,7 +465,7 @@ test('cursor position', t => {
     input.blur()
   }
   // The selection should have changed
-  render(<input type="text" value="Hello World!" />)
+  render(<input type='text' value='Hello World!' />)
   t.notEqual(input.selectionStart, 5, 'selection start')
   t.notEqual(input.selectionEnd, 7, 'selection end')
   document.body.removeChild(el)
@@ -531,7 +535,7 @@ test('higher-order components should have an element', t => {
   let el = document.createElement('div')
   let render = createRenderer(el)
   var Box = model => <div>{model.attributes.text}</div>
-  var Container = model => <Box text="hello" />
+  var Container = model => <Box text='hello' />
   Container.onCreate = (model, el) => {
     t.assert(el, 'element exists')
   }
@@ -556,120 +560,120 @@ test('changing the root node', t => {
   let render = createRenderer(el)
   var ComponentA = model => h(model.attributes.type, null, model.attributes.text)
   var Test = model => <ComponentA type={model.attributes.type} text={model.attributes.text} />
-  render(<Test type="span" text="test" />)
+  render(<Test type='span' text='test' />)
   t.equal(el.innerHTML, '<span>test</span>')
-  render(<Test type="div" text="test" />)
+  render(<Test type='div' text='test' />)
   t.equal(el.innerHTML, '<div>test</div>')
-  render(<Test type="div" text="foo" />)
+  render(<Test type='div' text='foo' />)
   t.equal(el.innerHTML, '<div>foo</div>')
   t.end()
 })
 
-test.skip('moving components with keys', t => {
-  let el = document.createElement('div')
-  let render = createRenderer(el)
-  var one,two,three
-  let ListItem = model => <li>{model.children}</li>
-
-  t.plan(10)
-
-  render(
-    <ul>
-      <ListItem key="foo">One</ListItem>
-      <ListItem key="bar">Two</ListItem>
-    </ul>
-  )
-  var [one,two] = el.querySelectorAll('li')
-
-  // Moving
-  render(
-    <ul>
-      <ListItem key="bar">Two</ListItem>
-      <ListItem key="foo">One</ListItem>
-    </ul>
-  )
-  var updated = el.querySelectorAll('li')
-  t.ok(updated[1] === one, 'foo moved down')
-  t.ok(updated[0] === two, 'bar moved up')
-
-  // Removing
-  render(
-    <ul>
-      <ListItem key="bar">Two</ListItem>
-    </ul>
-  )
-  updated = el.querySelectorAll('li')
-  t.ok(updated[0] === two && updated.length === 1, 'foo was removed')
-
-  // Updating
-  render(
-    <ul>
-      <ListItem key="foo">One</ListItem>
-      <ListItem key="bar">Two</ListItem>
-      <ListItem key="baz">Three</ListItem>
-    </ul>
-  )
-  var [one,two,three] = el.querySelectorAll('li')
-  render(
-    <ul>
-      <ListItem key="foo">One</ListItem>
-      <ListItem key="baz">Four</ListItem>
-    </ul>
-  )
-  var updated = el.querySelectorAll('li')
-  t.ok(updated[0] === one, 'foo is the same')
-  t.ok(updated[1] === three, 'baz is the same')
-  t.ok(updated[1].innerHTML === 'Four', 'baz was updated')
-  var foo = updated[0]
-  var baz = updated[1]
-
-  // Adding
-  render(
-    <ul>
-      <ListItem key="foo">One</ListItem>
-      <ListItem key="bar">Five</ListItem>
-      <ListItem key="baz">Four</ListItem>
-    </ul>
-  )
-  var updated = el.querySelectorAll('li')
-  t.ok(updated[0] === foo, 'foo is the same')
-  t.ok(updated[2] === baz, 'baz is the same')
-  t.ok(updated[1].innerHTML === 'Five', 'bar was added')
-
-  // Moving event handlers
-  // var clicked = () => pass('event handler moved')
-  // render(
-  //   <ul>
-  //     <ListItem key="foo">One</ListItem>
-  //     <ListItem key="bar">
-  //       <span onClick={clicked}>Click Me!</span>
-  //     </ListItem>
-  //   </ul>
-  // )
-  // render(
-  //   <ul>
-  //     <ListItem key="bar">
-  //       <span onClick={clicked}>Click Me!</span>
-  //     </ListItem>
-  //     <ListItem key="foo">One</ListItem>
-  //   </ul>
-  // )
-  // trigger(el.querySelector('span'), 'click')
-
-  // Removing handlers. If the handler isn't removed from
-  // the path correctly, it will still fire the handler from
-  // the previous assertion.
-  render(
-    <ul>
-      <ListItem key="foo">
-        <span>One</span>
-      </ListItem>
-    </ul>
-  )
-  trigger(el.querySelector('span'), 'click')
-
-  t.end()
-})
+// test.skip('moving components with keys', t => {
+//   let el = document.createElement('div')
+//   let render = createRenderer(el)
+//   var one, two, three
+//   let ListItem = model => <li>{model.children}</li>
+//
+//   t.plan(10)
+//
+//   render(
+//     <ul>
+//       <ListItem key='foo'>One</ListItem>
+//       <ListItem key='bar'>Two</ListItem>
+//     </ul>
+//   )
+//   var [one, two] = el.querySelectorAll('li')
+//
+//   // Moving
+//   render(
+//     <ul>
+//       <ListItem key='bar'>Two</ListItem>
+//       <ListItem key='foo'>One</ListItem>
+//     </ul>
+//   )
+//   var updated = el.querySelectorAll('li')
+//   t.ok(updated[1] === one, 'foo moved down')
+//   t.ok(updated[0] === two, 'bar moved up')
+//
+//   // Removing
+//   render(
+//     <ul>
+//       <ListItem key='bar'>Two</ListItem>
+//     </ul>
+//   )
+//   updated = el.querySelectorAll('li')
+//   t.ok(updated[0] === two && updated.length === 1, 'foo was removed')
+//
+//   // Updating
+//   render(
+//     <ul>
+//       <ListItem key='foo'>One</ListItem>
+//       <ListItem key='bar'>Two</ListItem>
+//       <ListItem key='baz'>Three</ListItem>
+//     </ul>
+//   )
+//   var [one,two,three] = el.querySelectorAll('li')
+//   render(
+//     <ul>
+//       <ListItem key='foo'>One</ListItem>
+//       <ListItem key='baz'>Four</ListItem>
+//     </ul>
+//   )
+//   var updated = el.querySelectorAll('li')
+//   t.ok(updated[0] === one, 'foo is the same')
+//   t.ok(updated[1] === three, 'baz is the same')
+//   t.ok(updated[1].innerHTML === 'Four', 'baz was updated')
+//   var foo = updated[0]
+//   var baz = updated[1]
+//
+//   // Adding
+//   render(
+//     <ul>
+//       <ListItem key='foo'>One</ListItem>
+//       <ListItem key='bar'>Five</ListItem>
+//       <ListItem key='baz'>Four</ListItem>
+//     </ul>
+//   )
+//   var updated = el.querySelectorAll('li')
+//   t.ok(updated[0] === foo, 'foo is the same')
+//   t.ok(updated[2] === baz, 'baz is the same')
+//   t.ok(updated[1].innerHTML === 'Five', 'bar was added')
+//
+//   // Moving event handlers
+//   // var clicked = () => pass('event handler moved')
+//   // render(
+//   //   <ul>
+//   //     <ListItem key='foo'>One</ListItem>
+//   //     <ListItem key='bar'>
+//   //       <span onClick={clicked}>Click Me!</span>
+//   //     </ListItem>
+//   //   </ul>
+//   // )
+//   // render(
+//   //   <ul>
+//   //     <ListItem key='bar'>
+//   //       <span onClick={clicked}>Click Me!</span>
+//   //     </ListItem>
+//   //     <ListItem key='foo'>One</ListItem>
+//   //   </ul>
+//   // )
+//   // trigger(el.querySelector('span'), 'click')
+//
+//   // Removing handlers. If the handler isn't removed from
+//   // the path correctly, it will still fire the handler from
+//   // the previous assertion.
+//   render(
+//     <ul>
+//       <ListItem key='foo'>
+//         <span>One</span>
+//       </ListItem>
+//     </ul>
+//   )
+//   trigger(el.querySelector('span'), 'click')
+//
+//   t.end()
+// })
 
 test('event handlers', t => {
   let el = document.createElement('div')
