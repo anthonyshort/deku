@@ -5,16 +5,15 @@ require('babel-polyfill')
 import test from 'tape'
 import isDOM from 'is-dom'
 import trigger from 'trigger-event'
-import {diffNode, groupByKey} from '../src/diff'
-import createRenderer from '../src/createDOMRenderer'
-import {setAttribute, removeAttribute} from '../src/updateAttribute'
+import {diffNode, diffAttributes, diffChildren, groupByKey} from '../src/diff'
+import {createDOMRenderer, update as patch} from '../src/createDOMRenderer'
+import {setAttribute} from '../src/setAttribute'
 import createElement from '../src/createElement'
 // import renderString from '../src/renderString'
 import * as actions from '../src/actions'
-import patch from '../src/updateElement'
-import h from '../src/element'
+import h, {createTextElement} from '../src/element'
 
-test('grouping virtual nodes', t => {
+test('groupByKey', t => {
   let one = <div/>
   let two = <div key='foo'/>
   let three = <div/>
@@ -28,7 +27,7 @@ test('grouping virtual nodes', t => {
   t.end()
 })
 
-test('updating attributes', t => {
+test('setAttribute', t => {
   let DOMElement
   DOMElement = document.createElement('input')
   DOMElement.setAttribute('type', 'checkbox')
@@ -60,7 +59,25 @@ test('updating attributes', t => {
   t.end()
 })
 
-test('creating DOM elements from virtual elements', t => {
+test('event handlers', t => {
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+  let render = createDOMRenderer(el)
+  let count = 0
+  render(<span onClick={e => count += 1} />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 1, 'event added')
+  render(<span onClick={e => count -= 1} />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 0, 'event updated')
+  render(<span />)
+  trigger(el.firstChild, 'click')
+  t.equal(count, 0, 'event removed')
+  document.body.removeChild(el)
+  t.end()
+})
+
+test('createElement', t => {
   let DOMElement
 
   DOMElement = createElement(<div color='red' />)
@@ -68,9 +85,9 @@ test('creating DOM elements from virtual elements', t => {
   t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
   t.equal(DOMElement.getAttribute('color'), 'red', 'has attributes')
 
-  DOMElement = createElement(h('#text', { nodeValue: 'Hello World' }))
-  t.equal(DOMElement.nodeType, 3, 'is a text element')
-  t.equal(DOMElement.data, 'Hello World', 'has text content')
+  DOMElement = createElement(<div>Hello World</div>)
+  t.equal(DOMElement.firstChild.nodeType, 3, 'is a text element')
+  t.equal(DOMElement.firstChild.data, 'Hello World', 'has text content')
 
   DOMElement = createElement(<div><span color='red' /></div>)
   t.equal(DOMElement.children.length, 1, 'has children')
@@ -96,91 +113,88 @@ test('creating DOM elements from virtual elements', t => {
   t.end()
 })
 
-test('diffing two elements', t => {
-  let {addAttribute, updateAttribute, removeAttribute, insertChild, updateChild, removeChild} = actions
-  let span = <span />
-  let div = <div />
+test('diffAttributes', t => {
+  let {setAttribute, removeAttribute} = actions
 
   t.deepEqual(
-    diffNode(<div />, <div color='red' />),
-    [addAttribute('color', 'red')],
+    diffAttributes(<div />, <div color='red' />),
+    [setAttribute('color', 'red')],
     'add attribute action'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color='blue' />),
-    [updateAttribute('color', 'blue', 'red')],
+    diffAttributes(<div color='red' />, <div color='blue' />),
+    [setAttribute('color', 'blue', 'red')],
     'update attribute action'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div />),
+    diffAttributes(<div color='red' />, <div />),
     [removeAttribute('color', 'red')],
     'remove attribute action'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color={false} />),
-    [updateAttribute('color', 'red', false)],
+    diffAttributes(<div color='red' />, <div color={false} />),
+    [setAttribute('color', false, 'red')],
     'update attribute action with false'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color={null} />),
-    [updateAttribute('color', null, 'red')],
+    diffAttributes(<div color='red' />, <div color={null} />),
+    [setAttribute('color', null, 'red')],
     'update attribute action with null'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color={undefined} />),
-    [updateAttribute('color', undefined, 'red')],
+    diffAttributes(<div color='red' />, <div color={undefined} />),
+    [setAttribute('color', undefined, 'red')],
     'update attribute action with undefined'
   )
 
   t.deepEqual(
-    diffNode(<div color='red' />, <div color='red' />),
+    diffAttributes(<div color='red' />, <div color='red' />),
     [],
     'no actions for same attribute values'
-  )
-
-  t.deepEqual(
-    diffNode(<div/>, <div>hello</div>),
-    [insertChild(h('#text', { nodeValue: 'hello' }), 0)],
-    'insert text child action'
-  )
-
-  t.deepEqual(
-    diffNode(<div>Hello</div>, <div>Goodbye</div>),
-    [updateChild([updateAttribute('nodeValue', 'Hello')], 0)],
-    'update text child action'
-  )
-
-  t.equal(
-    diffNode(div, div),
-    [],
-    'equal elements'
-  )
-
-  t.deepEqual(
-    diffNode(<div></div>, <div>{span}</div>),
-    [insertChild(span, 0)],
-    'insert element child'
-  )
-
-  t.deepEqual(
-    diffNode(<div>{span}</div>, <div/>),
-    [removeChild(span, 0)],
-    'remove child action'
   )
 
   t.end()
 })
 
-test('updating keyed child elements', t => {
-  let {removeChild, insertChild, updateChild, moveChild} = actions
-  let span = <span />
+test('diffChildren', t => {
+  let {insertChild, removeChild, updateChild, setAttribute} = actions
 
-  let actual = diffNode(
+  t.deepEqual(
+    diffChildren(<div/>, <div>hello</div>),
+    [insertChild(createTextElement('hello'), 0)],
+    'insert text'
+  )
+
+  t.deepEqual(
+    diffChildren(<div>Hello</div>, <div>Goodbye</div>),
+    [updateChild([setAttribute('nodeValue', 'Goodbye', 'Hello')], 0)],
+    'update text'
+  )
+
+  t.deepEqual(
+    diffChildren(<div></div>, <div><span /></div>),
+    [insertChild(<span />, 0)],
+    'insert element'
+  )
+
+  t.deepEqual(
+    diffChildren(<div><span /></div>, <div/>),
+    [removeChild(<span />, 0)],
+    'remove element'
+  )
+
+  t.end()
+})
+
+test.skip('diffChildren (move)', t => {
+  let {removeChild, insertBefore, insertChild} = actions
+
+  let actual = diffChildren(
     <div>
       <span />
       <span key='foo' />
@@ -192,49 +206,67 @@ test('updating keyed child elements', t => {
   )
 
   let expected = [
-    removeChild(span, 0),
-    insertChild(span, 1),
-    moveChild(1, 0),
-    updateChild([], 0)
+    insertBefore(<span key='foo' />, 1, 0),
+    insertChild(<span />, '0.1', 1),
+    removeChild(<span />, 2)
   ]
 
-  t.deepEqual(actual, expected, 'move child action')
+  t.deepEqual(actual, expected, 'move children')
   t.end()
 })
 
-test('updating keyed child thunks', t => {
-  let {updateChild, updateThunk} = actions
+test('diffNode (update thunk)', t => {
+  let {updateThunk} = actions
   let MyButton = m => <button>{m.children}</button>
-  let left = <MyButton color='red' key='foo' />
-  let right = <MyButton color='blue' key='foo' />
 
-  let actual = diffNode(<div>{left}</div>, <div>{right}</div>)
+  let actual = diffNode(
+    <MyButton color='red' key='foo' />,
+    <MyButton color='blue' key='foo' />
+  )
 
   let expected = [
-    updateChild([updateThunk(left, right, '0.foo')], 0)
+    updateThunk(<MyButton color='blue' key='foo' />, <MyButton color='red' key='foo' />, '0', 0)
   ]
 
-  t.deepEqual(actual, expected, 'update custom element')
+  t.deepEqual(actual, expected, 'update thunk')
   t.end()
 })
 
-test('patching element attributes', t => {
-  let {addAttribute, updateAttribute, removeAttribute} = actions
+test('diffNode (replace thunk)', t => {
+  let {replaceChild} = actions
+  let MyButton = m => <button></button>
+  let OtherButton = m => <button></button>
+
+  let actual = diffNode(
+    <MyButton />,
+    <OtherButton />
+  )
+
+  let expected = [
+    replaceChild(<MyButton />, <OtherButton />, '0', 0)
+  ]
+
+  t.deepEqual(actual, expected, 'replace thunk')
+  t.end()
+})
+
+test('update', t => {
+  let {setAttribute, removeAttribute} = actions
   let DOMElement = createElement(<div/>)
 
-  patch(DOMElement, [addAttribute('color', 'red')])
+  patch(DOMElement, [setAttribute('color', 'red')])
   t.equal(DOMElement.getAttribute('color'), 'red', 'add attribute')
 
-  patch(DOMElement, [updateAttribute('color', 'blue')])
+  patch(DOMElement, [setAttribute('color', 'blue')])
   t.equal(DOMElement.getAttribute('color'), 'blue', 'update attribute')
 
-  patch(DOMElement, [updateAttribute('color', false)])
+  patch(DOMElement, [setAttribute('color', false)])
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with false')
 
-  patch(DOMElement, [addAttribute('color', 'red'), updateAttribute('color', null, 'red')])
+  patch(DOMElement, [setAttribute('color', 'red'), setAttribute('color', null, 'red')])
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with null')
 
-  patch(DOMElement, [addAttribute('color', 'red'), updateAttribute('color', undefined, 'red')])
+  patch(DOMElement, [setAttribute('color', 'red'), setAttribute('color', undefined, 'red')])
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with undefined')
 
   patch(DOMElement, [removeAttribute('color')])
@@ -243,22 +275,22 @@ test('patching element attributes', t => {
   t.end()
 })
 
-test('patching element children', t => {
-  let {insertChild, updateChild, removeChild, updateText, moveChild, addAttribute} = actions
+test('update with children', t => {
+  let {insertChild, updateChild, removeChild, insertBefore, setAttribute} = actions
   let DOMElement = createElement(<div/>)
 
   patch(DOMElement, [
-    insertChild('Hello', 0)
+    insertChild(createTextElement('Hello'), 0)
   ])
   t.equal(DOMElement.innerHTML, 'Hello', 'text child inserted')
 
   patch(DOMElement, [
-    updateChild([updateText('Goodbye')], 0)
+    updateChild([setAttribute('nodeValue', 'Goodbye')], 0)
   ])
   t.equal(DOMElement.innerHTML, 'Goodbye', 'text child updated')
 
   patch(DOMElement, [
-    removeChild('Goodbye', 0)
+    removeChild(createTextElement('Goodbye'), 0)
   ])
   t.equal(DOMElement.innerHTML, '', 'text child removed')
 
@@ -268,7 +300,7 @@ test('patching element children', t => {
   t.equal(DOMElement.innerHTML, '<span>Hello</span>', 'element child inserted')
 
   patch(DOMElement, [
-    updateChild([addAttribute('color', 'blue')], 0)
+    updateChild([setAttribute('color', 'blue')], 0)
   ])
   t.equal(DOMElement.innerHTML, '<span color="blue">Hello</span>', 'element child updated')
 
@@ -286,16 +318,16 @@ test('patching element children', t => {
 
   patch(DOMElement, [
     removeChild(<span>0</span>, 0),
-    moveChild(1, 2)
+    updateChild([insertBefore(2)], 1)
   ])
   t.equal(DOMElement.innerHTML, '<span>2</span><span>1</span>', 'element moved')
 
   t.end()
 })
 
-test('rendering native DOM elements', t => {
+test('render (elements)', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<span />)
   t.equal(el.innerHTML, '<span></span>', 'no attribute')
   render(<div><span /></div>)
@@ -305,19 +337,9 @@ test('rendering native DOM elements', t => {
   t.end()
 })
 
-test('not touching the DOM', t => {
+test('render (attributes)', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
-  render(<span name='Bob' />)
-  el.children[0].setAttribute = () => t.fail('DOM was touched')
-  render(<span name='Bob' />)
-  t.pass('DOM not accessed')
-  t.end()
-})
-
-test('rendering HTML attributes', t => {
-  let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<span name='Bob' />)
   t.equal(el.innerHTML, '<span name="Bob"></span>', 'string')
   render(<span name={0} />)
@@ -338,9 +360,9 @@ test('rendering HTML attributes', t => {
   t.end()
 })
 
-test('rendering text nodes', t => {
+test('render (text)', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<span>Hello World</span>)
   t.equal(el.innerHTML, `<span>Hello World</span>`, 'text rendered')
   render(<span>Hello Pluto</span>)
@@ -356,21 +378,19 @@ test('rendering text nodes', t => {
   t.end()
 })
 
-test('not destroying parent elements', t => {
+test('render (thunks)', t => {
+  let MyButton = m => <button>{m.attributes.text}</button>
   let el = document.createElement('div')
-  let render = createRenderer(el)
-  render(<div/>)
-  let rootEl = el.firstChild
-  render(<div>Hello Pluto</div>)
-  t.equal(el.firstChild, rootEl, 'not replaced')
-  render(<span>Foo!</span>)
-  t.notEqual(el.firstChild, rootEl, 'replaced')
+  let render = createDOMRenderer(el)
+  render(<div><MyButton text='Reset' key='foo' /></div>)
+  render(<div><MyButton text='Submit' key='foo' /></div>)
+  t.equal(el.innerHTML, '<div><button>Submit</button></div>', 'element update')
   t.end()
 })
 
-test('rendering thunks', t => {
+test('render (thunk lifecycle hooks)', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   var MyButton = m => <button>{m.attributes.text}</button>
   MyButton.onCreate = (model, el) => t.pass('onCreate')
   MyButton.onUpdate = (model, el) => t.pass('onUpdate')
@@ -381,19 +401,9 @@ test('rendering thunks', t => {
   t.end()
 })
 
-test('patching thunks', t => {
-  let MyButton = m => <button>{m.attributes.text}</button>
+test('render (thunk context)', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
-  render(<div><MyButton text='Reset' key='foo' /></div>)
-  render(<div><MyButton text='Submit' key='foo' /></div>)
-  t.equal(el.innerHTML, '<div><button>Submit</button></div>', 'element update')
-  t.end()
-})
-
-test('context should be passed into all thunks', t => {
-  let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   let rootContext = { color: 'red' }
   let Container = (m) => <div>{m.children}</div>
   let MyButton = ({ context, attributes }) => {
@@ -405,9 +415,31 @@ test('context should be passed into all thunks', t => {
   t.end()
 })
 
-test('removing sibling elements', t => {
+test('optimization: not touching the DOM', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
+  render(<span name='Bob' />)
+  el.children[0].setAttribute = () => t.fail('DOM was touched')
+  render(<span name='Bob' />)
+  t.pass('DOM not accessed')
+  t.end()
+})
+
+test('optimization: not destroying parent elements', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  render(<div/>)
+  let rootEl = el.firstChild
+  render(<div>Hello Pluto</div>)
+  t.equal(el.firstChild, rootEl, 'not replaced')
+  render(<span>Foo!</span>)
+  t.notEqual(el.firstChild, rootEl, 'replaced')
+  t.end()
+})
+
+test('optimization: removing sibling elements', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
   render(
     <div>
       <span>one</span>
@@ -428,9 +460,9 @@ test('removing sibling elements', t => {
   t.end()
 })
 
-test('input value', t => {
+test('browser: input value', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<input/>)
   var input = el.firstChild
   render(<input value='Bob' />)
@@ -442,10 +474,10 @@ test('input value', t => {
   t.end()
 })
 
-test('cursor position', t => {
+test('browser: cursor position', t => {
   let el = document.createElement('div')
   document.body.appendChild(el)
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<input />)
   let input = el.firstChild
   // Cursor position
@@ -472,9 +504,9 @@ test('cursor position', t => {
   t.end()
 })
 
-test('input boolean attributes', t => {
+test('browser: input boolean attributes', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(<input />)
   let input = el.firstChild
   // Checked
@@ -506,10 +538,10 @@ test('input boolean attributes', t => {
   t.end()
 })
 
-test('option[selected]', t => {
+test('browser: option[selected]', t => {
   let options
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   render(
     <select>
       <option selected>one</option>
@@ -531,9 +563,9 @@ test('option[selected]', t => {
   t.end()
 })
 
-test('higher-order components should have an element', t => {
+test('higher-order thunks should have an element', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   var Box = model => <div>{model.attributes.text}</div>
   var Container = model => <Box text='hello' />
   Container.onCreate = (model, el) => {
@@ -545,7 +577,7 @@ test('higher-order components should have an element', t => {
 
 test('memoizing the render function', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   var i = 0
   var vnode = <div onUpdate={el => i++} />
   var Component = model => vnode
@@ -557,7 +589,7 @@ test('memoizing the render function', t => {
 
 test('changing the root node', t => {
   let el = document.createElement('div')
-  let render = createRenderer(el)
+  let render = createDOMRenderer(el)
   var ComponentA = model => h(model.attributes.type, null, model.attributes.text)
   var Test = model => <ComponentA type={model.attributes.type} text={model.attributes.text} />
   render(<Test type='span' text='test' />)
@@ -571,7 +603,7 @@ test('changing the root node', t => {
 
 // test.skip('moving components with keys', t => {
 //   let el = document.createElement('div')
-//   let render = createRenderer(el)
+//   let render = createDOMRenderer(el)
 //   var one, two, three
 //   let ListItem = model => <li>{model.children}</li>
 //
@@ -674,23 +706,6 @@ test('changing the root node', t => {
 //
 //   t.end()
 // })
-
-test('event handlers', t => {
-  let el = document.createElement('div')
-  let render = createRenderer(el)
-  let count = 0
-  let Page = (model) => <span onClick={model.attributes.clicker} />
-  render(<Page clicker={e => count += 1} />)
-  trigger(el.firstChild, 'click')
-  t.equal(count, 1, 'event added')
-  render(<Page clicker={e => count -= 1} />)
-  trigger(el.firstChild, 'click')
-  t.equal(count, 0, 'event updated')
-  render(<Page />)
-  trigger(el.firstChild, 'click')
-  t.equal(count, 0, 'event removed')
-  t.end()
-})
 
 test('replacing nodes in the DOM', t => {
   t.end()

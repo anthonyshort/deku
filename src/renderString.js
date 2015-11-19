@@ -1,4 +1,5 @@
-import {renderThunk, createModel, isThunk} from './thunk'
+import {renderThunk, createModel} from './thunk'
+import {isThunk, isText} from './utils'
 import {getKey, isValidAttribute} from './utils'
 
 /**
@@ -23,12 +24,13 @@ function attributesToString (attributes) {
  */
 
 export default function renderString (element, context, path = '0') {
-  if (element.type === '#text') {
+  if (isText(element)) {
     return element.nodeValue
   }
 
   if (isThunk(element)) {
-    return renderString(renderThunk(createModel(element, context, path)), context, path)
+    element.model = createModel(element, context, path)
+    return renderString(renderThunk(element), context, path)
   }
 
   let {attributes, type, children} = element
@@ -38,10 +40,7 @@ export default function renderString (element, context, path = '0') {
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => {
-      let keyOrIndex = getKey(child) || i
-      renderString(child, context, path + '.' + keyOrIndex)
-    }).join('')
+    str += children.map((child, i) => renderString(child, context, path + '.' + getKey(child) || i)).join('')
   }
 
   str += '</' + type + '>'

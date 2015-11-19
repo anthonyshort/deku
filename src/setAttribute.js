@@ -29,6 +29,9 @@ export function removeAttribute (DOMElement, name, previousValue) {
 }
 
 export function setAttribute (DOMElement, name, value, previousValue) {
+  if (value === previousValue) {
+    return
+  }
   if (typeof value === 'function') {
     value = value(DOMElement, name)
   }
