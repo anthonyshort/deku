@@ -1,6 +1,8 @@
 import element from 'dekujs/virtual-element'
 import { render, tree } from 'dekujs/deku'
 
+const intervals = {};
+
 let Counter = {
   initialState () {
     return {
@@ -20,14 +22,15 @@ let Counter = {
   },
 
   afterMount (component, el, setState) {
-    var counter = 0;
-    component.interval = setInterval(() => {
+    let counter = 0;
+    intervals[component.id] = setInterval(() => {
        setState({ secondsElapsed: counter++ })
     }, 1000);
   },
 
   beforeUnmount (component) {
-    clearInterval(component.interval);
+    clearInterval(intervals[component.id]);
+    delete intervals[component.id];
   }
 }
 
