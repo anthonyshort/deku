@@ -106,7 +106,7 @@ element('div', { class: "App" }, [
 ])
 ```
 
-And if you're using `virtual-element` [you can also use JSX](https://github.com/dekujs/deku/blob/master/docs/guides/jsx.md) to make rendering nodes more developer friendly. This is equivalant to the previous example:
+And if you're using `virtual-element` [you can also use JSX](https://github.com/dekujs/deku/blob/master/docs/guides/jsx.md) to make rendering nodes more developer friendly. This is equivalent to the previous example:
 
 ```jsx
 <div class="App">
