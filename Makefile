@@ -23,12 +23,14 @@ $(tests): node_modules
 standalone: $(src)
 	@mkdir -p build
 	@NODE_ENV=production browserify \
+		--insert-global-vars __filename,__dirname,process,global \
 		--standalone deku \
 		-t envify \
 		-e lib/index.js | bfc > build/deku.js
 
 test: $(src) $(tests)
 	@NODE_ENV=development hihat test/index.js -- \
+		--insert-global-vars __filename,__dirname,process,global \
 		--debug \
 		-t envify \
 		-t babelify \
