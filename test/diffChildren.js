@@ -1,11 +1,10 @@
 /** @jsx h */
 import test from 'tape'
-import {diffChildren} from '../src/diff'
-import actions from '../src/actions'
+import {diffChildren, Actions} from '../src/diff'
 import h, {createTextElement} from '../src/element'
 
 test('diffChildren', t => {
-  let {insertChild, removeChild, updateChild, setAttribute} = actions
+  let {insertChild, removeChild, updateChild, setAttribute} = Actions
 
   t.deepEqual(
     diffChildren(<div/>, <div>hello</div>),
@@ -34,24 +33,26 @@ test('diffChildren', t => {
   t.end()
 })
 
-test.skip('diffChildren (move)', t => {
-  let {removeChild, insertBefore, insertChild} = actions
+test('diffChildren (move)', t => {
+  let {removeChild, insertBefore, insertChild} = Actions
 
   let actual = diffChildren(
     <div>
       <span />
       <span key='foo' />
+      <span />
     </div>,
     <div>
       <span key='foo' />
+      <span />
       <span />
     </div>
   )
 
   let expected = [
-    insertBefore(<span key='foo' />, 1, 0),
-    insertChild(<span />, '0.1', 1),
-    removeChild(<span />, 2)
+    insertBefore(0),
+    insertChild(<span />, 1),
+    removeChild(<span />, 0)
   ]
 
   t.deepEqual(actual, expected, 'move children')

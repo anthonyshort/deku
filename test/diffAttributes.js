@@ -1,10 +1,8 @@
 /** @jsx h */
 import test from 'tape'
-import {diffAttributes} from '../src/diff'
+import {diffAttributes, Actions} from '../src/diff'
 import h from '../src/element'
-import actions from '../src/actions'
-
-let {setAttribute, removeAttribute} = actions
+let {setAttribute, removeAttribute} = Actions
 
 test('diffAttributes', t => {
   t.deepEqual(

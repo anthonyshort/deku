@@ -19,12 +19,16 @@ export function createDOMRenderer (container) {
     return node
   }
 
+  let create = (vnode) => {
+    node = createElement(vnode)
+    if (container) container.appendChild(node)
+    oldVnode = vnode
+    return node
+  }
+
   return (vnode) => {
-    if (!node) {
-      node = createElement(vnode)
-      if (container) container.appendChild(node)
-      return node
-    }
-    return update(vnode)
+    return node !== null
+      ? update(vnode)
+      : create(vnode)
   }
 }

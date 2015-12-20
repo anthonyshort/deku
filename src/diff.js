@@ -1,6 +1,22 @@
 import {isText, groupByKey} from './utils'
 import dift, * as diffActions from 'dift'
-import actions from './actions'
+import Type from 'union-type'
+let Any = () => true
+
+/**
+ * Patch actions
+ */
+
+export let Actions = Type({
+  setAttribute: [String, Any, Any],
+  removeAttribute: [String, Any],
+  insertChild: [Any, Number],
+  replaceChild: [Any, Any, Number],
+  removeChild: [Any, Number],
+  updateChild: [Number, Array],
+  insertBefore: [Number],
+  replaceNode: [Any, Any]
+})
 
 /**
  * Diff two attribute objects and return an array of actions that represent
@@ -8,7 +24,7 @@ import actions from './actions'
  */
 
 export function diffAttributes (previous, next) {
-  let { setAttribute, removeAttribute } = actions
+  let { setAttribute, removeAttribute } = Actions
   let changes = []
   let pAttrs = previous.attributes
   let nAttrs = next.attributes
@@ -35,7 +51,7 @@ export function diffAttributes (previous, next) {
  */
 
 export function diffChildren (previous, next) {
-  let { insertChild, updateChild, removeChild, insertBefore } = actions
+  let { insertChild, updateChild, removeChild, insertBefore } = Actions
   let { CREATE, UPDATE, MOVE, REMOVE } = diffActions
   let previousChildren = groupByKey(previous.children)
   let nextChildren = groupByKey(next.children)
@@ -88,7 +104,7 @@ export function diffChildren (previous, next) {
 
 export function diffNode (prev, next) {
   let changes = []
-  let {replaceChild, setAttribute} = actions
+  let {replaceNode, setAttribute} = Actions
 
   // Bail out and skip updating this whole sub-tree
   if (prev === next) {
@@ -97,7 +113,7 @@ export function diffNode (prev, next) {
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceChild(prev, next))
+    changes.push(replaceNode(prev, next))
     return changes
   }
 

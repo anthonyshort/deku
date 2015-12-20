@@ -2,11 +2,11 @@
 import test from 'tape'
 import patch from '../src/patch'
 import trigger from 'trigger-event'
-import actions from '../src/actions'
+import {Actions} from '../src/diff'
 import h, {createTextElement} from '../src/element'
 
 test('patching elements', t => {
-  let {setAttribute, removeAttribute} = actions
+  let {setAttribute, removeAttribute} = Actions
   let DOMElement = document.createElement('div')
 
   patch(DOMElement, setAttribute('color', 'red', undefined))
@@ -33,7 +33,7 @@ test('patching elements', t => {
 })
 
 test('patching children', t => {
-  let {insertChild, updateChild, removeChild, insertBefore, setAttribute} = actions
+  let {insertChild, updateChild, removeChild, insertBefore, setAttribute} = Actions
   let DOMElement = document.createElement('div')
 
   patch(DOMElement, insertChild(createTextElement('Hello'), 0))
@@ -67,7 +67,7 @@ test('patching children', t => {
 })
 
 test('patching event handlers', t => {
-  let {setAttribute, removeAttribute} = actions
+  let {setAttribute, removeAttribute} = Actions
   let count = 0
   let handler = e => count++
   let DOMElement = document.createElement('div')
@@ -86,7 +86,7 @@ test('patching event handlers', t => {
 })
 
 test('patching inputs', t => {
-  let {setAttribute, removeAttribute} = actions
+  let {setAttribute, removeAttribute} = Actions
   let input = document.createElement('input')
   patch(input, setAttribute('value', 'Bob', undefined))
   t.equal(input.value, 'Bob', 'value property set')

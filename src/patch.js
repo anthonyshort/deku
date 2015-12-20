@@ -1,7 +1,7 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {insertAtIndex, removeAtIndex} from './utils'
 import createElement from './createElement'
-import Actions from './actions'
+import {Actions} from './diff'
 
 /**
  * Modify a DOM element given an array of actions. A context can be set
@@ -29,6 +29,9 @@ export default function patch (DOMElement, action) {
       let child = DOMElement.childNodes[index]
       actions.forEach(action => patch(child, action))
       return DOMElement
+    },
+    replaceNode: (prev, next) => {
+      DOMElement.parentNode.replaceChild(createElement(next), DOMElement)
     }
   }, action)
   return DOMElement
