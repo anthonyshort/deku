@@ -59,19 +59,19 @@ test('render empty attributes to a string', t => {
   t.equal(
     render(<input type="checkbox" disabled={false} />),
     '<input type="checkbox"></input>',
-    'false attribute unexpectedly rendered'
+    'false attribute not rendered'
   )
 
   t.equal(
     render(<input type="checkbox" disabled={null} />),
     '<input type="checkbox"></input>',
-    'null attribute unexpectedly rendered'
+    'null attribute not rendered'
   )
 
   t.equal(
     render(<input type="checkbox" disabled={undefined} />),
     '<input type="checkbox"></input>',
-    'undefined attribute unexpectedly rendered'
+    'undefined attribute not rendered'
   )
 
   t.end()

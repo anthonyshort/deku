@@ -88,11 +88,15 @@ test('patching event handlers', t => {
 test('patching inputs', t => {
   let {setAttribute, removeAttribute} = Actions
   let input = document.createElement('input')
+
   patch(input, setAttribute('value', 'Bob', undefined))
   t.equal(input.value, 'Bob', 'value property set')
+
   patch(input, setAttribute('value', 'Tom', 'Bob'))
   t.equal(input.value, 'Tom', 'value property updated')
+
   patch(input, removeAttribute('value', 'Tom'))
   t.equal(input.value, '', 'value property removed')
+
   t.end()
 })

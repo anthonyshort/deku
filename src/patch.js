@@ -32,6 +32,10 @@ export default function patch (DOMElement, action) {
     },
     replaceNode: (prev, next) => {
       DOMElement.parentNode.replaceChild(createElement(next), DOMElement)
+    },
+    removeNode: (prev) => {
+      DOMElement.parentNode.removeChild(DOMElement)
+      DOMElement = null
     }
   }, action)
   return DOMElement

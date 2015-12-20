@@ -15,7 +15,9 @@ export let Actions = Type({
   removeChild: [Any, Number],
   updateChild: [Number, Array],
   insertBefore: [Number],
-  replaceNode: [Any, Any]
+  replaceNode: [Any, Any],
+  removeNode: [Any],
+  sameNode: []
 })
 
 /**
@@ -104,10 +106,23 @@ export function diffChildren (previous, next) {
 
 export function diffNode (prev, next) {
   let changes = []
-  let {replaceNode, setAttribute} = Actions
+  let {replaceNode, setAttribute, sameNode, removeNode} = Actions
+
+  // No left node to compare it to
+  // TODO: This should just return a createNode action
+  if (prev === null || prev === undefined) {
+    throw new Error('Left node must not be null or undefined')
+  }
 
   // Bail out and skip updating this whole sub-tree
   if (prev === next) {
+    changes.push(sameNode())
+    return changes
+  }
+
+  // Remove
+  if (prev != null && next == null) {
+    changes.push(removeNode(prev))
     return changes
   }
 
