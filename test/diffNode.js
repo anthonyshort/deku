@@ -1,3 +1,4 @@
+/** @jsx h */
 import test from 'tape'
 import {diffNode, Actions} from '../src/diff'
 import h, {createTextElement} from '../src/element'
@@ -36,7 +37,7 @@ test('diffing node with null', t => {
 test('diffing node with undefined', t => {
   let {removeNode} = Actions
   let left = <div />
-  let right = undefined
+  let right
   t.deepEqual(
     diffNode(left, right),
     [removeNode(left)],
@@ -72,7 +73,7 @@ test('diffing with a current node should throw an error', t => {
 test('diffing two nodes should diff attributes then children', t => {
   let {setAttribute, insertChild} = Actions
   let left = <div />
-  let right = <div name="Tom"><span /></div>
+  let right = <div name='Tom'><span /></div>
   t.deepEqual(
     diffNode(left, right),
     [

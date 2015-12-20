@@ -31,7 +31,9 @@ export default function patch (DOMElement, action) {
       return DOMElement
     },
     replaceNode: (prev, next) => {
-      DOMElement.parentNode.replaceChild(createElement(next), DOMElement)
+      let newEl = createElement(next)
+      DOMElement.parentNode.replaceChild(newEl, DOMElement)
+      DOMElement = newEl
     },
     removeNode: (prev) => {
       DOMElement.parentNode.removeChild(DOMElement)

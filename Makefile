@@ -28,7 +28,7 @@ test: lint
 		-t babelify \
 		-p tap-dev-tool
 
-test-cloud: node_modules lint
+ci: node_modules lint
 	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) ${BIN}/zuul -- ./test/index.js
 
 node_modules: package.json

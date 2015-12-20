@@ -18,7 +18,7 @@ test('render to a string', t => {
 
 test('render innerHTML to a string', t => {
   t.equal(
-    render(<div innerHTML="<span>foo</span>" />),
+    render(<div innerHTML='<span>foo</span>' />),
     '<div><span>foo</span></div>',
     'innerHTML rendered'
   )
@@ -27,7 +27,7 @@ test('render innerHTML to a string', t => {
 
 test('render input.value to a string', t => {
   t.equal(
-    render(<input value="foo" />),
+    render(<input value='foo' />),
     '<input value="foo"></input>',
     'value rendered'
   )
@@ -45,31 +45,31 @@ test('render event attributes to a string', t => {
 
 test('render empty attributes to a string', t => {
   t.equal(
-    render(<input type="checkbox" value="" />),
+    render(<input type='checkbox' value='' />),
     '<input type="checkbox" value=""></input>',
     'empty string attribute not rendered'
   )
 
   t.equal(
-    render(<input type="checkbox" value={0} />),
+    render(<input type='checkbox' value={0} />),
     '<input type="checkbox" value="0"></input>',
     'zero attribute not rendered'
   )
 
   t.equal(
-    render(<input type="checkbox" disabled={false} />),
+    render(<input type='checkbox' disabled={false} />),
     '<input type="checkbox"></input>',
     'false attribute not rendered'
   )
 
   t.equal(
-    render(<input type="checkbox" disabled={null} />),
+    render(<input type='checkbox' disabled={null} />),
     '<input type="checkbox"></input>',
     'null attribute not rendered'
   )
 
   t.equal(
-    render(<input type="checkbox" disabled={undefined} />),
+    render(<input type='checkbox' disabled={undefined} />),
     '<input type="checkbox"></input>',
     'undefined attribute not rendered'
   )

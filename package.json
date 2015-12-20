@@ -13,7 +13,6 @@
     "babelify": "^7.2.0",
     "browserify": "^12.0.0",
     "hihat": "^2.5.0",
-    "minify": "^1.4.11",
     "snazzy": "^2.0.1",
     "standard": "^5.4.1",
     "tap-dev-tool": "^1.3.0",
@@ -22,9 +21,7 @@
     "zuul": "^3.7.1"
   },
   "dependencies": {
-    "component-each": "^0.2.6",
     "dift": "^0.1.2",
-    "is-dom": "^1.0.5",
     "is-svg-attribute": "^1.0.2",
     "is-svg-element": "^1.0.1",
     "setify": "^1.0.3",
