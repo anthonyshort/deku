@@ -1,23 +1,6 @@
 import * as actions from './actions'
-import {getKey, isText, isThunk, isSameThunk, createPath} from './utils'
+import {isText, createPath} from './utils'
 import dift, * as diffActions from 'dift'
-
-/**
- * Group an array of virtual elements by their key, using index as a fallback.
- */
-
-export let groupByKey = (children) => {
-  return children.reduce((acc, child, i) => {
-    if (child != null && child !== false) {
-      acc.push({
-        key: String(getKey(child) || i),
-        item: child,
-        index: i
-      })
-    }
-    return acc
-  }, [])
-}
 
 /**
  * Diff two attribute objects and return an array of actions that represent
@@ -63,7 +46,7 @@ export function diffChildren (previous, next, path = '0') {
     switch (type) {
       case CREATE: {
         changes.push(
-          insertChild(next.item, createPath(path, next.key), next.index)
+          insertChild(next.item, next.index)
         )
         break
       }
@@ -107,7 +90,7 @@ export function diffChildren (previous, next, path = '0') {
 
 export function diffNode (prev, next, path = '0', index = 0) {
   let changes = []
-  let {updateThunk, replaceChild, setAttribute} = actions
+  let {replaceChild, setAttribute} = actions
 
   // Bail out and skip updating this whole sub-tree
   if (prev === next) {
@@ -116,7 +99,7 @@ export function diffNode (prev, next, path = '0', index = 0) {
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceChild(prev, next, index))
+    changes.push(replaceChild(prev, next, path, index))
     return changes
   }
 
@@ -124,16 +107,6 @@ export function diffNode (prev, next, path = '0', index = 0) {
   if (isText(next)) {
     if (prev.nodeValue !== next.nodeValue) {
       changes.push(setAttribute('nodeValue', next.nodeValue, prev.nodeValue))
-    }
-    return changes
-  }
-
-  // Thunk
-  if (isThunk(next)) {
-    if (isSameThunk(prev, next)) {
-      changes.push(updateThunk(next, prev, path, index))
-    } else {
-      changes.push(replaceChild(prev, next, path, index))
     }
     return changes
   }

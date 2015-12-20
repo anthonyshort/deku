@@ -1,6 +1,5 @@
-import {renderThunk, createModel} from './thunk'
 import {setAttribute} from './setAttribute'
-import {getKey, isText, isThunk} from './utils'
+import {isText} from './utils'
 import svg from './svg'
 const cache = {}
 
@@ -10,20 +9,9 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode, context = {}, path = '0') {
+export default function createElement (vnode) {
   if (isText(vnode)) {
-    vnode.el = document.createTextNode(vnode.nodeValue || '')
-    return vnode.el
-  }
-
-  if (isThunk(vnode)) {
-    vnode.model = createModel(vnode, context, path)
-    vnode.data = renderThunk(vnode)
-    vnode.el = createElement(vnode.data, context, path + '0')
-    if (typeof vnode.attributes.onCreate === 'function') {
-      vnode.attributes.onCreate(vnode.model)
-    }
-    return vnode.el
+    return document.createTextNode(vnode.nodeValue || '')
   }
 
   let cached = cache[vnode.type]
@@ -41,12 +29,10 @@ export default function createElement (vnode, context = {}, path = '0') {
   }
 
   vnode.children.forEach((node, index) => {
-    let keyOrIndex = getKey(node) || index
-    let child = createElement(node, context, path + '.' + keyOrIndex)
+    let keyOrIndex = node.key || index
+    let child = createElement(node)
     DOMElement.appendChild(child)
   })
 
-  vnode.el = DOMElement
-
-  return vnode.el
+  return DOMElement
 }

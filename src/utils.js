@@ -1,12 +1,4 @@
 /**
- * Get the key from a virtual element.
- */
-
-export let getKey = (virtualElement) => {
-  return virtualElement && virtualElement.attributes && virtualElement.attributes.key
-}
-
-/**
  * Check if an attribute shoudl be rendered into the DOM.
  */
 
@@ -49,6 +41,22 @@ export let isSameThunk = (left, right) => {
 
 export let createPath = (...args) => {
   return args.join('.')
+}
+
+/**
+ * Find a child node at a given path. Takes any tree that uses a
+ * 'children' key. This will work for both virtual nodes and real
+ * DOM trees.
+ */
+
+export let findNodeAtPath = (path, tree) => {
+  let parts = path.split('.')
+  let node
+  while (parts.length) {
+    let index = parts.shift()
+    node = tree.children[index]
+  }
+  return node
 }
 
 /**

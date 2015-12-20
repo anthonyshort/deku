@@ -22,6 +22,7 @@
     "zuul": "^3.7.1"
   },
   "dependencies": {
+    "component-each": "^0.2.6",
     "component-raf": "^1.2.0",
     "dift": "^0.1.2",
     "is-dom": "^1.0.5",

@@ -21,7 +21,7 @@ export default function element (type, attributes, ...children) {
     ? attributes.key :
     undefined
 
-  if (typeof type === 'function') {
+  if (typeof type === 'object') {
     return createThunkElement(type, key, attributes, children)
   }
 
@@ -51,13 +51,12 @@ export function createTextElement (text) {
   }
 }
 
-export function createThunkElement (render, key, attributes, children) {
+export function createThunkElement (component, key, attributes, children) {
   return {
     type: '#thunk',
-    data: null,
     attributes,
+    component,
     children,
-    render,
     key
   }
 }

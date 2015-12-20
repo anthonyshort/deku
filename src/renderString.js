@@ -1,6 +1,4 @@
-import {renderThunk, createModel} from './thunk'
-import {isThunk, isText} from './utils'
-import {getKey, isValidAttribute} from './utils'
+import {isText, isValidAttribute} from './utils'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -28,11 +26,6 @@ export default function renderString (element, context, path = '0') {
     return element.nodeValue
   }
 
-  if (isThunk(element)) {
-    element.model = createModel(element, context, path)
-    return renderString(renderThunk(element), context, path)
-  }
-
   let {attributes, type, children} = element
   let innerHTML = attributes.innerHTML
   let str = '<' + type + attributesToString(attributes) + '>'
@@ -40,7 +33,7 @@ export default function renderString (element, context, path = '0') {
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => renderString(child, context, path + '.' + getKey(child) || i)).join('')
+    str += children.map((child, i) => renderString(child, context, path + '.' + child.key || i)).join('')
   }
 
   str += '</' + type + '>'
