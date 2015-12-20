@@ -1,6 +1,6 @@
 import {isText, groupByKey} from './utils'
 import dift, * as diffActions from 'dift'
-import * as actions from './actions'
+import actions from './actions'
 
 /**
  * Diff two attribute objects and return an array of actions that represent
@@ -54,16 +54,16 @@ export function diffChildren (previous, next) {
         let actions = diffNode(prev.item, next.item)
         if (actions.length > 0) {
           changes.push(
-            updateChild(prev.index, actions)
+            updateChild(idx, actions)
           )
         }
         break
       }
       case MOVE: {
         let actions = diffNode(prev.item, next.item)
-        changes.push(insertBefore(prev, prev.index, next.index))
+        changes.push(insertBefore(next.index))
         if (actions.length > 0) {
-          changes.push(updateChild(prev, next.index, actions))
+          changes.push(updateChild(next.index, actions))
         }
         break
       }

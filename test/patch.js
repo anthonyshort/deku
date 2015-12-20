@@ -2,31 +2,31 @@
 import test from 'tape'
 import patch from '../src/patch'
 import trigger from 'trigger-event'
-import * as actions from '../src/actions'
+import actions from '../src/actions'
 import h, {createTextElement} from '../src/element'
 
 test('patching elements', t => {
   let {setAttribute, removeAttribute} = actions
   let DOMElement = document.createElement('div')
 
-  patch(DOMElement, setAttribute('color', 'red'))
+  patch(DOMElement, setAttribute('color', 'red', undefined))
   t.equal(DOMElement.getAttribute('color'), 'red', 'add attribute')
 
-  patch(DOMElement, setAttribute('color', 'blue'))
+  patch(DOMElement, setAttribute('color', 'blue', 'red'))
   t.equal(DOMElement.getAttribute('color'), 'blue', 'update attribute')
 
-  patch(DOMElement, setAttribute('color', false))
+  patch(DOMElement, setAttribute('color', false, 'blue'))
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with false')
 
-  patch(DOMElement, setAttribute('color', 'red'))
+  patch(DOMElement, setAttribute('color', 'red', false))
   patch(DOMElement, setAttribute('color', null, 'red'))
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with null')
 
-  patch(DOMElement, setAttribute('color', 'red'))
+  patch(DOMElement, setAttribute('color', 'red', null))
   patch(DOMElement, setAttribute('color', undefined, 'red'))
   t.equal(DOMElement.hasAttribute('color'), false, 'remove attribute with undefined')
 
-  patch(DOMElement, removeAttribute('color'))
+  patch(DOMElement, removeAttribute('color', undefined))
   t.equal(DOMElement.getAttribute('color'), null, 'remove attribute')
 
   t.end()
@@ -39,7 +39,7 @@ test('patching children', t => {
   patch(DOMElement, insertChild(createTextElement('Hello'), 0))
   t.equal(DOMElement.innerHTML, 'Hello', 'text child inserted')
 
-  patch(DOMElement, updateChild(0, [setAttribute('nodeValue', 'Goodbye')]))
+  patch(DOMElement, updateChild(0, [setAttribute('nodeValue', 'Goodbye', undefined)]))
   t.equal(DOMElement.innerHTML, 'Goodbye', 'text child updated')
 
   patch(DOMElement, removeChild(createTextElement('Goodbye'), 0))
@@ -48,7 +48,7 @@ test('patching children', t => {
   patch(DOMElement, insertChild(<span>Hello</span>, 0))
   t.equal(DOMElement.innerHTML, '<span>Hello</span>', 'element child inserted')
 
-  patch(DOMElement, updateChild(0, [setAttribute('color', 'blue')]))
+  patch(DOMElement, updateChild(0, [setAttribute('color', 'blue', undefined)]))
   t.equal(DOMElement.innerHTML, '<span color="blue">Hello</span>', 'element child updated')
 
   patch(DOMElement, removeChild(<span>Hello</span>, 0))
@@ -73,7 +73,7 @@ test('patching event handlers', t => {
   let DOMElement = document.createElement('div')
   document.body.appendChild(DOMElement)
 
-  patch(DOMElement, setAttribute('onClick', handler))
+  patch(DOMElement, setAttribute('onClick', handler, undefined))
   trigger(DOMElement, 'click')
   t.equal(count, 1, 'event added')
 
@@ -88,9 +88,9 @@ test('patching event handlers', t => {
 test('patching inputs', t => {
   let {setAttribute, removeAttribute} = actions
   let input = document.createElement('input')
-  patch(input, setAttribute('value', 'Bob'))
+  patch(input, setAttribute('value', 'Bob', undefined))
   t.equal(input.value, 'Bob', 'value property set')
-  patch(input, setAttribute('value', 'Tom'))
+  patch(input, setAttribute('value', 'Tom', 'Bob'))
   t.equal(input.value, 'Tom', 'value property updated')
   patch(input, removeAttribute('value', 'Tom'))
   t.equal(input.value, '', 'value property removed')

@@ -2,12 +2,14 @@
 import test from 'tape'
 import {diffAttributes} from '../src/diff'
 import h from '../src/element'
-import {setAttribute, removeAttribute} from '../src/actions'
+import actions from '../src/actions'
+
+let {setAttribute, removeAttribute} = actions
 
 test('diffAttributes', t => {
   t.deepEqual(
     diffAttributes(<div />, <div color='red' />),
-    [setAttribute('color', 'red')],
+    [setAttribute('color', 'red', undefined)],
     'add attribute action'
   )
 
