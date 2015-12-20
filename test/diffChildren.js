@@ -1,3 +1,4 @@
+/** @jsx h */
 import test from 'tape'
 import {diffChildren} from '../src/diff'
 import * as actions from '../src/actions'
@@ -14,7 +15,7 @@ test('diffChildren', t => {
 
   t.deepEqual(
     diffChildren(<div>Hello</div>, <div>Goodbye</div>),
-    [updateChild([setAttribute('nodeValue', 'Goodbye', 'Hello')], 0)],
+    [updateChild(0, [setAttribute('nodeValue', 'Goodbye', 'Hello')])],
     'update text'
   )
 
@@ -54,22 +55,5 @@ test.skip('diffChildren (move)', t => {
   ]
 
   t.deepEqual(actual, expected, 'move children')
-  t.end()
-})
-
-test('diffNode (update thunk)', t => {
-  let {updateThunk} = actions
-  let MyButton = m => <button>{m.children}</button>
-
-  let actual = diffNode(
-    <MyButton color='red' key='foo' />,
-    <MyButton color='blue' key='foo' />
-  )
-
-  let expected = [
-    updateThunk(<MyButton color='blue' key='foo' />, <MyButton color='red' key='foo' />, '0', 0)
-  ]
-
-  t.deepEqual(actual, expected, 'update thunk')
   t.end()
 })

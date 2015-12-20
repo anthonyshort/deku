@@ -1,6 +1,7 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {insertAtIndex, removeAtIndex} from './utils'
 import createElement from './createElement'
+import {types} from './actions'
 
 /**
  * Modify a DOM element given an array of actions. A context can be set
@@ -18,7 +19,7 @@ export default function patch (DOMElement, action) {
       return DOMElement
     }
     case types.INSERT_CHILD: {
-      insertAtIndex(DOMElement, action.index, createElement(action.vnode, context, action.path))
+      insertAtIndex(DOMElement, action.index, createElement(action.vnode))
       return DOMElement
     }
     case types.REMOVE_CHILD: {

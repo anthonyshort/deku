@@ -29,7 +29,6 @@ export default function createElement (vnode) {
   }
 
   vnode.children.forEach((node, index) => {
-    let keyOrIndex = node.key || index
     let child = createElement(node)
     DOMElement.appendChild(child)
   })

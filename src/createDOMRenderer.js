@@ -1,5 +1,5 @@
+import createElement from './createElement'
 import {diffNode} from './diff'
-import {types} from './actions'
 import patch from './patch'
 
 /**

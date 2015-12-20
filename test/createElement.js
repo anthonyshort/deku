@@ -1,3 +1,4 @@
+/** @jsx h */
 import test from 'tape'
 import isDOM from 'is-dom'
 import h from '../src/element'

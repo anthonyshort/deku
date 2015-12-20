@@ -51,19 +51,17 @@ export function removeChild (vnode, index) {
   }
 }
 
-export function updateChild (vnode, index, actions) {
+export function updateChild (index, actions) {
   return {
     type: types.UPDATE_CHILD,
-    vnode,
     index,
     actions
   }
 }
 
-export function insertBefore (vnode, index) {
+export function insertBefore (index) {
   return {
     type: types.INSERT_BEFORE,
-    vnode,
     index
   }
 }

@@ -18,8 +18,8 @@ export default function element (type, attributes, ...children) {
   children = (children || []).reduce(reduceChildren, [])
 
   let key = typeof attributes.key === 'string' || typeof attributes.key === 'number'
-    ? attributes.key :
-    undefined
+    ? attributes.key
+    : undefined
 
   if (typeof type === 'object') {
     return createThunkElement(type, key, attributes, children)

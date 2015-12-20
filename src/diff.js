@@ -1,6 +1,6 @@
-import * as actions from './actions'
-import {isText, createPath} from './utils'
+import {isText, groupByKey} from './utils'
 import dift, * as diffActions from 'dift'
+import * as actions from './actions'
 
 /**
  * Diff two attribute objects and return an array of actions that represent
@@ -34,7 +34,7 @@ export function diffAttributes (previous, next) {
  * recursively to build up unique paths for each node.
  */
 
-export function diffChildren (previous, next, path = '0') {
+export function diffChildren (previous, next) {
   let { insertChild, updateChild, removeChild, insertBefore } = actions
   let { CREATE, UPDATE, MOVE, REMOVE } = diffActions
   let previousChildren = groupByKey(previous.children)
@@ -51,18 +51,16 @@ export function diffChildren (previous, next, path = '0') {
         break
       }
       case UPDATE: {
-        let path = createPath(path, prev.key)
-        let actions = diffNode(prev.item, next.item, path, prev.index)
+        let actions = diffNode(prev.item, next.item)
         if (actions.length > 0) {
           changes.push(
-            updateChild(prev.item, prev.index, actions)
+            updateChild(prev.index, actions)
           )
         }
         break
       }
       case MOVE: {
-        let path = createPath(path, next.key)
-        let actions = diffNode(prev.item, next.item, path, next.index)
+        let actions = diffNode(prev.item, next.item)
         changes.push(insertBefore(prev, prev.index, next.index))
         if (actions.length > 0) {
           changes.push(updateChild(prev, next.index, actions))
@@ -71,7 +69,7 @@ export function diffChildren (previous, next, path = '0') {
       }
       case REMOVE: {
         changes.push(
-          removeChild(prev, prev.index)
+          removeChild(prev.item, prev.index)
         )
         break
       }
@@ -88,7 +86,7 @@ export function diffChildren (previous, next, path = '0') {
  * into the right.
  */
 
-export function diffNode (prev, next, path = '0', index = 0) {
+export function diffNode (prev, next) {
   let changes = []
   let {replaceChild, setAttribute} = actions
 
@@ -99,7 +97,7 @@ export function diffNode (prev, next, path = '0', index = 0) {
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceChild(prev, next, path, index))
+    changes.push(replaceChild(prev, next))
     return changes
   }
 
@@ -113,7 +111,7 @@ export function diffNode (prev, next, path = '0', index = 0) {
 
   changes = changes
     .concat(diffAttributes(prev, next))
-    .concat(diffChildren(prev, next, path))
+    .concat(diffChildren(prev, next))
 
   return changes
 }

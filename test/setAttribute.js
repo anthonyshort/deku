@@ -2,8 +2,7 @@ import test from 'tape'
 import {setAttribute} from '../src/setAttribute'
 
 test('setAttribute', t => {
-  let DOMElement
-  DOMElement = document.createElement('input')
+  let DOMElement = document.createElement('input')
   DOMElement.setAttribute('type', 'checkbox')
   setAttribute(DOMElement, 'checked', true)
   t.assert(DOMElement.checked, 'element checked')
@@ -35,9 +34,9 @@ test('setAttribute', t => {
 
 test('setting the same attribute value does not touch the DOM', t => {
   let el = document.createElement('div')
-  setAttribute(el, 'name', 'Bob')
+  setAttribute(el, 'name', 'Bob', null)
   el.setAttribute = () => t.fail('DOM was touched')
-  setAttribute(el, 'name', 'Bob')
+  setAttribute(el, 'name', 'Bob', 'Bob')
   t.pass()
   t.end()
 })
@@ -70,7 +69,7 @@ test('setting value should maintain cursor position', t => {
   t.notEqual(input.selectionEnd, 7, 'selection end')
 
   // Clean up
-  document.body.removeChild(el)
+  document.body.removeChild(input)
   t.end()
 })
 
@@ -80,18 +79,18 @@ test('setting value on fields that do not maintain selection', t => {
   let input = document.createElement('input')
   input.setAttribute('type', 'email')
   setAttribute(input, 'value', 'a@b.com')
+  t.pass()
   t.end()
 })
 
 test('selecting option elements', t => {
   let el = document.createElement('div')
-  el.innerHTML =
-    ```
+  el.innerHTML = `
     <select>
       <option selected>one</option>
       <option>two</option>
     </select>
-    ```
+    `
   let options = el.querySelectorAll('option')
   setAttribute(options[1], 'selected', true)
   t.equal(options[0].selected, false, 'is not selected')

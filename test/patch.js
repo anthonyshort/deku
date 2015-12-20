@@ -1,8 +1,9 @@
+/** @jsx h */
 import test from 'tape'
 import patch from '../src/patch'
 import trigger from 'trigger-event'
 import * as actions from '../src/actions'
-import {createTextElement} from '../src/element'
+import h, {createTextElement} from '../src/element'
 
 test('patching elements', t => {
   let {setAttribute, removeAttribute} = actions
@@ -38,7 +39,7 @@ test('patching children', t => {
   patch(DOMElement, insertChild(createTextElement('Hello'), 0))
   t.equal(DOMElement.innerHTML, 'Hello', 'text child inserted')
 
-  patch(DOMElement, updateChild([setAttribute('nodeValue', 'Goodbye')], 0))
+  patch(DOMElement, updateChild(0, [setAttribute('nodeValue', 'Goodbye')]))
   t.equal(DOMElement.innerHTML, 'Goodbye', 'text child updated')
 
   patch(DOMElement, removeChild(createTextElement('Goodbye'), 0))
@@ -47,7 +48,7 @@ test('patching children', t => {
   patch(DOMElement, insertChild(<span>Hello</span>, 0))
   t.equal(DOMElement.innerHTML, '<span>Hello</span>', 'element child inserted')
 
-  patch(DOMElement, updateChild([setAttribute('color', 'blue')], 0))
+  patch(DOMElement, updateChild(0, [setAttribute('color', 'blue')]))
   t.equal(DOMElement.innerHTML, '<span color="blue">Hello</span>', 'element child updated')
 
   patch(DOMElement, removeChild(<span>Hello</span>, 0))
@@ -59,7 +60,7 @@ test('patching children', t => {
   t.equal(DOMElement.childNodes.length, 3, 'multiple children added')
 
   patch(DOMElement, removeChild(<span>0</span>, 0))
-  patch(DOMElement, updateChild([insertBefore(2)], 1))
+  patch(DOMElement.children[0], insertBefore(2))
   t.equal(DOMElement.innerHTML, '<span>2</span><span>1</span>', 'element moved')
 
   t.end()
@@ -70,7 +71,7 @@ test('patching event handlers', t => {
   let count = 0
   let handler = e => count++
   let DOMElement = document.createElement('div')
-  document.appendChild(DOMElement)
+  document.body.appendChild(DOMElement)
 
   patch(DOMElement, setAttribute('onClick', handler))
   trigger(DOMElement, 'click')
@@ -80,11 +81,12 @@ test('patching event handlers', t => {
   trigger(DOMElement, 'click')
   t.equal(count, 1, 'event removed')
 
-  document.removeChild(DOMElement)
+  document.body.removeChild(DOMElement)
   t.end()
 })
 
 test('patching inputs', t => {
+  let {setAttribute, removeAttribute} = actions
   let input = document.createElement('input')
   patch(input, setAttribute('value', 'Bob'))
   t.equal(input.value, 'Bob', 'value property set')

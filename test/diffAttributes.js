@@ -1,3 +1,4 @@
+/** @jsx h */
 import test from 'tape'
 import {diffAttributes} from '../src/diff'
 import h from '../src/element'

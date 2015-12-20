@@ -12,6 +12,23 @@ export function isValidAttribute (value) {
 }
 
 /**
+ * Group an array of virtual elements by their key, using index as a fallback.
+ */
+
+export let groupByKey = (children) => {
+  return children.reduce((acc, child, i) => {
+    if (child != null && child !== false) {
+      acc.push({
+        key: String(child.key || i),
+        item: child,
+        index: i
+      })
+    }
+    return acc
+  }, [])
+}
+
+/**
  * Is a vnode a thunk?
  */
 
