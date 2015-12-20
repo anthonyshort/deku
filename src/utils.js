@@ -4,6 +4,7 @@
 
 export function isValidAttribute (value) {
   if (typeof value === 'boolean') return value
+  if (typeof value === 'function') return false
   if (value === '') return true
   if (value === undefined) return false
   if (value === null) return false
