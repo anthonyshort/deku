@@ -15,12 +15,12 @@ default: test
 $(src): node_modules
 $(tests): node_modules
 
-dist: $(src)
+build: $(src)
 	@mkdir -p dist
 	@NODE_ENV=production ${BIN}/browserify \
 		--standalone deku \
 		-t babelify \
-		-e src/index.js | dist/deku.js
+		-e src/index.js > dist/deku.js
 
 test: lint
 	@NODE_ENV=development ${BIN}/hihat test/index.js -- \
@@ -41,4 +41,4 @@ lint: $(src) $(tests)
 # Always run these tasks.
 #
 
-.PHONY: dist
+.PHONY: build
