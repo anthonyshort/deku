@@ -21,6 +21,8 @@ export default function element (type, attributes, ...children) {
     ? attributes.key
     : undefined
 
+  delete attributes.key
+
   if (typeof type === 'object') {
     return createThunkElement(type, key, attributes, children)
   }

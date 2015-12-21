@@ -52,7 +52,7 @@ test('moving elements using keys', t => {
 
   t.equal(
     el.innerHTML,
-    `<div><span id="2" key="foo"></span><span id="1"></span><span id="3"></span></div>`,
+    `<div><span id="2"></span><span id="1"></span><span id="3"></span></div>`,
     'elements rearranged'
   )
 

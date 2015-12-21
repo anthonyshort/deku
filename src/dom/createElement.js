@@ -46,7 +46,7 @@ export default function createElement (vnode, path) {
 
   vnode.children.forEach((node, index) => {
     if (node === null || node === undefined) {
-      return 
+      return
     }
     let child = createElement(
       node,
