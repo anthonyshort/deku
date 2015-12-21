@@ -71,14 +71,16 @@ test('diffing with a current node should throw an error', t => {
 })
 
 test('diffing two nodes should diff attributes then children', t => {
-  let {setAttribute, insertChild} = Actions
+  let {setAttribute, insertChild, updateChildren} = Actions
   let left = <div />
   let right = <div name='Tom'><span /></div>
   t.deepEqual(
     diffNode(left, right),
     [
       setAttribute('name', 'Tom', undefined),
-      insertChild(<span />, 0)
+      updateChildren([
+        insertChild(<span />, 0)
+      ])
     ]
   )
   t.end()

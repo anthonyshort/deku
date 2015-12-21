@@ -33,35 +33,73 @@ test('patching elements', t => {
 })
 
 test('patching children', t => {
-  let {insertChild, updateChild, removeChild, insertBefore, setAttribute} = Actions
+  let {insertChild, updateChild, removeChild, insertBefore, setAttribute, updateChildren} = Actions
   let DOMElement = document.createElement('div')
 
-  patch(DOMElement, insertChild(createTextElement('Hello'), 0))
+  patch(
+    DOMElement,
+    updateChildren([
+      insertChild(createTextElement('Hello'), 0)
+    ])
+  )
   t.equal(DOMElement.innerHTML, 'Hello', 'text child inserted')
 
-  patch(DOMElement, updateChild(0, [setAttribute('nodeValue', 'Goodbye', undefined)]))
+  patch(
+    DOMElement,
+    updateChildren([
+      updateChild(0, [
+        setAttribute('nodeValue', 'Goodbye', undefined)
+      ])
+    ])
+  )
   t.equal(DOMElement.innerHTML, 'Goodbye', 'text child updated')
 
-  patch(DOMElement, removeChild(0))
+  patch(
+    DOMElement,
+    updateChildren([
+      removeChild(0)
+    ])
+  )
   t.equal(DOMElement.innerHTML, '', 'text child removed')
 
-  patch(DOMElement, insertChild(<span>Hello</span>, 0))
+  patch(
+    DOMElement,
+    updateChildren([
+      insertChild(<span>Hello</span>, 0)
+    ])
+  )
   t.equal(DOMElement.innerHTML, '<span>Hello</span>', 'element child inserted')
 
-  patch(DOMElement, updateChild(0, [setAttribute('color', 'blue', undefined)]))
+  patch(
+    DOMElement,
+    updateChildren([
+      updateChild(0, [
+        setAttribute('color', 'blue', undefined)
+      ])
+    ])
+  )
   t.equal(DOMElement.innerHTML, '<span color="blue">Hello</span>', 'element child updated')
 
-  patch(DOMElement, removeChild(0))
+  patch(
+    DOMElement,
+    updateChildren([
+      removeChild(0)
+    ])
+  )
   t.equal(DOMElement.innerHTML, '', 'element child removed')
 
-  patch(DOMElement, insertChild(<span>0</span>, 0))
-  patch(DOMElement, insertChild(<span>1</span>, 1))
-  patch(DOMElement, insertChild(<span>2</span>, 2))
+  patch(
+    DOMElement,
+    updateChildren([
+      insertChild(<span>0</span>, 0),
+      insertChild(<span>1</span>, 1),
+      insertChild(<span>2</span>, 2)
+    ])
+  )
   t.equal(DOMElement.childNodes.length, 3, 'multiple children added')
 
-  patch(DOMElement, removeChild(0))
   patch(DOMElement.children[0], insertBefore(2))
-  t.equal(DOMElement.innerHTML, '<span>2</span><span>1</span>', 'element moved')
+  t.equal(DOMElement.innerHTML, '<span>1</span><span>0</span><span>2</span>', 'element moved')
 
   t.end()
 })

@@ -14,6 +14,7 @@ export let Actions = Type({
   replaceChild: [Any, Any, Number],
   removeChild: [Number],
   updateChild: [Number, Array],
+  updateChildren: [Array],
   insertBefore: [Number],
   replaceNode: [Any, Any],
   removeNode: [Any],
@@ -53,7 +54,7 @@ export function diffAttributes (previous, next) {
  */
 
 export function diffChildren (previous, next) {
-  let { insertChild, updateChild, removeChild, insertBefore } = Actions
+  let { insertChild, updateChild, removeChild, insertBefore, updateChildren } = Actions
   let { CREATE, UPDATE, MOVE, REMOVE } = diffActions
   let previousChildren = groupByKey(previous.children)
   let nextChildren = groupByKey(next.children)
@@ -75,7 +76,7 @@ export function diffChildren (previous, next) {
       }
       case MOVE: {
         let actions = diffNode(prev.item, next.item)
-        actions.unshift(insertBefore(pos))
+        actions.push(insertBefore(pos))
         changes.push(updateChild(prev.index, actions))
         break
       }
@@ -88,7 +89,7 @@ export function diffChildren (previous, next) {
 
   dift(previousChildren, nextChildren, effect, key)
 
-  return changes
+  return updateChildren(changes)
 }
 
 /**
@@ -132,9 +133,8 @@ export function diffNode (prev, next) {
     return changes
   }
 
-  changes = changes
-    .concat(diffAttributes(prev, next))
-    .concat(diffChildren(prev, next))
+  changes = diffAttributes(prev, next)
+  changes.push(diffChildren(prev, next))
 
   return changes
 }

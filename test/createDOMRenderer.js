@@ -34,6 +34,8 @@ test('moving elements using keys', t => {
     </div>
   )
 
+  let span = el.childNodes[0].childNodes[1]
+
   render(
     <div>
       <span id='2' key='foo' />
@@ -44,7 +46,14 @@ test('moving elements using keys', t => {
 
   t.equal(
     el.innerHTML,
-    `<div><span id="2" key="foo"></span><span id="1"></span><span id="3"></span></div>`
+    `<div><span id="2" key="foo"></span><span id="1"></span><span id="3"></span></div>`,
+    'elements rearranged'
+  )
+
+  t.equal(
+    span,
+    el.childNodes[0].childNodes[0],
+    'element is moved'
   )
 
   t.end()

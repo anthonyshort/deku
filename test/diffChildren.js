@@ -4,29 +4,29 @@ import {diffChildren, Actions} from '../src/diff'
 import h, {createTextElement} from '../src/element'
 
 test('diffChildren', t => {
-  let {insertChild, removeChild, updateChild, setAttribute} = Actions
+  let {insertChild, removeChild, updateChild, setAttribute, updateChildren} = Actions
 
   t.deepEqual(
     diffChildren(<div/>, <div>hello</div>),
-    [insertChild(createTextElement('hello'), 0)],
+    updateChildren([insertChild(createTextElement('hello'), 0)]),
     'insert text'
   )
 
   t.deepEqual(
     diffChildren(<div>Hello</div>, <div>Goodbye</div>),
-    [updateChild(0, [setAttribute('nodeValue', 'Goodbye', 'Hello')])],
+    updateChildren([updateChild(0, [setAttribute('nodeValue', 'Goodbye', 'Hello')])]),
     'update text'
   )
 
   t.deepEqual(
     diffChildren(<div></div>, <div><span /></div>),
-    [insertChild(<span />, 0)],
+    updateChildren([insertChild(<span />, 0)]),
     'insert element'
   )
 
   t.deepEqual(
     diffChildren(<div><span /></div>, <div/>),
-    [removeChild(0)],
+    updateChildren([removeChild(0)]),
     'remove element'
   )
 

@@ -9,10 +9,6 @@ import {Actions} from './diff'
  */
 
 export default function patch (DOMElement, action) {
-  // Create a clone of the children so we can reference them later
-  // using their original position even if they move around
-  let childNodes = Array.prototype.slice.apply(DOMElement.childNodes)
-
   Actions.case({
     setAttribute: (name, value, previousValue) => {
       setAttribute(DOMElement, name, value, previousValue)
@@ -20,17 +16,26 @@ export default function patch (DOMElement, action) {
     removeAttribute: (name, previousValue) => {
       removeAttribute(DOMElement, name, previousValue)
     },
-    insertChild: (vnode, index) => {
-      insertAtIndex(DOMElement, index, createElement(vnode))
-    },
-    removeChild: (index) => {
-      DOMElement.removeChild(childNodes[index])
-    },
     insertBefore: (index) => {
       insertAtIndex(DOMElement.parentNode, index, DOMElement)
     },
-    updateChild: (index, actions) => {
-      actions.forEach(action => patch(childNodes[index], action))
+    updateChildren: (changes) => {
+      // Create a clone of the children so we can reference them later
+      // using their original position even if they move around
+      let childNodes = Array.prototype.slice.apply(DOMElement.childNodes)
+      changes.forEach(change => {
+        Actions.case({
+          insertChild: (vnode, index) => {
+            insertAtIndex(DOMElement, index, createElement(vnode))
+          },
+          removeChild: (index) => {
+            DOMElement.removeChild(childNodes[index])
+          },
+          updateChild: (index, actions) => {
+            actions.forEach(action => patch(childNodes[index], action))
+          }
+        }, change)
+      })
     },
     replaceNode: (prev, next) => {
       let newEl = createElement(next)
@@ -42,5 +47,6 @@ export default function patch (DOMElement, action) {
       DOMElement = null
     }
   }, action)
+
   return DOMElement
 }
