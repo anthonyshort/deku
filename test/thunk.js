@@ -8,8 +8,8 @@ test('rendering and updating thunks', t => {
   let render = createDOMRenderer(el)
 
   let Component = {
-    render: ({ props }) => (
-      <div name={props.name} />
+    render: (model) => (
+      <div name={model.props.name} />
     )
   }
 
@@ -25,8 +25,8 @@ test('swapping a thunks root element', t => {
   let render = createDOMRenderer(el)
 
   let Component = {
-    render: ({ props }) => (
-      props.swap
+    render: (model) => (
+      model.props.swap
         ? <a />
         : <b />
     )
@@ -44,7 +44,7 @@ test('rendering a thunk with props', t => {
   let render = createDOMRenderer(el)
 
   let Component = {
-    render: ({ props }) => <button>{props.text}</button>
+    render: (model) => <button>{model.props.text}</button>
   }
 
   render(<div><Component text='Reset' /></div>)
