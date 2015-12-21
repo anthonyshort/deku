@@ -40,5 +40,29 @@ test('diffChildren', t => {
     'remove element'
   )
 
+  t.deepEqual(
+    diffChildren(<div><span /></div>, <div>{null}</div>),
+    updateChildren([
+      removeChild(0)
+    ]),
+    'remove element with null'
+  )
+
+  t.deepEqual(
+    diffChildren(<div><span /></div>, <div>{undefined}</div>),
+    updateChildren([
+      removeChild(0)
+    ]),
+    'remove element with undefined'
+  )
+
+  t.deepEqual(
+    diffChildren(<div>{null}</div>, <div><span /></div>),
+    updateChildren([
+      insertChild(<span />, 0, '.0')
+    ]),
+    'add element from null'
+  )
+
   t.end()
 })

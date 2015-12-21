@@ -27,6 +27,13 @@ test('create element with child', t => {
   t.end()
 })
 
+test('create element with null child', t => {
+  let DOMElement = createElement(<div>{null}</div>)
+  t.equal(DOMElement.children.length, 0, 'has no children')
+  t.equal(DOMElement.innerHTML, '', 'has correct content')
+  t.end()
+})
+
 test('create input element', t => {
   let DOMElement = createElement(<input type='text' value='foo' disabled />)
   t.equal(DOMElement.tagName, 'INPUT', 'is correct tag')

@@ -19,6 +19,12 @@ test('rendering elements', t => {
   render(<div><div /></div>)
   t.equal(el.innerHTML, '<div><div></div></div>', 'child replaced')
 
+  render()
+  t.equal(el.innerHTML, '', 'root removed')
+
+  render(<div>Hello</div>)
+  t.equal(el.innerHTML, '<div>Hello</div>', 'root added')
+
   t.end()
 })
 
