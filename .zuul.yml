@@ -15,4 +15,3 @@ browsers:
     version: 7..latest
 browserify:
   - transform: babelify
-  - transform: envify
