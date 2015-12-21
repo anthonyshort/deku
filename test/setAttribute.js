@@ -1,7 +1,7 @@
 import test from 'tape'
 import {setAttribute} from '../src/dom/setAttribute'
 
-test('setAttribute', t => {
+test('setAttribute (checkboxes)', t => {
   let DOMElement = document.createElement('input')
   DOMElement.setAttribute('type', 'checkbox')
   setAttribute(DOMElement, 'checked', true)
@@ -11,7 +11,7 @@ test('setAttribute', t => {
   setAttribute(DOMElement, 'disabled', true)
   t.assert(DOMElement.disabled, 'element disabled')
   setAttribute(DOMElement, 'disabled', false)
-  t.assert(!DOMElement.disabled, 'element unchecked')
+  t.assert(!DOMElement.disabled, 'element enabled')
   setAttribute(DOMElement, 'selected', true)
   t.assert(DOMElement.selected, 'element selected')
   setAttribute(DOMElement, 'selected', false)
@@ -22,11 +22,36 @@ test('setAttribute', t => {
   t.equal(DOMElement.value, '2', 'value updated')
   setAttribute(DOMElement, 'value', null)
   t.equal(DOMElement.value, '', 'value removed')
-  DOMElement = document.createElement('div')
+  t.end()
+})
+
+test('setAttribute (textfield)', t => {
+  let DOMElement = document.createElement('input')
+  DOMElement.setAttribute('type', 'text')
+  setAttribute(DOMElement, 'disabled', true)
+  t.assert(DOMElement.disabled, 'element disabled')
+  setAttribute(DOMElement, 'disabled', false)
+  t.assert(!DOMElement.disabled, 'element enabled')
+  setAttribute(DOMElement, 'value', 'foo')
+  t.equal(DOMElement.value, 'foo', 'value set')
+  setAttribute(DOMElement, 'value', 2)
+  t.equal(DOMElement.value, '2', 'value updated')
+  setAttribute(DOMElement, 'value', null)
+  t.equal(DOMElement.value, '', 'value removed')
+  t.end()
+})
+
+test('setAttribute (innerHTML)', t => {
+  let DOMElement = document.createElement('div')
   setAttribute(DOMElement, 'innerHTML', '<span></span>')
   t.equal(DOMElement.innerHTML, '<span></span>', 'innerHTML set')
   setAttribute(DOMElement, 'innerHTML', '')
   t.equal(DOMElement.innerHTML, '', 'innerHTML removed')
+  t.end()
+})
+
+test('setAttribute (function value)', t => {
+  let DOMElement = document.createElement('div')
   setAttribute(DOMElement, 'class', el => 'bar')
   t.equal(DOMElement.className, 'bar', 'function as a value')
   t.end()

@@ -20,7 +20,7 @@ export function removeAttribute (DOMElement, name, previousValue) {
       DOMElement.innerHTML = ''
       break
     case 'value':
-      setValue(DOMElement, null)
+      DOMElement.value = ''
       break
     default:
       DOMElement.removeAttribute(name)
