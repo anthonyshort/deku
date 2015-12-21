@@ -1,5 +1,5 @@
 import {setAttribute} from './setAttribute'
-import {isText} from './utils'
+import {isText, isThunk} from './utils'
 import svg from './svg'
 const cache = {}
 
@@ -12,6 +12,14 @@ const cache = {}
 export default function createElement (vnode) {
   if (isText(vnode)) {
     return document.createTextNode(vnode.nodeValue || '')
+  }
+
+  if (isThunk(vnode)) {
+    let { props, data } = vnode
+    let { render } = data
+    let output = render({ props })
+    vnode.data.vnode = output
+    return createElement(output)
   }
 
   let cached = cache[vnode.type]

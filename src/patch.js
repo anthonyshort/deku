@@ -1,7 +1,7 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {insertAtIndex, removeAtIndex} from './utils'
 import createElement from './createElement'
-import {Actions} from './diff'
+import {Actions, diffNode} from './diff'
 
 /**
  * Modify a DOM element given an array of actions. A context can be set
@@ -36,6 +36,14 @@ export default function patch (DOMElement, action) {
           }
         }, change)
       })
+    },
+    updateThunk: (prev, next) => {
+      let { render } = next.data
+      let prevNode = prev.data.vnode
+      let nextNode = render({ props: next.props })
+      let changes = diffNode(prevNode, nextNode)
+      DOMElement = changes.reduce(patch, DOMElement)
+      next.data.vnode = nextNode
     },
     replaceNode: (prev, next) => {
       let newEl = createElement(next)

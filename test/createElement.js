@@ -45,3 +45,13 @@ test('create element with event handlers', t => {
   document.body.removeChild(DOMElement)
   t.end()
 })
+
+test('create element with thunk', t => {
+  let Component = {
+    render: () => <div />
+  }
+  let DOMElement = createElement(<Component />)
+  t.assert(isDOM(DOMElement), 'is DOM element')
+  t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
+  t.end()
+})

@@ -85,3 +85,29 @@ test('diffing two nodes should diff attributes then children', t => {
   )
   t.end()
 })
+
+test('diffing thunks', t => {
+  let {updateThunk, replaceNode} = Actions
+  let renderDiv = () => <div />
+  let renderSpan = () => <span />
+  let One = { render: renderDiv }
+  let Two = { render: renderDiv }
+  let Three = { render: renderSpan }
+  let one = <One />
+  let two = <Two />
+  let three = <Three />
+
+  t.deepEqual(
+    diffNode(one, two),
+    [updateThunk(one, two)],
+    'update thunks of the same type'
+  )
+
+  t.deepEqual(
+    diffNode(one, three),
+    [replaceNode(one, three)],
+    'replace thunks of the different types'
+  )
+
+  t.end()
+})

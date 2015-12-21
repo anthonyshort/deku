@@ -1,4 +1,4 @@
-import {isText, groupByKey} from './utils'
+import {isText, groupByKey, isThunk, isSameThunk} from './utils'
 import dift, * as diffActions from 'dift'
 import Type from 'union-type'
 let Any = () => true
@@ -18,7 +18,8 @@ export let Actions = Type({
   insertBefore: [Number],
   replaceNode: [Any, Any],
   removeNode: [Any],
-  sameNode: []
+  sameNode: [],
+  updateThunk: [Any, Any]
 })
 
 /**
@@ -99,7 +100,7 @@ export function diffChildren (previous, next) {
 
 export function diffNode (prev, next) {
   let changes = []
-  let {replaceNode, setAttribute, sameNode, removeNode} = Actions
+  let {replaceNode, setAttribute, sameNode, removeNode, updateThunk} = Actions
 
   // No left node to compare it to
   // TODO: This should just return a createNode action
@@ -129,6 +130,16 @@ export function diffNode (prev, next) {
   if (isText(next)) {
     if (prev.nodeValue !== next.nodeValue) {
       changes.push(setAttribute('nodeValue', next.nodeValue, prev.nodeValue))
+    }
+    return changes
+  }
+
+  // Thunk
+  if (isThunk(next)) {
+    if (isSameThunk(prev, next)) {
+      changes.push(updateThunk(prev, next))
+    } else {
+      changes.push(replaceNode(prev, next))
     }
     return changes
   }

@@ -1,3 +1,77 @@
+/** @jsx h */
+import {createDOMRenderer} from '../src/createDOMRenderer'
+import createElement from '../src/createElement'
+import h from '../src/element'
+import isDOM from 'is-dom'
+import test from 'tape'
+
+test('rendering and updating thunks', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let Component = {
+    render: ({ props }) => (
+      <div name={props.name} />
+    )
+  }
+
+  render(<Component name="Tom" />)
+  render(<Component name="Bob" />)
+  t.equal(el.innerHTML, `<div name="Bob"></div>`, 'thunk updated')
+
+  t.end()
+})
+
+test('swapping a thunks root element', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let Component = {
+    render: ({ props }) => (
+      props.swap
+        ? <a />
+        : <b />
+    )
+  }
+
+  render(<Component />)
+  render(<Component swap />)
+  t.equal(el.innerHTML, `<a></a>`, 'thunk root element swapped')
+
+  t.end()
+})
+
+test('render and update nested thunk', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let Component = {
+    render: ({ props }) => <button>{props.text}</button>
+  }
+
+  render(<div><Component text='Reset' /></div>)
+  t.equal(el.innerHTML, '<div><button>Reset</button></div>', 'thunk rendered')
+
+  render(<div><Component text='Submit' /></div>)
+  t.equal(el.innerHTML, '<div><button>Submit</button></div>', 'thunk updated')
+
+  t.end()
+})
+
+// test('calling thunks onCreate hook', t => {
+//   let el = document.createElement('div')
+//   let render = createDOMRenderer(el)
+//
+//   let Component = {
+//     onCreate: () => t.pass(),
+//     render: m => <div />
+//   }
+//
+//   t.plan(1)
+//   render(<Component text='Reset' />)
+//   t.end()
+// })
+
 // test.skip('create element from thunk and call onCreate', t => {
 //   t.plan(7)
 //   let context = {}
@@ -23,16 +97,6 @@
 //   t.end()
 // })
 //
-//
-// test('render (thunks)', t => {
-//   let MyButton = m => <button>{m.attributes.text}</button>
-//   let el = document.createElement('div')
-//   let render = createDOMRenderer(el)
-//   render(<div><MyButton text='Reset' key='foo' /></div>)
-//   render(<div><MyButton text='Submit' key='foo' /></div>)
-//   t.equal(el.innerHTML, '<div><button>Submit</button></div>', 'element update')
-//   t.end()
-// })
 //
 // test('render (thunk lifecycle hooks)', t => {
 //   let el = document.createElement('div')
@@ -70,34 +134,5 @@
 //     t.assert(el, 'element exists')
 //   }
 //   render(<Container />)
-//   t.end()
-// })
-//
-// test('memoizing the render function', t => {
-//   let el = document.createElement('div')
-//   let render = createDOMRenderer(el)
-//   var i = 0
-//   var vnode = <div onUpdate={el => i++} />
-//   var Component = model => vnode
-//   render(<Component />)
-//   render(<Component />)
-//   t.equal(i, 1, 'component not updated')
-//   t.end()
-// })
-
-// test('diffNode (update thunk)', t => {
-//   let {updateThunk} = actions
-//   let MyButton = m => <button>{m.children}</button>
-//
-//   let actual = diffNode(
-//     <MyButton color='red' key='foo' />,
-//     <MyButton color='blue' key='foo' />
-//   )
-//
-//   let expected = [
-//     updateThunk(<MyButton color='blue' key='foo' />, <MyButton color='red' key='foo' />, '0', 0)
-//   ]
-//
-//   t.deepEqual(actual, expected, 'update thunk')
 //   t.end()
 // })
