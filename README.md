@@ -20,10 +20,9 @@ npm install --save virtual-element
 
 ### Features
 
-* State-less custom elements
-* Lifecycle hooks (Similar to React's Components)
+* State-less components with lifecycle hooks
 * Render to a string instead of the DOM for server-side rendering
-* Abstracts away browser quirks, like text selection
+* Fixes cross-browser quirks
 * SVG support
 
 ### Usage
