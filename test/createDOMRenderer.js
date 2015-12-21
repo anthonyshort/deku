@@ -21,3 +21,31 @@ test('rendering elements', t => {
 
   t.end()
 })
+
+test('moving elements using keys', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  render(
+    <div>
+      <span id='1' />
+      <span id='2' key='foo' />
+      <span id='3' />
+    </div>
+  )
+
+  render(
+    <div>
+      <span id='2' key='foo' />
+      <span id='1' />
+      <span id='3' />
+    </div>
+  )
+
+  t.equal(
+    el.innerHTML,
+    `<div><span id="2" key="foo"></span><span id="1"></span><span id="3"></span></div>`
+  )
+
+  t.end()
+})

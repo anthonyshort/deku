@@ -26,35 +26,9 @@ test('diffChildren', t => {
 
   t.deepEqual(
     diffChildren(<div><span /></div>, <div/>),
-    [removeChild(<span />, 0)],
+    [removeChild(0)],
     'remove element'
   )
 
-  t.end()
-})
-
-test('diffChildren (move)', t => {
-  let {removeChild, insertBefore, insertChild} = Actions
-
-  let actual = diffChildren(
-    <div>
-      <span />
-      <span key='foo' />
-      <span />
-    </div>,
-    <div>
-      <span key='foo' />
-      <span />
-      <span />
-    </div>
-  )
-
-  let expected = [
-    insertBefore(0),
-    insertChild(<span />, 1),
-    removeChild(<span />, 0)
-  ]
-
-  t.deepEqual(actual, expected, 'move children')
   t.end()
 })

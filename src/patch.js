@@ -9,6 +9,10 @@ import {Actions} from './diff'
  */
 
 export default function patch (DOMElement, action) {
+  // Create a clone of the children so we can reference them later
+  // using their original position even if they move around
+  let childNodes = Array.prototype.slice.apply(DOMElement.childNodes)
+
   Actions.case({
     setAttribute: (name, value, previousValue) => {
       setAttribute(DOMElement, name, value, previousValue)
@@ -19,16 +23,14 @@ export default function patch (DOMElement, action) {
     insertChild: (vnode, index) => {
       insertAtIndex(DOMElement, index, createElement(vnode))
     },
-    removeChild: (vnode, index) => {
-      removeAtIndex(DOMElement, index)
+    removeChild: (index) => {
+      DOMElement.removeChild(childNodes[index])
     },
     insertBefore: (index) => {
       insertAtIndex(DOMElement.parentNode, index, DOMElement)
     },
     updateChild: (index, actions) => {
-      let child = DOMElement.childNodes[index]
-      actions.forEach(action => patch(child, action))
-      return DOMElement
+      actions.forEach(action => patch(childNodes[index], action))
     },
     replaceNode: (prev, next) => {
       let newEl = createElement(next)

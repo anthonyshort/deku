@@ -12,7 +12,7 @@ export let Actions = Type({
   removeAttribute: [String, Any],
   insertChild: [Any, Number],
   replaceChild: [Any, Any, Number],
-  removeChild: [Any, Number],
+  removeChild: [Number],
   updateChild: [Number, Array],
   insertBefore: [Number],
   replaceNode: [Any, Any],
@@ -60,35 +60,27 @@ export function diffChildren (previous, next) {
   let key = a => a.key
   let changes = []
 
-  function effect (type, prev, next, idx) {
+  function effect (type, prev, next, pos) {
     switch (type) {
       case CREATE: {
-        changes.push(
-          insertChild(next.item, next.index)
-        )
+        changes.push(insertChild(next.item, pos))
         break
       }
       case UPDATE: {
         let actions = diffNode(prev.item, next.item)
         if (actions.length > 0) {
-          changes.push(
-            updateChild(idx, actions)
-          )
+          changes.push(updateChild(prev.index, actions))
         }
         break
       }
       case MOVE: {
         let actions = diffNode(prev.item, next.item)
-        changes.push(insertBefore(next.index))
-        if (actions.length > 0) {
-          changes.push(updateChild(next.index, actions))
-        }
+        actions.unshift(insertBefore(pos))
+        changes.push(updateChild(prev.index, actions))
         break
       }
       case REMOVE: {
-        changes.push(
-          removeChild(prev.item, prev.index)
-        )
+        changes.push(removeChild(prev.index))
         break
       }
     }

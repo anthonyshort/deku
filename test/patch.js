@@ -42,7 +42,7 @@ test('patching children', t => {
   patch(DOMElement, updateChild(0, [setAttribute('nodeValue', 'Goodbye', undefined)]))
   t.equal(DOMElement.innerHTML, 'Goodbye', 'text child updated')
 
-  patch(DOMElement, removeChild(createTextElement('Goodbye'), 0))
+  patch(DOMElement, removeChild(0))
   t.equal(DOMElement.innerHTML, '', 'text child removed')
 
   patch(DOMElement, insertChild(<span>Hello</span>, 0))
@@ -51,7 +51,7 @@ test('patching children', t => {
   patch(DOMElement, updateChild(0, [setAttribute('color', 'blue', undefined)]))
   t.equal(DOMElement.innerHTML, '<span color="blue">Hello</span>', 'element child updated')
 
-  patch(DOMElement, removeChild(<span>Hello</span>, 0))
+  patch(DOMElement, removeChild(0))
   t.equal(DOMElement.innerHTML, '', 'element child removed')
 
   patch(DOMElement, insertChild(<span>0</span>, 0))
@@ -59,7 +59,7 @@ test('patching children', t => {
   patch(DOMElement, insertChild(<span>2</span>, 2))
   t.equal(DOMElement.childNodes.length, 3, 'multiple children added')
 
-  patch(DOMElement, removeChild(<span>0</span>, 0))
+  patch(DOMElement, removeChild(0))
   patch(DOMElement.children[0], insertBefore(2))
   t.equal(DOMElement.innerHTML, '<span>2</span><span>1</span>', 'element moved')
 
