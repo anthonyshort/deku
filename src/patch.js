@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex, removeAtIndex} from './utils'
+import {insertAtIndex} from './utils'
 import createElement from './createElement'
 import {Actions, diffNode} from './diff'
 
@@ -23,10 +23,15 @@ export default function patch (DOMElement, action) {
       // Create a clone of the children so we can reference them later
       // using their original position even if they move around
       let childNodes = Array.prototype.slice.apply(DOMElement.childNodes)
+
       changes.forEach(change => {
         Actions.case({
-          insertChild: (vnode, index) => {
-            insertAtIndex(DOMElement, index, createElement(vnode))
+          insertChild: (vnode, index, path) => {
+            insertAtIndex(
+              DOMElement,
+              index,
+              createElement(vnode, path)
+            )
           },
           removeChild: (index) => {
             DOMElement.removeChild(childNodes[index])
@@ -37,16 +42,21 @@ export default function patch (DOMElement, action) {
         }, change)
       })
     },
-    updateThunk: (prev, next) => {
+    updateThunk: (prev, next, path) => {
+      let { props, children } = next
       let { render } = next.data
       let prevNode = prev.data.vnode
-      let nextNode = render({ props: next.props })
-      let changes = diffNode(prevNode, nextNode)
+      let nextNode = render({
+        children,
+        props,
+        path
+      })
+      let changes = diffNode(prevNode, nextNode, path)
       DOMElement = changes.reduce(patch, DOMElement)
       next.data.vnode = nextNode
     },
-    replaceNode: (prev, next) => {
-      let newEl = createElement(next)
+    replaceNode: (prev, next, path) => {
+      let newEl = createElement(next, path)
       DOMElement.parentNode.replaceChild(newEl, DOMElement)
       DOMElement = newEl
     },

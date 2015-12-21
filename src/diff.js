@@ -1,7 +1,8 @@
-import {isText, groupByKey, isThunk, isSameThunk} from './utils'
+import {isText, groupByKey, isThunk, isSameThunk, createPath} from './utils'
 import dift, * as diffActions from 'dift'
 import Type from 'union-type'
 let Any = () => true
+let Path = () => String
 
 /**
  * Patch actions
@@ -10,16 +11,15 @@ let Any = () => true
 export let Actions = Type({
   setAttribute: [String, Any, Any],
   removeAttribute: [String, Any],
-  insertChild: [Any, Number],
-  replaceChild: [Any, Any, Number],
+  insertChild: [Any, Number, Path],
   removeChild: [Number],
   updateChild: [Number, Array],
   updateChildren: [Array],
   insertBefore: [Number],
-  replaceNode: [Any, Any],
+  replaceNode: [Any, Any, Path],
   removeNode: [Any],
   sameNode: [],
-  updateThunk: [Any, Any]
+  updateThunk: [Any, Any, Path]
 })
 
 /**
@@ -54,7 +54,7 @@ export function diffAttributes (previous, next) {
  * recursively to build up unique paths for each node.
  */
 
-export function diffChildren (previous, next) {
+export function diffChildren (previous, next, path) {
   let { insertChild, updateChild, removeChild, insertBefore, updateChildren } = Actions
   let { CREATE, UPDATE, MOVE, REMOVE } = diffActions
   let previousChildren = groupByKey(previous.children)
@@ -65,18 +65,30 @@ export function diffChildren (previous, next) {
   function effect (type, prev, next, pos) {
     switch (type) {
       case CREATE: {
-        changes.push(insertChild(next.item, pos))
+        changes.push(insertChild(
+          next.item,
+          pos,
+          createPath(path, next.key || next.index)
+        ))
         break
       }
       case UPDATE: {
-        let actions = diffNode(prev.item, next.item)
+        let actions = diffNode(
+          prev.item,
+          next.item,
+          createPath(path, next.key || next.index)
+        )
         if (actions.length > 0) {
           changes.push(updateChild(prev.index, actions))
         }
         break
       }
       case MOVE: {
-        let actions = diffNode(prev.item, next.item)
+        let actions = diffNode(
+          prev.item,
+          next.item,
+          createPath(path, next.key || next.index)
+        )
         actions.push(insertBefore(pos))
         changes.push(updateChild(prev.index, actions))
         break
@@ -98,7 +110,7 @@ export function diffChildren (previous, next) {
  * into the right.
  */
 
-export function diffNode (prev, next) {
+export function diffNode (prev, next, path) {
   let changes = []
   let {replaceNode, setAttribute, sameNode, removeNode, updateThunk} = Actions
 
@@ -122,7 +134,7 @@ export function diffNode (prev, next) {
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceNode(prev, next))
+    changes.push(replaceNode(prev, next, path))
     return changes
   }
 
@@ -137,15 +149,15 @@ export function diffNode (prev, next) {
   // Thunk
   if (isThunk(next)) {
     if (isSameThunk(prev, next)) {
-      changes.push(updateThunk(prev, next))
+      changes.push(updateThunk(prev, next, path))
     } else {
-      changes.push(replaceNode(prev, next))
+      changes.push(replaceNode(prev, next, path))
     }
     return changes
   }
 
   changes = diffAttributes(prev, next)
-  changes.push(diffChildren(prev, next))
+  changes.push(diffChildren(prev, next, path))
 
   return changes
 }

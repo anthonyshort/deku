@@ -39,7 +39,7 @@ test('patching children', t => {
   patch(
     DOMElement,
     updateChildren([
-      insertChild(createTextElement('Hello'), 0)
+      insertChild(createTextElement('Hello'), 0, '0')
     ])
   )
   t.equal(DOMElement.innerHTML, 'Hello', 'text child inserted')
@@ -65,7 +65,7 @@ test('patching children', t => {
   patch(
     DOMElement,
     updateChildren([
-      insertChild(<span>Hello</span>, 0)
+      insertChild(<span>Hello</span>, 0, '0')
     ])
   )
   t.equal(DOMElement.innerHTML, '<span>Hello</span>', 'element child inserted')
@@ -91,9 +91,9 @@ test('patching children', t => {
   patch(
     DOMElement,
     updateChildren([
-      insertChild(<span>0</span>, 0),
-      insertChild(<span>1</span>, 1),
-      insertChild(<span>2</span>, 2)
+      insertChild(<span>0</span>, 0, '0'),
+      insertChild(<span>1</span>, 1, '1'),
+      insertChild(<span>2</span>, 2, '2')
     ])
   )
   t.equal(DOMElement.childNodes.length, 3, 'multiple children added')

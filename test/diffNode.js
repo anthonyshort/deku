@@ -16,7 +16,9 @@ test('diffing nodes with different types', t => {
   let right = <span />
   t.deepEqual(
     diffNode(left, right),
-    [replaceNode(left, right)],
+    [
+      replaceNode(left, right, undefined)
+    ],
     'replaced node'
   )
   t.end()
@@ -27,7 +29,7 @@ test('diffing node with null', t => {
   let left = <div />
   let right = null
   t.deepEqual(
-    diffNode(left, right),
+    diffNode(left, right, '0'),
     [removeNode(left)],
     'removed node'
   )
@@ -39,7 +41,7 @@ test('diffing node with undefined', t => {
   let left = <div />
   let right
   t.deepEqual(
-    diffNode(left, right),
+    diffNode(left, right, '0'),
     [removeNode(left)],
     'removed node'
   )
@@ -51,7 +53,7 @@ test('diffing text nodes', t => {
   let left = createTextElement('Hello')
   let right = createTextElement('Goodbye')
   t.deepEqual(
-    diffNode(left, right),
+    diffNode(left, right, '0'),
     [setAttribute('nodeValue', 'Goodbye', 'Hello')],
     'updated text'
   )
@@ -62,7 +64,7 @@ test('diffing with a current node should throw an error', t => {
   let left = null
   let right = <div />
   try {
-    diffNode(left, right)
+    diffNode(left, right, '0')
     t.fail('error not thrown')
   } catch (e) {
     t.equal(e.message, 'Left node must not be null or undefined')
@@ -75,11 +77,11 @@ test('diffing two nodes should diff attributes then children', t => {
   let left = <div />
   let right = <div name='Tom'><span /></div>
   t.deepEqual(
-    diffNode(left, right),
+    diffNode(left, right, '0'),
     [
       setAttribute('name', 'Tom', undefined),
       updateChildren([
-        insertChild(<span />, 0)
+        insertChild(<span />, 0, '0.0')
       ])
     ]
   )
@@ -98,14 +100,18 @@ test('diffing thunks', t => {
   let three = <Three />
 
   t.deepEqual(
-    diffNode(one, two),
-    [updateThunk(one, two)],
+    diffNode(one, two, '0'),
+    [
+      updateThunk(one, two, '0')
+    ],
     'update thunks of the same type'
   )
 
   t.deepEqual(
-    diffNode(one, three),
-    [replaceNode(one, three)],
+    diffNode(one, three, '0'),
+    [
+      replaceNode(one, three, '0')
+    ],
     'replace thunks of the different types'
   )
 

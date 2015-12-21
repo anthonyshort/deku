@@ -1,5 +1,5 @@
 import {setAttribute} from './setAttribute'
-import {isText, isThunk} from './utils'
+import {isText, isThunk, createPath} from './utils'
 import svg from './svg'
 const cache = {}
 
@@ -9,17 +9,25 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode) {
+export default function createElement (vnode, path) {
   if (isText(vnode)) {
     return document.createTextNode(vnode.nodeValue || '')
   }
 
   if (isThunk(vnode)) {
-    let { props, data } = vnode
+    let { props, data, children } = vnode
     let { render } = data
-    let output = render({ props })
+    let output = render({
+      children,
+      props,
+      path
+    })
     vnode.data.vnode = output
-    return createElement(output)
+    let DOMElement = createElement(
+      output,
+      createPath(path, output.key || '0')
+    )
+    return DOMElement
   }
 
   let cached = cache[vnode.type]
@@ -37,7 +45,10 @@ export default function createElement (vnode) {
   }
 
   vnode.children.forEach((node, index) => {
-    let child = createElement(node)
+    let child = createElement(
+      node,
+      createPath(path, node.key || index)
+    )
     DOMElement.appendChild(child)
   })
 

@@ -26,6 +26,7 @@
     "is-svg-attribute": "^1.0.2",
     "is-svg-element": "^1.0.1",
     "setify": "^1.0.3",
+    "uid": "0.0.2",
     "union-type": "^0.1.6"
   }
 }
