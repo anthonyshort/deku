@@ -1,7 +1,7 @@
-import {isValidAttribute} from './utils'
+import {isValidAttribute} from '../shared/utils'
+import events from '../shared/events'
+import svg from '../shared/svg'
 import setValue from 'setify'
-import events from './events'
-import svg from './svg'
 
 export function removeAttribute (DOMElement, name, previousValue) {
   switch (name) {

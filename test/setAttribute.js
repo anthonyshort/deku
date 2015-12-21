@@ -1,5 +1,5 @@
 import test from 'tape'
-import {setAttribute} from '../src/setAttribute'
+import {setAttribute} from '../src/dom/setAttribute'
 
 test('setAttribute', t => {
   let DOMElement = document.createElement('input')

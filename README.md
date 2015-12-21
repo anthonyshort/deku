@@ -12,12 +12,6 @@ Deku is a library for rendering user interfaces in a pure, functional way. It's 
 npm install --save deku
 ```
 
-You'll probably also want to install a module for creating virtual elements:
-
-```
-npm install --save virtual-element
-```
-
 ### Features
 
 * State-less components with lifecycle hooks
@@ -27,15 +21,32 @@ npm install --save virtual-element
 
 ### Usage
 
-```js
-import h from 'virtual-element'
-import { createDOMRenderer } from 'deku'
+You create pure components by exporting modules:
 
-let MyButton = (model) => {
-  return h('button', { class: "my-button" }, [model.children])
+```js
+import { element as h } from 'deku'
+
+function render (model) {
+  return <button class="my-button">{model.children}</button>
 }
 
-let render = createDOMRenderer(document.body)
+function onCreate (model) {
+  console.log('Button created')
+}
+
+export default {
+  render,
+  onCreate
+}
+```
+
+Then create a DOM renderer using `dom` that allows you to render it within an element on the page:
+
+```js
+import { dom } from 'deku'
+import MyButton from './button'
+
+let render = dom(document.body)
 
 render(
   <div class="App">

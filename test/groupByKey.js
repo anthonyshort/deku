@@ -1,5 +1,5 @@
 /** @jsx h */
-import {groupByKey} from '../src/utils'
+import {groupByKey} from '../src/shared/utils'
 import h from '../src/element'
 import test from 'tape'
 

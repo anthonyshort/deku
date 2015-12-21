@@ -1,5 +1,5 @@
 /** @jsx h */
-import {createDOMRenderer} from '../src/createDOMRenderer'
+import createDOMRenderer from '../src/dom'
 import h from '../src/element'
 import test from 'tape'
 

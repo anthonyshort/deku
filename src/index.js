@@ -1,9 +1,9 @@
-import renderString from './renderString'
-import createDOMRenderer from './createDOMRenderer'
 import element from './element'
+import string from './string'
+import dom from './dom'
 
 export default {
-  createDOMRenderer,
-  renderString,
-  element
+  element,
+  string,
+  dom
 }

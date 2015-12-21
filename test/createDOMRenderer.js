@@ -1,6 +1,6 @@
 /** @jsx h */
 import test from 'tape'
-import {createDOMRenderer} from '../src/createDOMRenderer'
+import createDOMRenderer from '../src/dom'
 import h from '../src/element'
 
 test('rendering elements', t => {

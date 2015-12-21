@@ -1,4 +1,4 @@
-import {isText, groupByKey, isThunk, isSameThunk, createPath} from './utils'
+import {isText, groupByKey, isThunk, isSameThunk, createPath} from '../shared/utils'
 import dift, * as diffActions from 'dift'
 import Type from 'union-type'
 let Any = () => true

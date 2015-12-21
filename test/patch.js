@@ -1,6 +1,6 @@
 /** @jsx h */
 import test from 'tape'
-import patch from '../src/patch'
+import patch from '../src/dom/patch'
 import trigger from 'trigger-event'
 import {Actions} from '../src/diff'
 import h, {createTextElement} from '../src/element'
