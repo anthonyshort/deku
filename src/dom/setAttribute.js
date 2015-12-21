@@ -1,6 +1,7 @@
 import {isValidAttribute} from '../shared/utils'
 import events from '../shared/events'
 import svg from '../shared/svg'
+import indexOf from 'index-of'
 import setValue from 'setify'
 
 export function removeAttribute (DOMElement, name, previousValue) {
@@ -48,10 +49,17 @@ export function setAttribute (DOMElement, name, value, previousValue) {
       break
     case 'checked':
     case 'disabled':
-    case 'selected':
     case 'innerHTML':
     case 'nodeValue':
       DOMElement[name] = value
+      break
+    case 'selected':
+      DOMElement.selected = value
+      // Fix for IE/Safari where select is not correctly selected on change
+      if (DOMElement.tagName === 'OPTION') {
+        let select = DOMElement.parentNode
+        select.selectedIndex = indexOf(select.options, DOMElement)
+      }
       break
     case 'value':
       setValue(DOMElement, value)
