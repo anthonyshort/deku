@@ -1,4 +1,4 @@
-# Deku
+# Deku [![Circle CI](https://circleci.com/gh/dekujs/deku/tree/2.0.0.svg?style=svg)](https://circleci.com/gh/dekujs/deku/tree/2.0.0)
 
 Deku is a library for rendering user interfaces in a pure, functional way. It's tiny at around ~500LOC and doesn't support legacy browsers. It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.
 
