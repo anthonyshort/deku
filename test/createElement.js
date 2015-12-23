@@ -49,6 +49,7 @@ test('create element with event handlers', t => {
   document.body.appendChild(DOMElement)
   trigger(DOMElement, 'click')
   t.equal(count, 1, 'event added')
+  t.equal(DOMElement.outerHTML, '<span></span>')
   document.body.removeChild(DOMElement)
   t.end()
 })

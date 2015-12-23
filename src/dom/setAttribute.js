@@ -5,12 +5,14 @@ import indexOf from 'index-of'
 import setValue from 'setify'
 
 export function removeAttribute (DOMElement, name, previousValue) {
+  let eventType = events[name]
+  if (eventType) {
+    if (typeof previousValue === 'function') {
+      DOMElement.removeEventListener(eventType, previousValue)
+    }
+    return
+  }
   switch (name) {
-    case events[name]:
-      if (typeof previousValue === 'function') {
-        DOMElement.removeEventListener(events[name], previousValue)
-      }
-      break
     case 'checked':
     case 'disabled':
     case 'selected':
@@ -30,7 +32,15 @@ export function removeAttribute (DOMElement, name, previousValue) {
 }
 
 export function setAttribute (DOMElement, name, value, previousValue) {
+  let eventType = events[name]
   if (value === previousValue) {
+    return
+  }
+  if (eventType) {
+    if (typeof previousValue === 'function') {
+      DOMElement.removeEventListener(eventType, previousValue)
+    }
+    DOMElement.addEventListener(eventType, value)
     return
   }
   if (typeof value === 'function') {
@@ -41,12 +51,6 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     return
   }
   switch (name) {
-    case events[name]:
-      if (typeof previousValue === 'function') {
-        DOMElement.removeEventListener(events[name], previousValue)
-      }
-      DOMElement.addEventListener(events[name], value)
-      break
     case 'checked':
     case 'disabled':
     case 'innerHTML':

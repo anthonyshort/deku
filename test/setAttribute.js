@@ -57,6 +57,13 @@ test('setAttribute (function value)', t => {
   t.end()
 })
 
+test('setAttribute (event handler)', t => {
+  let DOMElement = document.createElement('div')
+  setAttribute(DOMElement, 'onClick', el => 'bar')
+  t.equal(DOMElement.outerHTML, '<div></div>', 'event handler')
+  t.end()
+})
+
 test('setting the same attribute value does not touch the DOM', t => {
   let el = document.createElement('div')
   setAttribute(el, 'name', 'Bob', null)
