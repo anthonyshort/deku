@@ -9,20 +9,20 @@ import uid from 'uid'
  * replace what is currently rendered.
  */
 
-export default function createDOMRenderer (container) {
+export default function createDOMRenderer (container, dispatch) {
   let oldVnode = null
   let node = null
   let path = uid()
 
   let update = (newVnode) => {
     let changes = diffNode(oldVnode, newVnode, path)
-    node = changes.reduce(patch, node)
+    node = changes.reduce(patch(dispatch), node)
     oldVnode = newVnode
     return node
   }
 
   let create = (vnode) => {
-    node = createElement(vnode, path)
+    node = createElement(vnode, path, dispatch)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node

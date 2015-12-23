@@ -2,6 +2,8 @@
 import createDOMRenderer from '../src/dom'
 import h from '../src/element'
 import test from 'tape'
+import trigger from 'trigger-event'
+import Type from 'union-type'
 
 test('rendering and updating thunks', t => {
   let el = document.createElement('div')
@@ -17,6 +19,51 @@ test('rendering and updating thunks', t => {
   render(<Component name='Bob' />)
   t.equal(el.innerHTML, `<div name="Bob"></div>`, 'thunk updated')
 
+  t.end()
+})
+
+test('calling dispatch', t => {
+  let Component = {
+    render: ({ dispatch }) => (
+      <button onClick={() => dispatch({ type: 'CLICK' })}>Click</button>
+    )
+  }
+
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+
+  let render = createDOMRenderer(el, action => {
+    t.equal(action.type, 'CLICK', 'Action received')
+  })
+
+  t.plan(1)
+  render(<Component />)
+  trigger(el.querySelector('button'), 'click')
+  document.body.removeChild(el)
+  t.end()
+})
+
+test.skip('calling actions', t => {
+  let Component = {
+    render: ({ actions }) => (
+      <button onClick={actions.click}>Click</button>
+    ),
+    actions: Type({
+      click: [Object]
+    })
+  }
+
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+
+  let render = createDOMRenderer(el, action => {
+    t.equal(action.name, 'click', 'Action received')
+  })
+
+  t.plan(2)
+  render(<Component />)
+  trigger(el.querySelector('button'), 'click')
+  document.body.removeChild(el)
   t.end()
 })
 

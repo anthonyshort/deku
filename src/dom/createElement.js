@@ -9,7 +9,7 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode, path) {
+export default function createElement (vnode, path, dispatch) {
   if (isText(vnode)) {
     return document.createTextNode(vnode.nodeValue || '')
   }
@@ -20,7 +20,8 @@ export default function createElement (vnode, path) {
     let output = render({
       children,
       props,
-      path
+      path,
+      dispatch
     })
     vnode.data.vnode = output
     let DOMElement = createElement(
