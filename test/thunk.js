@@ -3,7 +3,6 @@ import createDOMRenderer from '../src/dom'
 import h from '../src/element'
 import test from 'tape'
 import trigger from 'trigger-event'
-import Type from 'union-type'
 
 test('rendering and updating thunks', t => {
   let el = document.createElement('div')
