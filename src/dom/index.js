@@ -14,23 +14,23 @@ export default function createDOMRenderer (container, dispatch) {
   let node = null
   let path = uid()
 
-  let update = (newVnode) => {
+  let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, path)
-    node = changes.reduce(patch(dispatch), node)
+    node = changes.reduce(patch(dispatch, context), node)
     oldVnode = newVnode
     return node
   }
 
-  let create = (vnode) => {
-    node = createElement(vnode, path, dispatch)
+  let create = (vnode, context) => {
+    node = createElement(vnode, path, dispatch, context)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node
   }
 
-  return (vnode) => {
+  return (vnode, context = {}) => {
     return node !== null
-      ? update(vnode)
-      : create(vnode)
+      ? update(vnode, context)
+      : create(vnode, context)
   }
 }

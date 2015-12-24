@@ -8,7 +8,7 @@ import {Actions, diffNode} from '../diff'
  * that will be used to render any custom elements.
  */
 
-export default function patch (dispatch) {
+export default function patch (dispatch, context) {
   return (DOMElement, action) => {
     Actions.case({
       setAttribute: (name, value, previousValue) => {
@@ -52,14 +52,15 @@ export default function patch (dispatch) {
           children,
           props,
           path,
-          dispatch
+          dispatch,
+          context
         })
         let changes = diffNode(prevNode, nextNode, path)
-        DOMElement = changes.reduce(patch(dispatch), DOMElement)
+        DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
         next.data.vnode = nextNode
       },
       replaceNode: (prev, next, path) => {
-        let newEl = createElement(next, path, dispatch)
+        let newEl = createElement(next, path, dispatch, context)
         DOMElement.parentNode.replaceChild(newEl, DOMElement)
         DOMElement = newEl
       },

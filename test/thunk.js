@@ -43,27 +43,20 @@ test('calling dispatch', t => {
   t.end()
 })
 
-test.skip('calling actions', t => {
-  let Component = {
-    render: ({ actions }) => (
-      <button onClick={actions.click}>Click</button>
-    ),
-    actions: Type({
-      click: [Object]
-    })
+test('accessing context', t => {
+  let state = {
+    name: 'Tom'
   }
-
+  let Component = {
+    render: ({ context }) => {
+      t.equal(context, state, 'same object is used')
+      return <div>{context.name}</div>
+    }
+  }
   let el = document.createElement('div')
-  document.body.appendChild(el)
-
-  let render = createDOMRenderer(el, action => {
-    t.equal(action.name, 'click', 'Action received')
-  })
-
-  t.plan(2)
-  render(<Component />)
-  trigger(el.querySelector('button'), 'click')
-  document.body.removeChild(el)
+  let render = createDOMRenderer(el)
+  render(<Component />, state)
+  t.equal(el.innerHTML, '<div>Tom</div>')
   t.end()
 })
 
