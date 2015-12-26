@@ -76,3 +76,53 @@ test('render empty attributes to a string', t => {
 
   t.end()
 })
+
+test('render thunks to a string', t => {
+  let Component = {
+    render: (model) => (
+      <div>{model.props.name}</div>
+    )
+  }
+
+  t.equal(
+    render(<Component name='Tom' />),
+    '<div>Tom</div>',
+    'Root level component rendered'
+  )
+
+  t.end()
+})
+
+test('render thunks with children to a string', t => {
+  let Component = {
+    render: (model) => (
+      <div path={model.path}>{model.children}</div>
+    )
+  }
+
+  t.equal(
+    render(
+      <Component>
+        <div>Tom</div>
+      </Component>
+    ),
+    '<div path="0"><div>Tom</div></div>',
+    'rendered html'
+  )
+
+  t.equal(
+    render(
+      <Component>
+        <div>
+          <Component key='foo'>
+            <span>Tom</span>
+          </Component>
+        </div>
+      </Component>
+    ),
+    '<div path="0"><div><div path="0.0.foo"><span>Tom</span></div></div></div>',
+    'rendered html'
+  )
+
+  t.end()
+})

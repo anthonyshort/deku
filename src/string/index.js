@@ -1,4 +1,4 @@
-import {isText, isValidAttribute} from '../shared/utils'
+import {isText, isValidAttribute, isThunk} from '../shared/utils'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -26,6 +26,22 @@ export default function renderString (element, context, path = '0') {
     return element.nodeValue
   }
 
+  if (isThunk(element)) {
+    let { props, data, children } = element
+    let { render } = data
+    let output = render({
+      children,
+      props,
+      path,
+      context
+    })
+    return renderString(
+      output,
+      context,
+      path
+    )
+  }
+
   let {attributes, type, children} = element
   let innerHTML = attributes.innerHTML
   let str = '<' + type + attributesToString(attributes) + '>'
@@ -33,7 +49,7 @@ export default function renderString (element, context, path = '0') {
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => renderString(child, context, path + '.' + child.key || i)).join('')
+    str += children.map((child, i) => renderString(child, context, path + '.' + (child.key == null ? i : child.key))).join('')
   }
 
   str += '</' + type + '>'

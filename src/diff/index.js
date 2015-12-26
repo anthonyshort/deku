@@ -63,12 +63,15 @@ export function diffChildren (previous, next, path) {
   let changes = []
 
   function effect (type, prev, next, pos) {
+    let nextPath = next
+      ? createPath(path, next.key == null ? next.index : next.key)
+      : null
     switch (type) {
       case CREATE: {
         changes.push(insertChild(
           next.item,
           pos,
-          createPath(path, next.key || next.index)
+          nextPath
         ))
         break
       }
@@ -76,7 +79,7 @@ export function diffChildren (previous, next, path) {
         let actions = diffNode(
           prev.item,
           next.item,
-          createPath(path, next.key || next.index)
+          nextPath
         )
         if (actions.length > 0) {
           changes.push(updateChild(prev.index, actions))
@@ -87,7 +90,7 @@ export function diffChildren (previous, next, path) {
         let actions = diffNode(
           prev.item,
           next.item,
-          createPath(path, next.key || next.index)
+          nextPath
         )
         actions.push(insertBefore(pos))
         changes.push(updateChild(prev.index, actions))
