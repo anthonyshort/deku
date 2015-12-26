@@ -71,7 +71,7 @@ let List = {
 
     return (
       <div>
-        <ul className="listItems">
+        <ul class="listItems">
           { items }
         </ul>
         <input type="text"/>
