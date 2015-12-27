@@ -137,16 +137,50 @@ test('rendering a thunk with a path', t => {
   t.end()
 })
 
-test.skip('calling thunks onCreate hook', t => {
-  let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+test('calling onCreate hook correctly', t => {
+  let render = createDOMRenderer()
 
   let Component = {
-    onCreate: () => t.pass(),
+    onCreate: () => t.pass('onCreate called'),
     render: m => <div />
   }
 
   t.plan(1)
-  render(<Component text='Reset' />)
+  render(<Component />)
+  render(<Component />)
+  t.end()
+})
+
+test('calling onUpdate hook correctly', t => {
+  let render = createDOMRenderer()
+
+  let Component = {
+    onUpdate: ({ path, props, children }) => {
+      t.assert(path, 'path available')
+      t.equal(props.name, 'Tom', 'props available')
+    },
+    render: m => <div />
+  }
+
+  t.plan(2)
+  render(<Component name='Bob' />)
+  render(<Component name='Tom' />)
+  t.end()
+})
+
+test('calling onRemove hook correctly', t => {
+  let render = createDOMRenderer()
+
+  let Component = {
+    onRemove: ({ path, props, children }) => {
+      t.assert(path, 'path available')
+      t.equal(props.name, 'Tom', 'props available')
+    },
+    render: m => <div />
+  }
+
+  t.plan(2)
+  render(<Component name='Tom' />)
+  render(<div />)
   t.end()
 })

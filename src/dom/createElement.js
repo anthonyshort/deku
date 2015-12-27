@@ -16,19 +16,22 @@ export default function createElement (vnode, path, dispatch, context) {
 
   if (isThunk(vnode)) {
     let { props, data, children } = vnode
-    let { render } = data
-    let output = render({
+    let { render, onCreate } = data
+    let model = {
       children,
       props,
       path,
       dispatch,
       context
-    })
-    vnode.data.vnode = output
+    }
+    let output = render(model)
     let DOMElement = createElement(
       output,
       createPath(path, output.key || '0')
     )
+    if (onCreate) onCreate(model)
+    vnode.data.vnode = output
+    vnode.data.model = model
     return DOMElement
   }
 

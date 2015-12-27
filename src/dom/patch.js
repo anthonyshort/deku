@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex} from '../shared/utils'
+import {insertAtIndex, isThunk} from '../shared/utils'
 import createElement from './createElement'
 import {Actions, diffNode} from '../diff'
 
@@ -46,30 +46,52 @@ export default function patch (dispatch, context) {
       },
       updateThunk: (prev, next, path) => {
         let { props, children } = next
-        let { render } = next.data
+        let { render, onUpdate } = next.data
         let prevNode = prev.data.vnode
-        let nextNode = render({
+        let model = {
           children,
           props,
           path,
           dispatch,
           context
-        })
+        }
+        let nextNode = render(model)
         let changes = diffNode(prevNode, nextNode, path)
         DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
+        if (onUpdate) onUpdate(model)
         next.data.vnode = nextNode
+        next.data.model = model
       },
       replaceNode: (prev, next, path) => {
         let newEl = createElement(next, path, dispatch, context)
-        DOMElement.parentNode.replaceChild(newEl, DOMElement)
+        let parentEl = DOMElement.parentNode
+        if (parentEl) parentEl.replaceChild(newEl, DOMElement)
         DOMElement = newEl
+        removeThunks(prev)
       },
       removeNode: (prev) => {
+        removeThunks(prev)
         DOMElement.parentNode.removeChild(DOMElement)
         DOMElement = null
       }
     }, action)
 
     return DOMElement
+  }
+}
+
+/**
+ * Recursively remove all thunks
+ */
+
+function removeThunks (vnode) {
+  while (isThunk(vnode)) {
+    let { onRemove, model } = vnode.data
+    if (onRemove) onRemove(model)
+    vnode = vnode.data.vnode
+  }
+
+  for (var i = 0; i < vnode.children.length; i++) {
+    removeThunks(vnode.children[i])
   }
 }
