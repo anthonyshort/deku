@@ -1,16 +1,21 @@
 # Deku [![Circle CI](https://circleci.com/gh/dekujs/deku/tree/2.0.0.svg?style=svg)](https://circleci.com/gh/dekujs/deku/tree/2.0.0)
 
-Deku is a library for rendering interfaces using pure functions.
-
-Instead of using classes and local state, Deku just uses functions and pushes the responsibility of all state management and side-effects onto tools like [Redux](http://redux.js.org/).
-
-* There's no local state or access to the DOM within components. All side-effects and state manipulation are expected to be handled by a state container like [Redux](https://github.com/rackt/redux).
-* By not supporting legacy browsers the code can be smaller and faster.
-* It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.
-
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
+
+Deku is a library for rendering interfaces using pure functions.
+
+Instead of using classes and local state, Deku just uses functions and pushes the responsibility of all state management and side-effects onto tools like [Redux](http://redux.js.org/). It also aims to support only modern browsers to keep things simple.
+
+It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.
+
+Deku consists of 4 modules packaged together for convenience:
+
+* `element`: Creating virtual elements
+* `diff`: Computing the difference between two virtual elements
+* `dom`: DOM renderer
+* `string`: HTML string renderer
 
 ### Installation
 
@@ -26,18 +31,26 @@ We support the latest two versions of each browser. This means we only support I
 
 ```js
 import {dom, element} from 'deku'
-let render = dom.createRenderer(document.body)
+import {createStore} from 'redux'
+import reducer from './reducer'
 
+// Create a Redux store to handle actions and side-effects
+let store = createStore(reducer)
+
+// Create a renderer that can turn vnodes into real DOM elements
+let render = dom.createRenderer(document.body, store.dispatch)
+
+// Define a state-less component
 let MyButton = {
-  render: ({ children }) {
+  render: ({ props, children }) {
     return <button class="my-button">{children}</button>
   }
 }
 
+// Update the page and add redux state to the context
 render(
-  <div class="App">
-    <MyButton>Hello World!</MyButton>
-  </div>
+  <MyButton>Hello World!</MyButton>,
+  store.getState()
 )
 ```
 
