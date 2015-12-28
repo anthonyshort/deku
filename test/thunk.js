@@ -1,5 +1,5 @@
 /** @jsx h */
-import createDOMRenderer from '../src/dom'
+import createDOMRenderer from '../src/dom/createRenderer'
 import h from '../src/element'
 import test from 'tape'
 import trigger from 'trigger-event'
