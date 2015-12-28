@@ -2,7 +2,7 @@
  * Special attributes that map to DOM events.
  */
 
-export default {
+export let events = {
   onAbort: 'abort',
   onAnimationStart: 'animationstart',
   onAnimationIteration: 'animationiteration',

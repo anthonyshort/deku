@@ -8,7 +8,7 @@ import {Actions, diffNode} from '../diff'
  * that will be used to render any custom elements.
  */
 
-export default function patch (dispatch, context) {
+export function patch (dispatch, context) {
   return (DOMElement, action) => {
     Actions.case({
       setAttribute: (name, value, previousValue) => {

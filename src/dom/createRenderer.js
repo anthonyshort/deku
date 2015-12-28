@@ -1,6 +1,6 @@
-import createElement from './createElement'
+import {createElement} from './createElement'
 import {diffNode} from '../diff'
-import patch from './patch'
+import {patch} from './patch'
 import uid from 'uid'
 
 /**
@@ -9,7 +9,7 @@ import uid from 'uid'
  * replace what is currently rendered.
  */
 
-export default function createDOMRenderer (container, dispatch) {
+export function createDOMRenderer (container, dispatch) {
   let oldVnode = null
   let node = null
   let path = uid()

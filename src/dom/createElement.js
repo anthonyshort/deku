@@ -1,6 +1,6 @@
 import {setAttribute} from './setAttribute'
 import {isText, isThunk, createPath} from '../shared/utils'
-import svg from '../shared/svg'
+import * as svg from '../shared/svg'
 const cache = {}
 
 /**
@@ -9,7 +9,7 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode, path, dispatch, context) {
+export function createElement (vnode, path, dispatch, context) {
   if (isText(vnode)) {
     return document.createTextNode(vnode.nodeValue || '')
   }

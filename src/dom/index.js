@@ -1,8 +1,8 @@
-import createRenderer from './createRenderer'
-import createElement from './createElement'
-import patch from './patch'
+import {createRenderer} from './createRenderer'
+import {createElement} from './createElement'
+import {patch} from './patch'
 
-export default {
+export {
   createRenderer,
   createElement,
   patch
