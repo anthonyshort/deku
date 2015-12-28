@@ -1,7 +1,5 @@
 {
-  "gitbook": "2.x.x",
-  "title": "Deku",
-  "description": "Learn how to use Deku",
+  "gitbook": "2.4.3",
   "structure": {
     "summary": "docs/README.md"
   },
