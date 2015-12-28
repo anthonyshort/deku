@@ -1,10 +1,11 @@
-# Deku [![Circle CI](https://circleci.com/gh/dekujs/deku/tree/2.0.0.svg?style=svg)](https://circleci.com/gh/dekujs/deku/tree/2.0.0)
+# Deku
 
+[![version](https://img.shields.io/travis/dekujs/deku.svg?style=flat-square)](https://travis-ci.org/dekujs/deku)
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 
-Deku is a library for rendering interfaces using pure functions.
+Deku is a library for rendering interfaces using pure functions and virtual DOM.
 
 Instead of using classes and local state, Deku just uses functions and pushes the responsibility of all state management and side-effects onto tools like [Redux](http://redux.js.org/). It also aims to support only modern browsers to keep things simple.
 
