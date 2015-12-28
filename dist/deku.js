@@ -1,4 +1,56 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.deku = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/**
+ * Use typed arrays if we can
+ */
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+var FastArray = typeof Uint32Array === 'undefined' ? Array : Uint32Array;
+
+/**
+ * Bit vector
+ */
+
+function createBv(sizeInBits) {
+  return new FastArray(Math.ceil(sizeInBits / 32));
+}
+
+function setBit(v, idx) {
+  var r = idx % 32;
+  var pos = (idx - r) / 32;
+
+  v[pos] |= 1 << r;
+}
+
+function clearBit(v, idx) {
+  var r = idx % 32;
+  var pos = (idx - r) / 32;
+
+  v[pos] &= ~(1 << r);
+}
+
+function getBit(v, idx) {
+  var r = idx % 32;
+  var pos = (idx - r) / 32;
+
+  return !!(v[pos] & 1 << r);
+}
+
+/**
+ * Exports
+ */
+
+exports['default'] = {
+  createBv: createBv,
+  setBit: setBit,
+  clearBit: clearBit,
+  getBit: getBit
+};
+module.exports = exports['default'];
+},{}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -157,59 +209,7 @@ exports.CREATE = CREATE;
 exports.UPDATE = UPDATE;
 exports.MOVE = MOVE;
 exports.REMOVE = REMOVE;
-},{"bit-vector":2}],2:[function(require,module,exports){
-/**
- * Use typed arrays if we can
- */
-
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-var FastArray = typeof Uint32Array === 'undefined' ? Array : Uint32Array;
-
-/**
- * Bit vector
- */
-
-function createBv(sizeInBits) {
-  return new FastArray(Math.ceil(sizeInBits / 32));
-}
-
-function setBit(v, idx) {
-  var r = idx % 32;
-  var pos = (idx - r) / 32;
-
-  v[pos] |= 1 << r;
-}
-
-function clearBit(v, idx) {
-  var r = idx % 32;
-  var pos = (idx - r) / 32;
-
-  v[pos] &= ~(1 << r);
-}
-
-function getBit(v, idx) {
-  var r = idx % 32;
-  var pos = (idx - r) / 32;
-
-  return !!(v[pos] & 1 << r);
-}
-
-/**
- * Exports
- */
-
-exports['default'] = {
-  createBv: createBv,
-  setBit: setBit,
-  clearBit: clearBit,
-  getBit: getBit
-};
-module.exports = exports['default'];
-},{}],3:[function(require,module,exports){
+},{"bit-vector":1}],3:[function(require,module,exports){
 /*!
  * index-of <https://github.com/jonschlinkert/index-of>
  *
@@ -343,49 +343,13 @@ exports.isElement = function (name) {
 }
 
 },{}],6:[function(require,module,exports){
-var naturalSelection = require('natural-selection');
-
-module.exports = function(element, value){
-    var canSet = naturalSelection(element) && element === document.activeElement;
-
-    if (canSet) {
-        var start = element.selectionStart,
-            end = element.selectionEnd;
-
-        element.value = value;
-        element.setSelectionRange(start, end);
-    } else {
-        element.value = value;
-    }
-};
-
-},{"natural-selection":7}],7:[function(require,module,exports){
 var supportedTypes = ['text', 'search', 'tel', 'url', 'password'];
 
 module.exports = function(element){
     return !!(element.setSelectionRange && ~supportedTypes.indexOf(element.type));
 };
 
-},{}],8:[function(require,module,exports){
-/**
- * Export `uid`
- */
-
-module.exports = uid;
-
-/**
- * Create a `uid`
- *
- * @param {String} len
- * @return {String} uid
- */
-
-function uid(len) {
-  len = len || 7;
-  return Math.random().toString(35).substr(2, len);
-}
-
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -434,7 +398,7 @@ module.exports = _curry2(function(n, fn) {
   }
 });
 
-},{"./internal/_curry2":12}],10:[function(require,module,exports){
+},{"./internal/_curry2":10}],8:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _curryN = require('./internal/_curryN');
 var arity = require('./arity');
@@ -487,7 +451,7 @@ module.exports = _curry2(function curryN(length, fn) {
   return arity(length, _curryN(length, [], fn));
 });
 
-},{"./arity":9,"./internal/_curry2":12,"./internal/_curryN":13}],11:[function(require,module,exports){
+},{"./arity":7,"./internal/_curry2":10,"./internal/_curryN":11}],9:[function(require,module,exports){
 /**
  * Optimized internal two-arity curry function.
  *
@@ -508,7 +472,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{}],12:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var _curry1 = require('./_curry1');
 
 
@@ -542,7 +506,7 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"./_curry1":11}],13:[function(require,module,exports){
+},{"./_curry1":9}],11:[function(require,module,exports){
 var arity = require('../arity');
 
 
@@ -582,7 +546,43 @@ module.exports = function _curryN(length, received, fn) {
   };
 };
 
-},{"../arity":9}],14:[function(require,module,exports){
+},{"../arity":7}],12:[function(require,module,exports){
+var naturalSelection = require('natural-selection');
+
+module.exports = function(element, value){
+    var canSet = naturalSelection(element) && element === document.activeElement;
+
+    if (canSet) {
+        var start = element.selectionStart,
+            end = element.selectionEnd;
+
+        element.value = value;
+        element.setSelectionRange(start, end);
+    } else {
+        element.value = value;
+    }
+};
+
+},{"natural-selection":6}],13:[function(require,module,exports){
+/**
+ * Export `uid`
+ */
+
+module.exports = uid;
+
+/**
+ * Create a `uid`
+ *
+ * @param {String} len
+ * @return {String} uid
+ */
+
+function uid(len) {
+  len = len || 7;
+  return Math.random().toString(35).substr(2, len);
+}
+
+},{}],14:[function(require,module,exports){
 var curryN = require('ramda/src/curryN');
 
 function isString(s) { return typeof s === 'string'; }
@@ -652,7 +652,7 @@ function Type(desc) {
 
 module.exports = Type;
 
-},{"ramda/src/curryN":10}],15:[function(require,module,exports){
+},{"ramda/src/curryN":8}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -852,7 +852,7 @@ function diffNode(prev, next, path) {
   return changes;
 }
 
-},{"../shared/utils":25,"dift":1,"union-type":14}],16:[function(require,module,exports){
+},{"../shared/utils":25,"dift":2,"union-type":14}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -984,7 +984,7 @@ function createDOMRenderer(container, dispatch) {
   };
 }
 
-},{"../diff":15,"./createElement":16,"./patch":19,"uid":8}],18:[function(require,module,exports){
+},{"../diff":15,"./createElement":16,"./patch":19,"uid":13}],18:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1232,7 +1232,7 @@ function setAttribute(DOMElement, name, value, previousValue) {
   }
 }
 
-},{"../shared/events":23,"../shared/svg":24,"../shared/utils":25,"index-of":3,"setify":6}],21:[function(require,module,exports){
+},{"../shared/events":23,"../shared/svg":24,"../shared/utils":25,"index-of":3,"setify":12}],21:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1319,6 +1319,7 @@ function createThunkElement(data, key, props, children) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.dom = exports.string = exports.element = undefined;
 
 var _element = require('./element');
 
@@ -1334,11 +1335,9 @@ var _dom2 = _interopRequireDefault(_dom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = {
-  element: _element2.default,
-  string: _string2.default,
-  dom: _dom2.default
-};
+exports.element = _element2.default;
+exports.string = _string2.default;
+exports.dom = _dom2.default;
 
 },{"./dom":18,"./element":21,"./string":26}],23:[function(require,module,exports){
 'use strict';
