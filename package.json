@@ -4,10 +4,10 @@
   "license": "MIT",
   "repository": "dekujs/deku",
   "description": "Render interfaces using pure functions and virtual DOM",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "scripts": {
-    "clean": "rimraf lib _book dist",
+    "clean": "rimraf lib _book",
     "build": "babel src --out-dir lib",
     "test": "hihat test/index.js -- --debug -t babelify -p tap-dev-tool",
     "test:ci": "zuul -- ./test/index.js",
