@@ -210,6 +210,40 @@ exports['default'] = {
 };
 module.exports = exports['default'];
 },{}],3:[function(require,module,exports){
+/*!
+ * index-of <https://github.com/jonschlinkert/index-of>
+ *
+ * Copyright (c) 2014-2015 Jon Schlinkert.
+ * Licensed under the MIT license.
+ */
+
+'use strict';
+
+module.exports = function indexOf(arr, ele, start) {
+  start = start || 0;
+  var idx = -1;
+
+  if (arr == null) return idx;
+  var len = arr.length;
+  var i = start < 0
+    ? (len + start)
+    : start;
+
+  if (i >= arr.length) {
+    return -1;
+  }
+
+  while (i < len) {
+    if (arr[i] === ele) {
+      return i;
+    }
+    i++;
+  }
+
+  return -1;
+};
+
+},{}],4:[function(require,module,exports){
 /**
  * Supported SVG attributes
  */
@@ -270,7 +304,7 @@ module.exports = function (attr) {
   return attr in exports.attributes
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * Supported SVG elements
  *
@@ -308,7 +342,7 @@ exports.isElement = function (name) {
   return name in exports.elements
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var naturalSelection = require('natural-selection');
 
 module.exports = function(element, value){
@@ -325,14 +359,33 @@ module.exports = function(element, value){
     }
 };
 
-},{"natural-selection":6}],6:[function(require,module,exports){
+},{"natural-selection":7}],7:[function(require,module,exports){
 var supportedTypes = ['text', 'search', 'tel', 'url', 'password'];
 
 module.exports = function(element){
     return !!(element.setSelectionRange && ~supportedTypes.indexOf(element.type));
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+/**
+ * Export `uid`
+ */
+
+module.exports = uid;
+
+/**
+ * Create a `uid`
+ *
+ * @param {String} len
+ * @return {String} uid
+ */
+
+function uid(len) {
+  len = len || 7;
+  return Math.random().toString(35).substr(2, len);
+}
+
+},{}],9:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -381,7 +434,7 @@ module.exports = _curry2(function(n, fn) {
   }
 });
 
-},{"./internal/_curry2":10}],8:[function(require,module,exports){
+},{"./internal/_curry2":12}],10:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _curryN = require('./internal/_curryN');
 var arity = require('./arity');
@@ -434,7 +487,7 @@ module.exports = _curry2(function curryN(length, fn) {
   return arity(length, _curryN(length, [], fn));
 });
 
-},{"./arity":7,"./internal/_curry2":10,"./internal/_curryN":11}],9:[function(require,module,exports){
+},{"./arity":9,"./internal/_curry2":12,"./internal/_curryN":13}],11:[function(require,module,exports){
 /**
  * Optimized internal two-arity curry function.
  *
@@ -455,7 +508,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var _curry1 = require('./_curry1');
 
 
@@ -489,7 +542,7 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"./_curry1":9}],11:[function(require,module,exports){
+},{"./_curry1":11}],13:[function(require,module,exports){
 var arity = require('../arity');
 
 
@@ -529,7 +582,7 @@ module.exports = function _curryN(length, received, fn) {
   };
 };
 
-},{"../arity":7}],12:[function(require,module,exports){
+},{"../arity":9}],14:[function(require,module,exports){
 var curryN = require('ramda/src/curryN');
 
 function isString(s) { return typeof s === 'string'; }
@@ -599,107 +652,7 @@ function Type(desc) {
 
 module.exports = Type;
 
-},{"ramda/src/curryN":8}],13:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.createDOMRenderer = createDOMRenderer;
-
-var _createElement = require('./createElement');
-
-var _createElement2 = _interopRequireDefault(_createElement);
-
-var _diff = require('./diff');
-
-var _patch = require('./patch');
-
-var _patch2 = _interopRequireDefault(_patch);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Create a DOM renderer using a container element. Everything will be rendered
- * inside of that container. Returns a function that accepts new state that can
- * replace what is currently rendered.
- */
-
-function createDOMRenderer(container) {
-  var oldVnode = null;
-  var node = null;
-
-  var update = function update(newVnode) {
-    var changes = (0, _diff.diffNode)(oldVnode, newVnode);
-    node = changes.reduce(_patch2.default, node);
-    oldVnode = newVnode;
-    return node;
-  };
-
-  var create = function create(vnode) {
-    node = (0, _createElement2.default)(vnode);
-    if (container) container.appendChild(node);
-    oldVnode = vnode;
-    return node;
-  };
-
-  return function (vnode) {
-    return node !== null ? update(vnode) : create(vnode);
-  };
-}
-
-},{"./createElement":14,"./diff":15,"./patch":19}],14:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = createElement;
-
-var _setAttribute = require('./setAttribute');
-
-var _utils = require('./utils');
-
-var _svg = require('./svg');
-
-var _svg2 = _interopRequireDefault(_svg);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var cache = {};
-
-/**
- * Create a real DOM element from a virtual element, recursively looping down.
- * When it finds custom elements it will render them, cache them, and keep going,
- * so they are treated like any other native element.
- */
-
-function createElement(vnode) {
-  if ((0, _utils.isText)(vnode)) {
-    return document.createTextNode(vnode.nodeValue || '');
-  }
-
-  var cached = cache[vnode.type];
-
-  if (typeof cached === 'undefined') {
-    cached = cache[vnode.type] = _svg2.default.isElement(vnode.type) ? document.createElementNS(_svg2.default.namespace, vnode.type) : document.createElement(vnode.type);
-  }
-
-  var DOMElement = cached.cloneNode(false);
-
-  for (var name in vnode.attributes) {
-    (0, _setAttribute.setAttribute)(DOMElement, name, vnode.attributes[name]);
-  }
-
-  vnode.children.forEach(function (node, index) {
-    var child = createElement(node);
-    DOMElement.appendChild(child);
-  });
-
-  return DOMElement;
-}
-
-},{"./setAttribute":21,"./svg":22,"./utils":23}],15:[function(require,module,exports){
+},{"ramda/src/curryN":10}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -710,7 +663,7 @@ exports.diffAttributes = diffAttributes;
 exports.diffChildren = diffChildren;
 exports.diffNode = diffNode;
 
-var _utils = require('./utils');
+var _utils = require('../shared/utils');
 
 var _dift = require('dift');
 
@@ -727,6 +680,9 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 var Any = function Any() {
   return true;
 };
+var Path = function Path() {
+  return String;
+};
 
 /**
  * Patch actions
@@ -735,14 +691,15 @@ var Any = function Any() {
 var Actions = exports.Actions = (0, _unionType2.default)({
   setAttribute: [String, Any, Any],
   removeAttribute: [String, Any],
-  insertChild: [Any, Number],
-  replaceChild: [Any, Any, Number],
-  removeChild: [Any, Number],
+  insertChild: [Any, Number, Path],
+  removeChild: [Number],
   updateChild: [Number, Array],
+  updateChildren: [Array],
   insertBefore: [Number],
-  replaceNode: [Any, Any],
+  replaceNode: [Any, Any, Path],
   removeNode: [Any],
-  sameNode: []
+  sameNode: [],
+  updateThunk: [Any, Any, Path]
 });
 
 /**
@@ -779,11 +736,12 @@ function diffAttributes(previous, next) {
  * recursively to build up unique paths for each node.
  */
 
-function diffChildren(previous, next) {
+function diffChildren(previous, next, path) {
   var insertChild = Actions.insertChild;
   var updateChild = Actions.updateChild;
   var removeChild = Actions.removeChild;
   var insertBefore = Actions.insertBefore;
+  var updateChildren = Actions.updateChildren;
   var CREATE = diffActions.CREATE;
   var UPDATE = diffActions.UPDATE;
   var MOVE = diffActions.MOVE;
@@ -796,33 +754,32 @@ function diffChildren(previous, next) {
   };
   var changes = [];
 
-  function effect(type, prev, next, idx) {
+  function effect(type, prev, next, pos) {
+    var nextPath = next ? (0, _utils.createPath)(path, next.key == null ? next.index : next.key) : null;
     switch (type) {
       case CREATE:
         {
-          changes.push(insertChild(next.item, next.index));
+          changes.push(insertChild(next.item, pos, nextPath));
           break;
         }
       case UPDATE:
         {
-          var actions = diffNode(prev.item, next.item);
+          var actions = diffNode(prev.item, next.item, nextPath);
           if (actions.length > 0) {
-            changes.push(updateChild(idx, actions));
+            changes.push(updateChild(prev.index, actions));
           }
           break;
         }
       case MOVE:
         {
-          var actions = diffNode(prev.item, next.item);
-          changes.push(insertBefore(next.index));
-          if (actions.length > 0) {
-            changes.push(updateChild(next.index, actions));
-          }
+          var actions = diffNode(prev.item, next.item, nextPath);
+          actions.push(insertBefore(pos));
+          changes.push(updateChild(prev.index, actions));
           break;
         }
       case REMOVE:
         {
-          changes.push(removeChild(prev.item, prev.index));
+          changes.push(removeChild(prev.index));
           break;
         }
     }
@@ -830,7 +787,7 @@ function diffChildren(previous, next) {
 
   (0, diffActions.default)(previousChildren, nextChildren, effect, key);
 
-  return changes;
+  return updateChildren(changes);
 }
 
 /**
@@ -838,12 +795,13 @@ function diffChildren(previous, next) {
  * into the right.
  */
 
-function diffNode(prev, next) {
+function diffNode(prev, next, path) {
   var changes = [];
   var replaceNode = Actions.replaceNode;
   var setAttribute = Actions.setAttribute;
   var sameNode = Actions.sameNode;
   var removeNode = Actions.removeNode;
+  var updateThunk = Actions.updateThunk;
 
   // No left node to compare it to
   // TODO: This should just return a createNode action
@@ -866,7 +824,7 @@ function diffNode(prev, next) {
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceNode(prev, next));
+    changes.push(replaceNode(prev, next, path));
     return changes;
   }
 
@@ -878,12 +836,403 @@ function diffNode(prev, next) {
     return changes;
   }
 
-  changes = changes.concat(diffAttributes(prev, next)).concat(diffChildren(prev, next));
+  // Thunk
+  if ((0, _utils.isThunk)(next)) {
+    if ((0, _utils.isSameThunk)(prev, next)) {
+      changes.push(updateThunk(prev, next, path));
+    } else {
+      changes.push(replaceNode(prev, next, path));
+    }
+    return changes;
+  }
+
+  changes = diffAttributes(prev, next);
+  changes.push(diffChildren(prev, next, path));
 
   return changes;
 }
 
-},{"./utils":23,"dift":1,"union-type":12}],16:[function(require,module,exports){
+},{"../shared/utils":25,"dift":1,"union-type":14}],16:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createElement;
+
+var _setAttribute = require('./setAttribute');
+
+var _utils = require('../shared/utils');
+
+var _svg = require('../shared/svg');
+
+var _svg2 = _interopRequireDefault(_svg);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var cache = {};
+
+/**
+ * Create a real DOM element from a virtual element, recursively looping down.
+ * When it finds custom elements it will render them, cache them, and keep going,
+ * so they are treated like any other native element.
+ */
+
+function createElement(vnode, path, dispatch, context) {
+  if ((0, _utils.isText)(vnode)) {
+    return document.createTextNode(vnode.nodeValue || '');
+  }
+
+  if ((0, _utils.isThunk)(vnode)) {
+    var props = vnode.props;
+    var data = vnode.data;
+    var children = vnode.children;
+    var render = data.render;
+    var onCreate = data.onCreate;
+
+    var model = {
+      children: children,
+      props: props,
+      path: path,
+      dispatch: dispatch,
+      context: context
+    };
+    var output = render(model);
+    var _DOMElement = createElement(output, (0, _utils.createPath)(path, output.key || '0'));
+    if (onCreate) onCreate(model);
+    vnode.data.vnode = output;
+    vnode.data.model = model;
+    return _DOMElement;
+  }
+
+  var cached = cache[vnode.type];
+
+  if (typeof cached === 'undefined') {
+    cached = cache[vnode.type] = _svg2.default.isElement(vnode.type) ? document.createElementNS(_svg2.default.namespace, vnode.type) : document.createElement(vnode.type);
+  }
+
+  var DOMElement = cached.cloneNode(false);
+
+  for (var name in vnode.attributes) {
+    (0, _setAttribute.setAttribute)(DOMElement, name, vnode.attributes[name]);
+  }
+
+  vnode.children.forEach(function (node, index) {
+    if (node === null || node === undefined) {
+      return;
+    }
+    var child = createElement(node, (0, _utils.createPath)(path, node.key || index));
+    DOMElement.appendChild(child);
+  });
+
+  return DOMElement;
+}
+
+},{"../shared/svg":24,"../shared/utils":25,"./setAttribute":20}],17:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createDOMRenderer;
+
+var _createElement = require('./createElement');
+
+var _createElement2 = _interopRequireDefault(_createElement);
+
+var _diff = require('../diff');
+
+var _patch = require('./patch');
+
+var _patch2 = _interopRequireDefault(_patch);
+
+var _uid = require('uid');
+
+var _uid2 = _interopRequireDefault(_uid);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Create a DOM renderer using a container element. Everything will be rendered
+ * inside of that container. Returns a function that accepts new state that can
+ * replace what is currently rendered.
+ */
+
+function createDOMRenderer(container, dispatch) {
+  var oldVnode = null;
+  var node = null;
+  var path = (0, _uid2.default)();
+
+  var update = function update(newVnode, context) {
+    var changes = (0, _diff.diffNode)(oldVnode, newVnode, path);
+    node = changes.reduce((0, _patch2.default)(dispatch, context), node);
+    oldVnode = newVnode;
+    return node;
+  };
+
+  var create = function create(vnode, context) {
+    node = (0, _createElement2.default)(vnode, path, dispatch, context);
+    if (container) container.appendChild(node);
+    oldVnode = vnode;
+    return node;
+  };
+
+  return function (vnode) {
+    var context = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    return node !== null ? update(vnode, context) : create(vnode, context);
+  };
+}
+
+},{"../diff":15,"./createElement":16,"./patch":19,"uid":8}],18:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createRenderer = require('./createRenderer');
+
+var _createRenderer2 = _interopRequireDefault(_createRenderer);
+
+var _createElement = require('./createElement');
+
+var _createElement2 = _interopRequireDefault(_createElement);
+
+var _patch = require('./patch');
+
+var _patch2 = _interopRequireDefault(_patch);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createRenderer: _createRenderer2.default,
+  createElement: _createElement2.default,
+  patch: _patch2.default
+};
+
+},{"./createElement":16,"./createRenderer":17,"./patch":19}],19:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = patch;
+
+var _setAttribute2 = require('./setAttribute');
+
+var _utils = require('../shared/utils');
+
+var _createElement = require('./createElement');
+
+var _createElement2 = _interopRequireDefault(_createElement);
+
+var _diff = require('../diff');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Modify a DOM element given an array of actions. A context can be set
+ * that will be used to render any custom elements.
+ */
+
+function patch(dispatch, context) {
+  return function (DOMElement, action) {
+    _diff.Actions.case({
+      setAttribute: function setAttribute(name, value, previousValue) {
+        (0, _setAttribute2.setAttribute)(DOMElement, name, value, previousValue);
+      },
+      removeAttribute: function removeAttribute(name, previousValue) {
+        (0, _setAttribute2.removeAttribute)(DOMElement, name, previousValue);
+      },
+      insertBefore: function insertBefore(index) {
+        (0, _utils.insertAtIndex)(DOMElement.parentNode, index, DOMElement);
+      },
+      updateChildren: function updateChildren(changes) {
+        // Create a clone of the children so we can reference them later
+        // using their original position even if they move around
+        var childNodes = Array.prototype.slice.apply(DOMElement.childNodes);
+
+        changes.forEach(function (change) {
+          _diff.Actions.case({
+            insertChild: function insertChild(vnode, index, path) {
+              (0, _utils.insertAtIndex)(DOMElement, index, (0, _createElement2.default)(vnode, path, dispatch));
+            },
+            removeChild: function removeChild(index) {
+              DOMElement.removeChild(childNodes[index]);
+            },
+            updateChild: function updateChild(index, actions) {
+              var update = patch(dispatch);
+              actions.forEach(function (action) {
+                return update(childNodes[index], action);
+              });
+            }
+          }, change);
+        });
+      },
+      updateThunk: function updateThunk(prev, next, path) {
+        var props = next.props;
+        var children = next.children;
+        var _next$data = next.data;
+        var render = _next$data.render;
+        var onUpdate = _next$data.onUpdate;
+
+        var prevNode = prev.data.vnode;
+        var model = {
+          children: children,
+          props: props,
+          path: path,
+          dispatch: dispatch,
+          context: context
+        };
+        var nextNode = render(model);
+        var changes = (0, _diff.diffNode)(prevNode, nextNode, path);
+        DOMElement = changes.reduce(patch(dispatch, context), DOMElement);
+        if (onUpdate) onUpdate(model);
+        next.data.vnode = nextNode;
+        next.data.model = model;
+      },
+      replaceNode: function replaceNode(prev, next, path) {
+        var newEl = (0, _createElement2.default)(next, path, dispatch, context);
+        var parentEl = DOMElement.parentNode;
+        if (parentEl) parentEl.replaceChild(newEl, DOMElement);
+        DOMElement = newEl;
+        removeThunks(prev);
+      },
+      removeNode: function removeNode(prev) {
+        removeThunks(prev);
+        DOMElement.parentNode.removeChild(DOMElement);
+        DOMElement = null;
+      }
+    }, action);
+
+    return DOMElement;
+  };
+}
+
+/**
+ * Recursively remove all thunks
+ */
+
+function removeThunks(vnode) {
+  while ((0, _utils.isThunk)(vnode)) {
+    var _vnode$data = vnode.data;
+    var onRemove = _vnode$data.onRemove;
+    var model = _vnode$data.model;
+
+    if (onRemove) onRemove(model);
+    vnode = vnode.data.vnode;
+  }
+
+  for (var i = 0; i < vnode.children.length; i++) {
+    removeThunks(vnode.children[i]);
+  }
+}
+
+},{"../diff":15,"../shared/utils":25,"./createElement":16,"./setAttribute":20}],20:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.removeAttribute = removeAttribute;
+exports.setAttribute = setAttribute;
+
+var _utils = require('../shared/utils');
+
+var _events = require('../shared/events');
+
+var _events2 = _interopRequireDefault(_events);
+
+var _svg = require('../shared/svg');
+
+var _svg2 = _interopRequireDefault(_svg);
+
+var _indexOf = require('index-of');
+
+var _indexOf2 = _interopRequireDefault(_indexOf);
+
+var _setify = require('setify');
+
+var _setify2 = _interopRequireDefault(_setify);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function removeAttribute(DOMElement, name, previousValue) {
+  var eventType = _events2.default[name];
+  if (eventType) {
+    if (typeof previousValue === 'function') {
+      DOMElement.removeEventListener(eventType, previousValue);
+    }
+    return;
+  }
+  switch (name) {
+    case 'checked':
+    case 'disabled':
+    case 'selected':
+      DOMElement[name] = false;
+      break;
+    case 'innerHTML':
+    case 'nodeValue':
+      DOMElement.innerHTML = '';
+      break;
+    case 'value':
+      DOMElement.value = '';
+      break;
+    default:
+      DOMElement.removeAttribute(name);
+      break;
+  }
+}
+
+function setAttribute(DOMElement, name, value, previousValue) {
+  var eventType = _events2.default[name];
+  if (value === previousValue) {
+    return;
+  }
+  if (eventType) {
+    if (typeof previousValue === 'function') {
+      DOMElement.removeEventListener(eventType, previousValue);
+    }
+    DOMElement.addEventListener(eventType, value);
+    return;
+  }
+  if (typeof value === 'function') {
+    value = value(DOMElement, name);
+  }
+  if (!(0, _utils.isValidAttribute)(value)) {
+    removeAttribute(DOMElement, name, previousValue);
+    return;
+  }
+  switch (name) {
+    case 'checked':
+    case 'disabled':
+    case 'innerHTML':
+    case 'nodeValue':
+      DOMElement[name] = value;
+      break;
+    case 'selected':
+      DOMElement.selected = value;
+      // Fix for IE/Safari where select is not correctly selected on change
+      if (DOMElement.tagName === 'OPTION') {
+        var select = DOMElement.parentNode;
+        select.selectedIndex = (0, _indexOf2.default)(select.options, DOMElement);
+      }
+      break;
+    case 'value':
+      (0, _setify2.default)(DOMElement, value);
+      break;
+    default:
+      if (_svg2.default.isAttribute(name)) {
+        DOMElement.setAttributeNS(_svg2.default.namespace, name, value);
+      } else {
+        DOMElement.setAttribute(name, value);
+      }
+      break;
+  }
+}
+
+},{"../shared/events":23,"../shared/svg":24,"../shared/utils":25,"index-of":3,"setify":6}],21:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -922,6 +1271,8 @@ function element(type, attributes) {
 
   var key = typeof attributes.key === 'string' || typeof attributes.key === 'number' ? attributes.key : undefined;
 
+  delete attributes.key;
+
   if ((typeof type === 'undefined' ? 'undefined' : _typeof(type)) === 'object') {
     return createThunkElement(type, key, attributes, children);
   }
@@ -952,17 +1303,44 @@ function createTextElement(text) {
   };
 }
 
-function createThunkElement(component, key, attributes, children) {
+function createThunkElement(data, key, props, children) {
   return {
     type: '#thunk',
-    attributes: attributes,
-    component: component,
     children: children,
+    props: props,
+    data: data,
     key: key
   };
 }
 
-},{}],17:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _element = require('./element');
+
+var _element2 = _interopRequireDefault(_element);
+
+var _string = require('./string');
+
+var _string2 = _interopRequireDefault(_string);
+
+var _dom = require('./dom');
+
+var _dom2 = _interopRequireDefault(_dom);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  element: _element2.default,
+  string: _string2.default,
+  dom: _dom2.default
+};
+
+},{"./dom":18,"./element":21,"./string":26}],23:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1040,239 +1418,7 @@ exports.default = {
   onWheel: 'wheel'
 };
 
-},{}],18:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _renderString = require('./renderString');
-
-var _renderString2 = _interopRequireDefault(_renderString);
-
-var _createDOMRenderer = require('./createDOMRenderer');
-
-var _createDOMRenderer2 = _interopRequireDefault(_createDOMRenderer);
-
-var _element = require('./element');
-
-var _element2 = _interopRequireDefault(_element);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = {
-  createDOMRenderer: _createDOMRenderer2.default,
-  renderString: _renderString2.default,
-  element: _element2.default
-};
-
-},{"./createDOMRenderer":13,"./element":16,"./renderString":20}],19:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = patch;
-
-var _setAttribute2 = require('./setAttribute');
-
-var _utils = require('./utils');
-
-var _createElement = require('./createElement');
-
-var _createElement2 = _interopRequireDefault(_createElement);
-
-var _diff = require('./diff');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Modify a DOM element given an array of actions. A context can be set
- * that will be used to render any custom elements.
- */
-
-function patch(DOMElement, action) {
-  _diff.Actions.case({
-    setAttribute: function setAttribute(name, value, previousValue) {
-      (0, _setAttribute2.setAttribute)(DOMElement, name, value, previousValue);
-    },
-    removeAttribute: function removeAttribute(name, previousValue) {
-      (0, _setAttribute2.removeAttribute)(DOMElement, name, previousValue);
-    },
-    insertChild: function insertChild(vnode, index) {
-      (0, _utils.insertAtIndex)(DOMElement, index, (0, _createElement2.default)(vnode));
-    },
-    removeChild: function removeChild(vnode, index) {
-      (0, _utils.removeAtIndex)(DOMElement, index);
-    },
-    insertBefore: function insertBefore(index) {
-      (0, _utils.insertAtIndex)(DOMElement.parentNode, index, DOMElement);
-    },
-    updateChild: function updateChild(index, actions) {
-      var child = DOMElement.childNodes[index];
-      actions.forEach(function (action) {
-        return patch(child, action);
-      });
-      return DOMElement;
-    },
-    replaceNode: function replaceNode(prev, next) {
-      DOMElement.parentNode.replaceChild((0, _createElement2.default)(next), DOMElement);
-    },
-    removeNode: function removeNode(prev) {
-      DOMElement.parentNode.removeChild(DOMElement);
-      DOMElement = null;
-    }
-  }, action);
-  return DOMElement;
-}
-
-},{"./createElement":14,"./diff":15,"./setAttribute":21,"./utils":23}],20:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = renderString;
-
-var _utils = require('./utils');
-
-/**
- * Turn an object of key/value pairs into a HTML attribute string. This
- * function is responsible for what attributes are allowed to be rendered and
- * should handle any other special cases specific to deku.
- */
-
-function attributesToString(attributes) {
-  var str = '';
-  for (var name in attributes) {
-    var value = attributes[name];
-    if (name === 'innerHTML') continue;
-    if ((0, _utils.isValidAttribute)(value)) str += ' ' + name + '="' + attributes[name] + '"';
-  }
-  return str;
-}
-
-/**
- * Render a virtual element to a string. You can pass in an option state context
- * object that will be given to all components.
- */
-
-function renderString(element, context) {
-  var path = arguments.length <= 2 || arguments[2] === undefined ? '0' : arguments[2];
-
-  if ((0, _utils.isText)(element)) {
-    return element.nodeValue;
-  }
-
-  var attributes = element.attributes;
-  var type = element.type;
-  var children = element.children;
-
-  var innerHTML = attributes.innerHTML;
-  var str = '<' + type + attributesToString(attributes) + '>';
-
-  if (innerHTML) {
-    str += innerHTML;
-  } else {
-    str += children.map(function (child, i) {
-      return renderString(child, context, path + '.' + child.key || i);
-    }).join('');
-  }
-
-  str += '</' + type + '>';
-  return str;
-}
-
-},{"./utils":23}],21:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.removeAttribute = removeAttribute;
-exports.setAttribute = setAttribute;
-
-var _utils = require('./utils');
-
-var _setify = require('setify');
-
-var _setify2 = _interopRequireDefault(_setify);
-
-var _events = require('./events');
-
-var _events2 = _interopRequireDefault(_events);
-
-var _svg = require('./svg');
-
-var _svg2 = _interopRequireDefault(_svg);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function removeAttribute(DOMElement, name, previousValue) {
-  switch (name) {
-    case _events2.default[name]:
-      if (typeof previousValue === 'function') {
-        DOMElement.removeEventListener(_events2.default[name], previousValue);
-      }
-      break;
-    case 'checked':
-    case 'disabled':
-    case 'selected':
-      DOMElement[name] = false;
-      break;
-    case 'innerHTML':
-    case 'nodeValue':
-      DOMElement.innerHTML = '';
-      break;
-    case 'value':
-      (0, _setify2.default)(DOMElement, null);
-      break;
-    default:
-      DOMElement.removeAttribute(name);
-      break;
-  }
-}
-
-function setAttribute(DOMElement, name, value, previousValue) {
-  if (value === previousValue) {
-    return;
-  }
-  if (typeof value === 'function') {
-    value = value(DOMElement, name);
-  }
-  if (!(0, _utils.isValidAttribute)(value)) {
-    removeAttribute(DOMElement, name, previousValue);
-    return;
-  }
-  switch (name) {
-    case _events2.default[name]:
-      if (typeof previousValue === 'function') {
-        DOMElement.removeEventListener(_events2.default[name], previousValue);
-      }
-      DOMElement.addEventListener(_events2.default[name], value);
-      break;
-    case 'checked':
-    case 'disabled':
-    case 'selected':
-    case 'innerHTML':
-    case 'nodeValue':
-      DOMElement[name] = value;
-      break;
-    case 'value':
-      (0, _setify2.default)(DOMElement, value);
-      break;
-    default:
-      if (_svg2.default.isAttribute(name)) {
-        DOMElement.setAttributeNS(_svg2.default.namespace, name, value);
-      } else {
-        DOMElement.setAttribute(name, value);
-      }
-      break;
-  }
-}
-
-},{"./events":17,"./svg":22,"./utils":23,"setify":5}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1295,7 +1441,7 @@ exports.default = {
   namespace: namespace
 };
 
-},{"is-svg-attribute":3,"is-svg-element":4}],23:[function(require,module,exports){
+},{"is-svg-attribute":4,"is-svg-element":5}],25:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1354,7 +1500,7 @@ var isText = exports.isText = function isText(node) {
  */
 
 var isSameThunk = exports.isSameThunk = function isSameThunk(left, right) {
-  return isThunk(left) && isThunk(right) && left.render === right.render;
+  return isThunk(left) && isThunk(right) && left.data.render === right.data.render;
 };
 
 /**
@@ -1406,5 +1552,94 @@ var removeAtIndex = exports.removeAtIndex = function removeAtIndex(DOMElement, i
   DOMElement.removeChild(DOMElement.childNodes[index]);
 };
 
-},{}]},{},[18])(18)
+},{}],26:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _renderString = require('./renderString');
+
+var _renderString2 = _interopRequireDefault(_renderString);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  renderString: _renderString2.default
+};
+
+},{"./renderString":27}],27:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = renderString;
+
+var _utils = require('../shared/utils');
+
+/**
+ * Turn an object of key/value pairs into a HTML attribute string. This
+ * function is responsible for what attributes are allowed to be rendered and
+ * should handle any other special cases specific to deku.
+ */
+
+function attributesToString(attributes) {
+  var str = '';
+  for (var name in attributes) {
+    var value = attributes[name];
+    if (name === 'innerHTML') continue;
+    if ((0, _utils.isValidAttribute)(value)) str += ' ' + name + '="' + attributes[name] + '"';
+  }
+  return str;
+}
+
+/**
+ * Render a virtual element to a string. You can pass in an option state context
+ * object that will be given to all components.
+ */
+
+function renderString(element, context) {
+  var path = arguments.length <= 2 || arguments[2] === undefined ? '0' : arguments[2];
+
+  if ((0, _utils.isText)(element)) {
+    return element.nodeValue;
+  }
+
+  if ((0, _utils.isThunk)(element)) {
+    var props = element.props;
+    var data = element.data;
+    var _children = element.children;
+    var render = data.render;
+
+    var output = render({
+      children: _children,
+      props: props,
+      path: path,
+      context: context
+    });
+    return renderString(output, context, path);
+  }
+
+  var attributes = element.attributes;
+  var type = element.type;
+  var children = element.children;
+
+  var innerHTML = attributes.innerHTML;
+  var str = '<' + type + attributesToString(attributes) + '>';
+
+  if (innerHTML) {
+    str += innerHTML;
+  } else {
+    str += children.map(function (child, i) {
+      return renderString(child, context, path + '.' + (child.key == null ? i : child.key));
+    }).join('');
+  }
+
+  str += '</' + type + '>';
+  return str;
+}
+
+},{"../shared/utils":25}]},{},[22])(22)
 });
