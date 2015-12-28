@@ -34,19 +34,27 @@ We support the latest two versions of each browser. This means we only support I
 import {dom, element} from 'deku'
 import {createStore} from 'redux'
 import reducer from './reducer'
+let {createRenderer} = dom
 
-// Create a Redux store to handle actions and side-effects
-let store = createStore(reducer)
-
-// Create a renderer that can turn vnodes into real DOM elements
-let render = dom.createRenderer(document.body, store.dispatch)
+// Dispatch an action when the button is clicked
+let log = dispatch => event => {
+  dispatch({
+    type: 'CLICKED'
+  })
+}
 
 // Define a state-less component
 let MyButton = {
-  render: ({ props, children }) => {
-    return <button class="my-button">{children}</button>
+  render: ({ props, children, dispatch }) => {
+    return <button onClick={log(dispatch)}>{children}</button>
   }
 }
+
+// Create a Redux store to handle all UI actions and side-effects
+let store = createStore(reducer)
+
+// Create a renderer that can turn vnodes into real DOM elements
+let render = createRenderer(document.body, store.dispatch)
 
 // Update the page and add redux state to the context
 render(
