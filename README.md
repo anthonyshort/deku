@@ -57,7 +57,7 @@ render(
 
 ### Documentation
 
-You can [read the documentation online](https://anthonyshort.gitbooks.io/dekujs/content/) at Gitbook.
+You can [read the documentation online](https://dekujs.github.io/deku).
 
 ### License
 
