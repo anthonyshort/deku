@@ -1,6 +1,6 @@
 {
   "name": "deku",
-  "version": "2.0.0-rc2",
+  "version": "2.0.0-rc3",
   "license": "MIT",
   "repository": "dekujs/deku",
   "description": "Render interfaces using pure functions and virtual DOM",
