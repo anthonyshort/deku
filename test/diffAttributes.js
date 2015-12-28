@@ -47,5 +47,11 @@ test('diffAttributes', t => {
     'no actions for same attribute values'
   )
 
+  t.deepEqual(
+    diffAttributes(<input value='red' />, <input value={0} />),
+    [setAttribute('value', 0, 'red')],
+    'update input value with zero value'
+  )
+
   t.end()
 })

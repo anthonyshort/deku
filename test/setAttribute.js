@@ -36,6 +36,8 @@ test('setAttribute (textfield)', t => {
   t.equal(DOMElement.value, 'foo', 'value set')
   setAttribute(DOMElement, 'value', 2)
   t.equal(DOMElement.value, '2', 'value updated')
+  setAttribute(DOMElement, 'value', 0)
+  t.equal(DOMElement.value, '0', 'value updated to zero')
   setAttribute(DOMElement, 'value', null)
   t.equal(DOMElement.value, '', 'value removed')
   t.end()

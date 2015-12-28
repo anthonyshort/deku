@@ -136,6 +136,9 @@ test('patching inputs', t => {
   patch(input, setAttribute('value', 'Tom', 'Bob'))
   t.equal(input.value, 'Tom', 'value property updated')
 
+  patch(input, setAttribute('value', 0, 'Tom'))
+  t.equal(input.value, '0', 'value property updated to zero')
+
   patch(input, removeAttribute('value', 'Tom'))
   t.equal(input.value, '', 'value property removed')
 

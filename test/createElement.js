@@ -43,6 +43,12 @@ test('create input element', t => {
   t.end()
 })
 
+test('create input element with zero value', t => {
+  let DOMElement = createElement(<input type='text' value={0} disabled />)
+  t.equal(DOMElement.value, '0', 'has a value')
+  t.end()
+})
+
 test('create element with event handlers', t => {
   let count = 0
   let DOMElement = createElement(<span onClick={e => count += 1} />)
