@@ -22,13 +22,9 @@ We support the latest two versions of each browser. This means we only support I
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
-### Examples
+### Documentation
 
-Each example can be run in the browser so you can get an understanding of how Deku works:
-
-```
-budo --live index.js -- -t babelify
-```
+You can [read the documentation online](https://anthonyshort.gitbooks.io/dekujs/content/) at Gitbook.
 
 ### License
 
