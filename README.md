@@ -43,7 +43,7 @@ let render = dom.createRenderer(document.body, store.dispatch)
 
 // Define a state-less component
 let MyButton = {
-  render: ({ props, children }) {
+  render: ({ props, children }) => {
     return <button class="my-button">{children}</button>
   }
 }
