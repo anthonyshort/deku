@@ -22,6 +22,25 @@ We support the latest two versions of each browser. This means we only support I
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/deku.svg)](https://saucelabs.com/u/deku)
 
+### Example
+
+```js
+import {dom, element} from 'deku'
+let render = dom.createRenderer(document.body)
+
+let MyButton = {
+  render: ({ children }) {
+    return <button class="my-button">{children}</button>
+  }
+}
+
+render(
+  <div class="App">
+    <MyButton>Hello World!</MyButton>
+  </div>
+)
+```
+
 ### Documentation
 
 You can [read the documentation online](https://anthonyshort.gitbooks.io/dekujs/content/) at Gitbook.
