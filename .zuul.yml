@@ -2,9 +2,9 @@ ui: tape
 concurrency: 2
 browsers:
   - name: chrome
-    version: 43..latest
+    version: latest
   - name: firefox
-    version: 38..latest
+    version: latest
   - name: iphone
     version: latest
   - name: ipad
@@ -15,4 +15,3 @@ browsers:
     version: 7..latest
 browserify:
   - transform: babelify
-  - transform: envify

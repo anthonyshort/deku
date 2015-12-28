@@ -1,16 +1,11 @@
 #
-# Binaries.
+# Vars.
 #
 
-export PATH := ./node_modules/.bin:${PATH}
 BIN := ./node_modules/.bin
 
-#
-# Wildcards.
-#
-
-src = $(shell find lib/*.js)
-tests = $(shell find test/**/*.js)
+src = $(shell find src/*.js)
+tests = $(shell find test/*.js)
 
 #
 # Targets.
@@ -20,54 +15,34 @@ default: test
 $(src): node_modules
 $(tests): node_modules
 
-standalone: $(src)
-	@mkdir -p build
-	@NODE_ENV=production browserify \
+build: $(src)
+	@mkdir -p dist
+	@NODE_ENV=production ${BIN}/browserify \
 		--standalone deku \
-		-t envify \
-		-e lib/index.js | bfc > build/deku.js
+		-t babelify \
+		-e src/index.js > dist/deku.js
 
-test: $(src) $(tests)
-	@NODE_ENV=development hihat test/index.js -- \
+test: lint
+	@NODE_ENV=development ${BIN}/hihat test/index.js -- \
 		--debug \
-		-t envify \
 		-t babelify \
 		-p tap-dev-tool
 
-test-cloud: node_modules
-	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) zuul -- ./test/index.js
+ci: node_modules lint
+	@TRAVIS_BUILD_NUMBER=$(CIRCLE_BUILD_NUM) ${BIN}/zuul -- ./test/index.js
 
 node_modules: package.json
 	@npm install
 
-clean:
-	@-rm -rf build build.js node_modules
-
 lint: $(src) $(tests)
-	standard lib/**/*.js | snazzy
+	${BIN}/standard src/*.js test/*.js | ${BIN}/snazzy
 
-size: standalone
-	@minify build/deku.js | gzip -9 | wc -c
-
-#
-# Releases.
-#
-
-release: standalone
-	bump $$VERSION && \
-	git changelog --tag $$VERSION && \
-	git commit --all -m "Release $$VERSION" && \
-	git tag $$VERSION && \
-	git push origin master --tags && \
-	npm publish
+docs:
+	gitbook serve
 
 #
-# These tasks will be run every time regardless of dependencies.
+# Always run these tasks.
 #
 
-.PHONY: standalone
-.PHONY: clean
-.PHONY: lint
-.PHONY: size
-.PHONY: release
-.PHONY: test-cloud
+.PHONY: build
+.PHONY: docs
