@@ -37,8 +37,12 @@ node_modules: package.json
 lint: $(src) $(tests)
 	${BIN}/standard src/*.js test/*.js | ${BIN}/snazzy
 
+docs:
+	gitbook serve
+
 #
 # Always run these tasks.
 #
 
 .PHONY: build
+.PHONY: docs
