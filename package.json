@@ -3,16 +3,33 @@
   "version": "2.0.0-rc2",
   "license": "MIT",
   "repository": "dekujs/deku",
-  "description": "Create view components using a virtual DOM",
-  "main": "dist/deku.js",
+  "description": "Render interfaces using pure functions and virtual DOM",
+  "main": "dist/index.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "clean": "rimraf lib _book dist",
+    "build": "babel src --out-dir lib",
+    "test": "hihat test/index.js -- --debug -t babelify -p tap-dev-tool",
+    "test:ci": "zuul -- ./test/index.js",
+    "test:lint": "standard src/*.js test/*.js | snazzy",
+    "docs:install": "gitbook install",
+    "docs:build": "npm run docs:install && gitbook build",
+    "docs:serve": "npm run docs:install && gitbook serve",
+    "docs:deploy": "npm run docs:build && gh-pages -d _book",
+    "prepublish": "npm run clean && npm run build",
+    "preversion": "npm run clean && npm run test:lint",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags && npm run clean"
+  },
   "devDependencies": {
+    "babel-cli": "^6.3.17",
     "babel-plugin-transform-react-jsx": "^6.1.18",
     "babel-polyfill": "^6.1.19",
     "babel-preset-es2015": "^6.1.18",
     "babel-preset-stage-2": "^6.1.18",
     "babelify": "^7.2.0",
-    "browserify": "^12.0.0",
     "budo": "^7.1.0",
+    "gh-pages": "^0.8.0",
     "gitbook": "^2.6.6",
     "hihat": "^2.5.0",
     "is-dom": "^1.0.5",
@@ -31,5 +48,14 @@
     "setify": "^1.0.3",
     "uid": "0.0.2",
     "union-type": "^0.1.6"
-  }
+  },
+  "keywords": [
+    "deku",
+    "functional",
+    "react",
+    "virtual",
+    "dom",
+    "elm",
+    "redux"
+  ]
 }
