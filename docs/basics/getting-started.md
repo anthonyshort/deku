@@ -8,7 +8,7 @@ let {createRenderer} = dom
 let render = createRenderer(document.body)
 
 let MyButton = {
-  render: ({ children }) {
+  render: ({ children }) => {
     return <button class="my-button">{children}</button>
   }
 }
