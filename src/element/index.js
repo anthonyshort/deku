@@ -36,7 +36,7 @@ export default function element (type, attributes, ...children) {
 }
 
 function reduceChildren (children, vnode) {
-  if (typeof vnode === 'string') {
+  if (typeof vnode === 'string' || typeof vnode === 'number') {
     children.push(createTextElement(vnode))
   } else if (Array.isArray(vnode)) {
     children = [...children, ...vnode]
