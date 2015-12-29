@@ -92,7 +92,7 @@ test('context should be passed down all elements', t => {
   let Button = {
     render ({ props, context }) {
       t.equal(context.hello, 'there')
-      return <button>{ props.label }</button>
+      return <button>Submit</button>
     }
   }
   let render = createDOMRenderer(document.body)
