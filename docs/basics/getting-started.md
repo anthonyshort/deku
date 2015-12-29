@@ -20,12 +20,6 @@ render(
 )
 ```
 
-First, we're importing a library to create virtual elements.
-
-```js
-import h from 'virtual-element'
-```
-
 Unlike React and other libraries, the virtual elements used in Deku are plain objects with no knowledge of what's rendering them. We'll cover this in more detail in the next section.
 
 ```js
