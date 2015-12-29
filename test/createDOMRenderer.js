@@ -64,3 +64,16 @@ test('moving elements using keys', t => {
 
   t.end()
 })
+
+test('emptying the container', t => {
+  let el = document.createElement('div')
+  el.innerHTML = '<div></div>'
+  let render = createDOMRenderer(el)
+  render(<span></span>)
+  t.equal(
+    el.innerHTML,
+    '<span></span>',
+    'container emptied'
+  )
+  t.end()
+})

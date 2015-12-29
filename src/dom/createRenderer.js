@@ -14,6 +14,10 @@ export default function createDOMRenderer (container, dispatch) {
   let node = null
   let path = uid()
 
+  if (container && container.childNodes.length > 0) {
+    container.innerHTML = ''
+  }
+
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, path)
     node = changes.reduce(patch(dispatch, context), node)
