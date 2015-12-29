@@ -4,6 +4,7 @@
 * [Motivation](/docs/motivation.md)
 * [Contributing](/docs/contributing.md)
 * [Basics](/docs/basics/index.md)
+  * [Getting Started](/docs/basics/getting-started.md)
   * [Elements](/docs/basics/elements.md)
   * [JSX](/docs/basics/JSX.md)
   * [Events](/docs/basics/events.md)
