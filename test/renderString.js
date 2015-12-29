@@ -126,3 +126,26 @@ test('render thunks with children to a string', t => {
 
   t.end()
 })
+
+test('context should be passed down all elements when rendered as a string', t => {
+  let Form = {
+    render ({ props, context }) {
+      return <div>
+        <h2>My form</h2>
+        <div>
+          <Button label='press me!' />
+        </div>
+      </div>
+    }
+  }
+  let Button = {
+    render ({ props, context }) {
+      return <button>{context.hello}</button>
+    }
+  }
+  t.equal(
+    render(<Form />, { hello: 'there' }),
+    `<div><h2>My form</h2><div><button>there</button></div></div>`
+  )
+  t.end()
+})
