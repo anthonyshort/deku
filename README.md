@@ -4,7 +4,7 @@
 [![version](https://img.shields.io/npm/v/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 [![npm downloads](https://img.shields.io/npm/dm/deku.svg?style=flat-square)](https://www.npmjs.com/package/deku)
-
+[![discord](https://img.shields.io/badge/Discord-Join%20Chat%20→-738BD7.svg?style=flat-square)](https://discord.gg/0gNkyCAVkDYsBaFe)
 
 Deku is a library for rendering interfaces using pure functions and virtual DOM.
 
