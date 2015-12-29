@@ -55,7 +55,9 @@ export default function createElement (vnode, path, dispatch, context) {
     }
     let child = createElement(
       node,
-      createPath(path, node.key || index)
+      createPath(path, node.key || index),
+      dispatch,
+      context
     )
     DOMElement.appendChild(child)
   })
