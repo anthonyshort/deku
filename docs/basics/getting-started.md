@@ -8,7 +8,7 @@ let {createRenderer} = dom
 let render = createRenderer(document.body)
 
 let MyButton = {
-  render: ({ children }) {
+  render: ({ children }) => {
     return <button class="my-button">{children}</button>
   }
 }
@@ -18,12 +18,6 @@ render(
     <MyButton>Hello World!</MyButton>
   </div>
 )
-```
-
-First, we're importing a library to create virtual elements.
-
-```js
-import h from 'virtual-element'
 ```
 
 Unlike React and other libraries, the virtual elements used in Deku are plain objects with no knowledge of what's rendering them. We'll cover this in more detail in the next section.

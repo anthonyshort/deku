@@ -42,7 +42,7 @@
     <body>
         
         
-    <div class="book" data-level="0" data-basepath="." data-revision="Mon Dec 28 2015 12:09:45 GMT-0800 (PST)">
+    <div class="book" data-level="0" data-basepath="." data-revision="Mon Dec 28 2015 22:35:35 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -119,14 +119,29 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="3.1" data-path="docs/basics/elements.html">
+        <li class="chapter " data-level="3.1" data-path="docs/basics/migrating.html">
+            
+                
+                    <a href="./docs/basics/migrating.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Migrating from v1
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="docs/basics/elements.html">
             
                 
                     <a href="./docs/basics/elements.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.1.</b>
+                            <b>3.2.</b>
                         
                         Elements
                     </a>
@@ -134,14 +149,14 @@
             
         </li>
     
-        <li class="chapter " data-level="3.2" data-path="docs/basics/JSX.html">
+        <li class="chapter " data-level="3.3" data-path="docs/basics/JSX.html">
             
                 
                     <a href="./docs/basics/JSX.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.2.</b>
+                            <b>3.3.</b>
                         
                         JSX
                     </a>
@@ -149,14 +164,14 @@
             
         </li>
     
-        <li class="chapter " data-level="3.3" data-path="docs/basics/events.html">
+        <li class="chapter " data-level="3.4" data-path="docs/basics/events.html">
             
                 
                     <a href="./docs/basics/events.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.3.</b>
+                            <b>3.4.</b>
                         
                         Events
                     </a>
@@ -164,14 +179,14 @@
             
         </li>
     
-        <li class="chapter " data-level="3.4" data-path="docs/basics/components.html">
+        <li class="chapter " data-level="3.5" data-path="docs/basics/components.html">
             
                 
                     <a href="./docs/basics/components.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.4.</b>
+                            <b>3.5.</b>
                         
                         Components
                     </a>
@@ -460,19 +475,27 @@
 <pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>dom<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
 <span class="token keyword">import</span> <span class="token punctuation">{</span>createStore<span class="token punctuation">}</span> from <span class="token string">&apos;redux&apos;</span>
 <span class="token keyword">import</span> reducer from <span class="token string">&apos;./reducer&apos;</span>
+<span class="token keyword">let</span> <span class="token punctuation">{</span>createRenderer<span class="token punctuation">}</span> <span class="token operator">=</span> dom
 
-<span class="token comment" spellcheck="true">// Create a Redux store to handle actions and side-effects</span>
-<span class="token keyword">let</span> store <span class="token operator">=</span> <span class="token function">createStore</span><span class="token punctuation">(</span>reducer<span class="token punctuation">)</span>
-
-<span class="token comment" spellcheck="true">// Create a renderer that can turn vnodes into real DOM elements</span>
-<span class="token keyword">let</span> render <span class="token operator">=</span> dom<span class="token punctuation">.</span><span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// Dispatch an action when the button is clicked</span>
+<span class="token keyword">let</span> log <span class="token operator">=</span> dispatch <span class="token operator">=</span><span class="token operator">&gt;</span> event <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+  <span class="token function">dispatch</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    type<span class="token punctuation">:</span> <span class="token string">&apos;CLICKED&apos;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
 
 <span class="token comment" spellcheck="true">// Define a state-less component</span>
 <span class="token keyword">let</span> MyButton <span class="token operator">=</span> <span class="token punctuation">{</span>
-  render<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> children <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-    <span class="token keyword">return</span> <span class="token operator">&lt;</span>button <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">&quot;my-button&quot;</span><span class="token operator">&gt;</span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
+  render<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> children<span class="token punctuation">,</span> dispatch <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token operator">&lt;</span>button onClick<span class="token operator">=</span><span class="token punctuation">{</span><span class="token function">log</span><span class="token punctuation">(</span>dispatch<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">&gt;</span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// Create a Redux store to handle all UI actions and side-effects</span>
+<span class="token keyword">let</span> store <span class="token operator">=</span> <span class="token function">createStore</span><span class="token punctuation">(</span>reducer<span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// Create a renderer that can turn vnodes into real DOM elements</span>
+<span class="token keyword">let</span> render <span class="token operator">=</span> <span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
 
 <span class="token comment" spellcheck="true">// Update the page and add redux state to the context</span>
 <span class="token function">render</span><span class="token punctuation">(</span>
@@ -481,7 +504,7 @@
 <span class="token punctuation">)</span>
 </code></pre>
 <h3 id="documentation">Documentation</h3>
-<p>You can <a href="http://dekujs.github.io/deku/" target="_blank">read the documentation online</a>.</p>
+<p>You can <a href="https://dekujs.github.io/deku" target="_blank">read the documentation online</a>.</p>
 <h3 id="license">License</h3>
 <p>The MIT License (MIT) Copyright (c) 2015 Anthony Short</p>
 

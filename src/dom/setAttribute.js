@@ -1,6 +1,6 @@
 import {isValidAttribute} from '../shared/utils'
-import {events} from '../shared/events'
-import * as svg from '../shared/svg'
+import events from '../shared/events'
+import svg from '../shared/svg'
 import indexOf from 'index-of'
 import setValue from 'setify'
 

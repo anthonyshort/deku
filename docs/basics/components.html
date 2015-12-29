@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.4" data-basepath="../.." data-revision="Mon Dec 28 2015 12:09:45 GMT-0800 (PST)">
+    <div class="book" data-level="3.5" data-basepath="../.." data-revision="Mon Dec 28 2015 22:35:35 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -121,14 +121,29 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="3.1" data-path="docs/basics/elements.html">
+        <li class="chapter " data-level="3.1" data-path="docs/basics/migrating.html">
+            
+                
+                    <a href="../../docs/basics/migrating.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>3.1.</b>
+                        
+                        Migrating from v1
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="docs/basics/elements.html">
             
                 
                     <a href="../../docs/basics/elements.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.1.</b>
+                            <b>3.2.</b>
                         
                         Elements
                     </a>
@@ -136,14 +151,14 @@
             
         </li>
     
-        <li class="chapter " data-level="3.2" data-path="docs/basics/JSX.html">
+        <li class="chapter " data-level="3.3" data-path="docs/basics/JSX.html">
             
                 
                     <a href="../../docs/basics/JSX.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.2.</b>
+                            <b>3.3.</b>
                         
                         JSX
                     </a>
@@ -151,14 +166,14 @@
             
         </li>
     
-        <li class="chapter " data-level="3.3" data-path="docs/basics/events.html">
+        <li class="chapter " data-level="3.4" data-path="docs/basics/events.html">
             
                 
                     <a href="../../docs/basics/events.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.3.</b>
+                            <b>3.4.</b>
                         
                         Events
                     </a>
@@ -166,14 +181,14 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.4" data-path="docs/basics/components.html">
+        <li class="chapter active" data-level="3.5" data-path="docs/basics/components.html">
             
                 
                     <a href="../../docs/basics/components.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>3.4.</b>
+                            <b>3.5.</b>
                         
                         Components
                     </a>
@@ -453,7 +468,7 @@
 <p>Unlike React, components in Deku are completely stateless, there&apos;s no <code>setState</code> function or <code>this</code> used.</p>
 <h2 id="example">Example</h2>
 <p>Here&apos;s a simple <code><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>App</span> <span class="token punctuation">/&gt;</span></span></code> component:</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> children<span class="token punctuation">,</span> context <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> children<span class="token punctuation">,</span> context<span class="token punctuation">,</span> path <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token keyword">return</span> <span class="token punctuation">(</span>
     <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">&quot;App&quot;</span> hidden<span class="token operator">=</span><span class="token punctuation">{</span>props<span class="token punctuation">.</span>hidden<span class="token punctuation">}</span> color<span class="token operator">=</span><span class="token punctuation">{</span>context<span class="token punctuation">.</span>theme<span class="token punctuation">.</span>color<span class="token punctuation">}</span><span class="token operator">&gt;</span>
       <span class="token punctuation">{</span>children<span class="token punctuation">}</span>
@@ -539,6 +554,8 @@
 <span class="token punctuation">}</span>
 </code></pre>
 <p>Paths in a tree are strings, like <code>0.1.5.2</code>. Each number represents the index of the node in the parent node, so you can use this to find a node within a tree. If a node within that path has a <code>key</code> attribute, we use that instead of the index so that the path is stable even if any elements move around.</p>
+<h4 id="-context"><code>context</code></h4>
+<p>An object that is available to every component in the tree.</p>
 
                     
                     </section>

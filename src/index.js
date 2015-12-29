@@ -1,6 +1,6 @@
-import {element} from './element'
-import * as string from './string'
-import * as dom from './dom'
+import element from './element'
+import string from './string'
+import dom from './dom'
 
 export {
   element,

@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>JSX | Deku</title>
+        <title>Migrating from v1 | Deku</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 2.4.3">
@@ -33,10 +33,10 @@
         
     
     
-    <link rel="next" href="../../docs/basics/events.html" />
+    <link rel="next" href="../../docs/basics/elements.html" />
     
     
-    <link rel="prev" href="../../docs/basics/elements.html" />
+    <link rel="prev" href="../../docs/basics/index.html" />
     
 
         
@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.3" data-basepath="../.." data-revision="Mon Dec 28 2015 22:35:35 GMT-0800 (PST)">
+    <div class="book" data-level="3.1" data-basepath="../.." data-revision="Mon Dec 28 2015 22:35:35 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -121,7 +121,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="3.1" data-path="docs/basics/migrating.html">
+        <li class="chapter active" data-level="3.1" data-path="docs/basics/migrating.html">
             
                 
                     <a href="../../docs/basics/migrating.html">
@@ -151,7 +151,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.3" data-path="docs/basics/JSX.html">
+        <li class="chapter " data-level="3.3" data-path="docs/basics/JSX.html">
             
                 
                     <a href="../../docs/basics/JSX.html">
@@ -454,36 +454,59 @@
                 
                     <section class="normal" id="section-">
                     
-                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/basics/JSX.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="jsx">JSX</h1>
-<p>The <code>element</code> function used to create virtual elements is compatible with <a href="http://jsx.github.io" target="_blank">JSX</a> through <a href="https://babeljs.io" target="_blank">Babel</a>. When using Babel you just need to set the <code>jsxPragma</code>. This allows you to automatically transform HTML in your code into <code>element</code> calls.</p>
-<h2 id="setting-the-pragma">Setting the pragma</h2>
-<p>Here&apos;s an example <code>.babelrc</code> that sets the pragma:</p>
-<pre><code>{
-  &quot;presets&quot;: [&quot;es2015&quot;],
-  &quot;plugins&quot;: [
-    [&quot;transform-react-jsx&quot;, {&quot;pragma&quot;: &quot;element&quot;}]
-  ]
-}
-</code></pre><h2 id="how-does-it-work">How does it work?</h2>
-<p>JSX is just syntax sugar for creating object trees. You can use Deku perfectly fine without JSX, but if you&apos;re already using Babel you can use JSX without any extra work.</p>
-<p>Instead of writing each <code>element</code> call:</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span>model<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;button&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token keyword">class</span><span class="token punctuation">:</span> <span class="token string">&apos;Button&apos;</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>
-      <span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;span&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token keyword">class</span><span class="token punctuation">:</span> <span class="token string">&apos;Button-text&apos;</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">&apos;Click Me!&apos;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
-    <span class="token punctuation">]</span><span class="token punctuation">)</span>
-  <span class="token punctuation">)</span>
+                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/basics/migrating.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="migrating-from-v1">Migrating from v1</h1>
+<p>There have been a few big changes to the API since version 1. The goal of the changes is to move Deku away from trying to be a kitchen-sink module and instead just do one small thing well.</p>
+<p>Here are the major changes:</p>
+<ul>
+<li><code>sources</code> and <code>.set</code> API have been removed</li>
+<li><code>app</code> API was removed. You no longer need to create a <code>tree</code> and call <code>.mount</code> whenever you want to render something different. Instead, you&apos;ll create a <code>render</code> method, and then just call that with your new virtual element.</li>
+<li><code>virtual-element</code> now exists within Deku and you don&apos;t need to depend on it separately. If people want to create &apos;magical&apos; wrappers that handle attributes in a custom way (e.g. like <code>class</code>) they should just create a custom module.</li>
+<li><code>setState</code> has been removed. The reason why we needed something like <code>app</code> was because it managed the re-renders for you. Now there&apos;s only one way to re-render, and that&apos;s to call <code>render</code> again. You&apos;ll need to store local state on your own using the components <code>path</code> property.</li>
+<li><code>initialState</code> has been removed.</li>
+<li><code>defaultProps</code> has been removed.</li>
+<li><code>context</code> has been added.</li>
+<li>Lifecycle hooks have changed.</li>
+</ul>
+<h2 id="lifecycle-hooks">Lifecycle Hooks</h2>
+<p>Having so many hooks before and after events meant that developers would need to start thinking about state over time again, rather than being declarative.</p>
+<h4 id="changed">Changed</h4>
+<ul>
+<li><code>beforeMount(model)</code> -&gt; <code>onCreate(model)</code></li>
+<li><code>afterUpdate(prev, next, el)</code> -&gt; <code>onUpdate(model)</code></li>
+<li><code>beforeUnmount(model)</code> -&gt; <code>onRemove(model)</code></li>
+</ul>
+<h4 id="removed">Removed</h4>
+<ul>
+<li><code>afterMount</code></li>
+<li><code>beforeUpdate</code></li>
+<li><code>beforeRender</code></li>
+<li><code>afterRender</code></li>
+</ul>
+<p>You can see how we don&apos;t worry about passing in previous and next data into the hooks. It turns out if you ever needed to do that, there was always a cleaner way to do it.</p>
+<h3 id="how-do-i">How do I...?</h3>
+<p>You should be able to still do everything you did before, but we don&apos;t pass you the DOM element. This was a deliberate choice. It was difficult to get it to work well so that the hook was called at just the right time. Instead, we&apos;d rather not try and make a nice API for something that is inherently imperative and used for hacking at the DOM directly.</p>
+<p>This means you&apos;ll need to just add a class to the element you want to mutate, then call <code>querySelector</code> in the hook to find it. For example, if I wanted to get the element in the <code>onCreate</code> hook:</p>
+<pre><code class="lang-js"><span class="token keyword">function</span> onCreate <span class="token punctuation">(</span><span class="token punctuation">{</span> path <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token function">requestAnimationFrame</span><span class="token punctuation">(</span><span class="token function">mutate</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> path <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token operator">&lt;</span>div id<span class="token operator">=</span><span class="token punctuation">{</span>path<span class="token punctuation">}</span><span class="token operator">&gt;</span>Hello<span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> mutate <span class="token punctuation">(</span>path<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> el <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">&apos;#&apos;</span> <span class="token operator">+</span> path<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// perform some side-effects</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token punctuation">{</span>
+  onCreate<span class="token punctuation">,</span>
+  render  
 <span class="token punctuation">}</span>
 </code></pre>
-<p>You can write HTML:</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span>model<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token operator">&lt;</span>button <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">&apos;Button&apos;</span><span class="token operator">&gt;</span>
-      <span class="token operator">&lt;</span>span <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">&apos;Button-text&apos;</span><span class="token operator">&gt;</span>Click Me<span class="token operator">!</span><span class="token operator">&lt;</span><span class="token operator">/</span>span<span class="token operator">&gt;</span>
-    <span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
-  <span class="token punctuation">)</span>
-<span class="token punctuation">}</span>
-</code></pre>
+<p>It would be even better to just dispatch an action from <code>onCreate</code> and let something else in your app handle it entirely. This is a trivial example, but you can see how it needs to wait until the next frame (so the element exists in the DOM).</p>
 
                     
                     </section>
@@ -494,10 +517,10 @@
         </div>
 
         
-        <a href="../../docs/basics/elements.html" class="navigation navigation-prev " aria-label="Previous page: Elements"><i class="fa fa-angle-left"></i></a>
+        <a href="../../docs/basics/index.html" class="navigation navigation-prev " aria-label="Previous page: Basics"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../docs/basics/events.html" class="navigation navigation-next " aria-label="Next page: Events"><i class="fa fa-angle-right"></i></a>
+        <a href="../../docs/basics/elements.html" class="navigation navigation-next " aria-label="Next page: Elements"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

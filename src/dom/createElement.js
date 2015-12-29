@@ -1,6 +1,6 @@
 import {setAttribute} from './setAttribute'
 import {isText, isThunk, createPath} from '../shared/utils'
-import * as svg from '../shared/svg'
+import svg from '../shared/svg'
 const cache = {}
 
 /**
@@ -9,7 +9,7 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export function createElement (vnode, path, dispatch, context) {
+export default function createElement (vnode, path, dispatch, context) {
   if (isText(vnode)) {
     return document.createTextNode(vnode.nodeValue || '')
   }
@@ -55,7 +55,9 @@ export function createElement (vnode, path, dispatch, context) {
     }
     let child = createElement(
       node,
-      createPath(path, node.key || index)
+      createPath(path, node.key || index),
+      dispatch,
+      context
     )
     DOMElement.appendChild(child)
   })

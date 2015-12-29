@@ -1,5 +1,5 @@
-import {renderString} from './renderString'
+import renderString from './renderString'
 
-export {
+export default {
   renderString
 }

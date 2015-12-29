@@ -11,7 +11,7 @@
  * ])
  */
 
-export function element (type, attributes, ...children) {
+export default function element (type, attributes, ...children) {
   if (!type) throw new TypeError('element() needs a type.')
 
   attributes = attributes || {}
