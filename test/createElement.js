@@ -43,6 +43,12 @@ test('create input element', t => {
   t.end()
 })
 
+test('create range input', t => {
+  let DOMElement = createElement(<input type='range' min={0} max={10} value={5} step={1}/>)
+  t.equal(DOMElement.value, '5', 'has a value')
+  t.end()
+})
+
 test('create input element with zero value', t => {
   let DOMElement = createElement(<input type='text' value={0} disabled />)
   t.equal(DOMElement.value, '0', 'has a value')
