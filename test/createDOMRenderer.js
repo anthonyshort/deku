@@ -77,3 +77,28 @@ test('emptying the container', t => {
   )
   t.end()
 })
+
+test('context should be passed down all elements', t => {
+  let Form = {
+    render ({ props, context }) {
+      return <div>
+        <h2>My form</h2>
+        <div>
+          <Button label='press me!' />
+        </div>
+      </div>
+    }
+  }
+
+  let Button = {
+    render ({ props, context }) {
+      t.equal(context.hello, 'there')
+      return <button>{ props.label }</button>
+    }
+  }
+
+  let render = createDOMRenderer(document.body)
+  t.plan(1)
+  render(<Form />, { hello: 'there' })
+  t.end()
+})

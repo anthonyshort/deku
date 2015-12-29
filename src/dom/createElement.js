@@ -27,7 +27,9 @@ export default function createElement (vnode, path, dispatch, context) {
     let output = render(model)
     let DOMElement = createElement(
       output,
-      createPath(path, output.key || '0')
+      createPath(path, output.key || '0'),
+      dispatch,
+      context
     )
     if (onCreate) onCreate(model)
     vnode.data.vnode = output
