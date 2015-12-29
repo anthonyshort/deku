@@ -19,7 +19,7 @@ Unlike React, components in Deku are completely stateless, there's no `setState`
 Here's a simple `<App />` component:
 
 ```js
-function render ({ props, children, context }) {
+function render ({ props, children, context, path }) {
   return (
     <div class="App" hidden={props.hidden} color={context.theme.color}>
       {children}
@@ -138,3 +138,7 @@ function render ({ path }) {
 ```
 
 Paths in a tree are strings, like `0.1.5.2`. Each number represents the index of the node in the parent node, so you can use this to find a node within a tree. If a node within that path has a `key` attribute, we use that instead of the index so that the path is stable even if any elements move around.
+
+#### `context`
+
+An object that is available to every component in the tree.
