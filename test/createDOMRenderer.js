@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
@@ -147,3 +149,25 @@ test('rendering the same node', t => {
   )
   t.end()
 })
+
+test('context should be passed down across re-renders even after disappearance', t => {
+  let Form = {
+    render ({ props }) {
+      return <div>{ props.visible ? <Button /> : [] }</div>
+    }
+  }
+  let Button = {
+    render ({ props, context }) {
+      t.equal(context, 'the context', 'context is passed down')
+      return <button>Submit</button>
+    }
+  }
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  t.plan(2)
+  render(<Form visible />, 'the context')
+  render(<Form />, 'the context')
+  render(<Form visible />, 'the context')
+  t.end()
+})
+
