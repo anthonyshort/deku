@@ -133,3 +133,24 @@ test('rendering numbers as text elements', t => {
   )
   t.end()
 })
+
+test.skip('setting attribute after a null node', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  let Component = {
+    render ({ props }) {
+      return <div>
+        { props.heading ? <h2>Image</h2> : null }
+        <span style={props.style}></span>
+      </div>
+    }
+  }
+  render(<Component style='color: blue' />)
+  render(<Component />)
+  t.equal(
+    el.innerHTML,
+    '<div><span></span></div>',
+    'rendered correctly'
+  )
+  t.end()
+})
