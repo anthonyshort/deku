@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
@@ -163,9 +165,9 @@ test('context should be passed down across re-renders even after disappearance',
   let el = document.createElement('div')
   let render = createDOMRenderer(el)
   t.plan(2)
-  render(<Form visible={true} />, 'the context')
-  render(<Form visible={false} />, 'the context')
-  render(<Form visible={true} />, 'the context')
+  render(<Form visible />, 'the context')
+  render(<Form />, 'the context')
+  render(<Form visible />, 'the context')
   t.end()
 })
 
