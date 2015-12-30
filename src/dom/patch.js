@@ -20,6 +20,7 @@ export default function patch (dispatch, context) {
       insertBefore: (index) => {
         insertAtIndex(DOMElement.parentNode, index, DOMElement)
       },
+      sameNode: () => {},
       updateChildren: (changes) => {
         // Create a clone of the children so we can reference them later
         // using their original position even if they move around
