@@ -3,4 +3,5 @@ node_js:
   - "5"
 script:
   - npm run test:lint
-  - npm run test:ci
+  - npm run test:jsdom
+  - if [ -n "$TRAVIS_TAG" ]; then npm run test:ci; fi
