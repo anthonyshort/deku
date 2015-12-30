@@ -32,7 +32,7 @@ export default function patch (dispatch, context) {
               insertAtIndex(
                 DOMElement,
                 index,
-                createElement(vnode, path, dispatch)
+                createElement(vnode, path, dispatch, context)
               )
             },
             removeChild: (index) => {
