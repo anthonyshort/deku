@@ -95,7 +95,8 @@ test('context should be passed down all elements', t => {
       return <button>Submit</button>
     }
   }
-  let render = createDOMRenderer(document.body)
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
   t.plan(1)
   render(<Form />, { hello: 'there' })
   t.end()
@@ -113,7 +114,8 @@ test('context should be passed down across re-renders', t => {
       return <button>Submit</button>
     }
   }
-  let render = createDOMRenderer(document.body)
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
   t.plan(2)
   render(<Form />, 'the context')
   render(<Form />, 'the context')

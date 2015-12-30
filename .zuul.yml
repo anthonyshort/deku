@@ -1,5 +1,5 @@
 ui: tape
-concurrency: 2
+concurrency: 5
 browsers:
   - name: chrome
     version: latest
@@ -9,9 +9,13 @@ browsers:
     version: latest
   - name: ipad
     version: latest
+  - name: android
+    version: latest
   - name: ie
     version: 10..latest
+  - name: microsoftedge
+    version: latest
   - name: safari
-    version: 7..latest
+    version: latest
 browserify:
   - transform: babelify
