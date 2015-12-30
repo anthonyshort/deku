@@ -64,3 +64,51 @@ test('moving elements using keys', t => {
 
   t.end()
 })
+
+test('emptying the container', t => {
+  let el = document.createElement('div')
+  el.innerHTML = '<div></div>'
+  let render = createDOMRenderer(el)
+  render(<span></span>)
+  t.equal(
+    el.innerHTML,
+    '<span></span>',
+    'container emptied'
+  )
+  t.end()
+})
+
+test('context should be passed down all elements', t => {
+  let Form = {
+    render ({ props, context }) {
+      return <div>
+        <h2>My form</h2>
+        <div>
+          <Button label='press me!' />
+        </div>
+      </div>
+    }
+  }
+  let Button = {
+    render ({ props, context }) {
+      t.equal(context.hello, 'there')
+      return <button>Submit</button>
+    }
+  }
+  let render = createDOMRenderer(document.body)
+  t.plan(1)
+  render(<Form />, { hello: 'there' })
+  t.end()
+})
+
+test('rendering numbers as text elements', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  render(<span>{5}</span>)
+  t.equal(
+    el.innerHTML,
+    '<span>5</span>',
+    'number rendered correctly'
+  )
+  t.end()
+})
