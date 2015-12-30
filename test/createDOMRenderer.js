@@ -133,3 +133,17 @@ test('rendering numbers as text elements', t => {
   )
   t.end()
 })
+
+test('rendering the same node', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  var node = <div></div>
+  render(node)
+  render(node)
+  t.equal(
+    el.innerHTML,
+    '<div></div>',
+    'samenode is handled'
+  )
+  t.end()
+})
