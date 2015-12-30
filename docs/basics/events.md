@@ -3,22 +3,43 @@
 You can add event handlers using attributes. There are a number of attributes that Deku will recognize for you. These are treated as special attributes:
 
 ```js
+function render () {
+  return <button onClick={save}>Submit</button>
+}
+
+function save (event) {
+  // event = MouseClick dom event
+}
+
+export { render }
+```
+
+These handlers will be added and removed for you. With each render, if the handler doesn't match the new handler, they are swapped.
+
+## Usage with Redux
+
+Redux is the preferred state management package for Deku. As `dispatch` is passed down to every component's [render](components.md) method, you can create a curried function for your event handlers to allow them to access this function.
+
+```js
 let save = dispatch => event => {
   dispatch({
     type: 'SAVED'
   })
 }
 
-let render = model => {
+function render ({ dispatch }) {
   return <button onClick={save(dispatch)}>Submit</button>
 }
 
-export default {
-  render
-}
+export { render }
 ```
 
-These handlers will be added and removed for you. With each render, if the handler doesn't match the new handler, they are swapped.
+```js
+// Assuming you passed the `dispatch` function to dom.createRenderer like below,
+// your components should be able to access this `dispatch` function like above.
+let render = dom.createRenderer(document.body, store.dispatch)
+render(<MyComponent />, store.getState())
+```
 
 ## How do I delegate events?
 
