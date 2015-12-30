@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.4" data-basepath="../.." data-revision="Tue Dec 29 2015 16:20:57 GMT-0800 (PST)">
+    <div class="book" data-level="3.4" data-basepath="../.." data-revision="Tue Dec 29 2015 19:48:28 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -456,21 +456,36 @@
                     
                         <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/basics/events.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="event-handlers">Event handlers</h1>
 <p>You can add event handlers using attributes. There are a number of attributes that Deku will recognize for you. These are treated as special attributes:</p>
+<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token operator">&lt;</span>button onClick<span class="token operator">=</span><span class="token punctuation">{</span>save<span class="token punctuation">}</span><span class="token operator">&gt;</span>Submit<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> save <span class="token punctuation">(</span>event<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment" spellcheck="true">// event = MouseClick dom event</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token punctuation">{</span> render <span class="token punctuation">}</span>
+</code></pre>
+<p>These handlers will be added and removed for you. With each render, if the handler doesn&apos;t match the new handler, they are swapped.</p>
+<h2 id="usage-with-redux">Usage with Redux</h2>
+<p>Redux is the preferred state management package for Deku. As <code>dispatch</code> is passed down to every component&apos;s <a href="components.html">render</a> method, you can create a curried function for your event handlers to allow them to access this function.</p>
 <pre><code class="lang-js"><span class="token keyword">let</span> save <span class="token operator">=</span> dispatch <span class="token operator">=</span><span class="token operator">&gt;</span> event <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
   <span class="token function">dispatch</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
     type<span class="token punctuation">:</span> <span class="token string">&apos;SAVED&apos;</span>
   <span class="token punctuation">}</span><span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword">let</span> render <span class="token operator">=</span> model <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+<span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> dispatch <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token keyword">return</span> <span class="token operator">&lt;</span>button onClick<span class="token operator">=</span><span class="token punctuation">{</span><span class="token function">save</span><span class="token punctuation">(</span>dispatch<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">&gt;</span>Submit<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">{</span>
-  render
-<span class="token punctuation">}</span>
+<span class="token keyword">export</span> <span class="token punctuation">{</span> render <span class="token punctuation">}</span>
 </code></pre>
-<p>These handlers will be added and removed for you. With each render, if the handler doesn&apos;t match the new handler, they are swapped.</p>
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">// Assuming you passed the `dispatch` function to dom.createRenderer like below,</span>
+<span class="token comment" spellcheck="true">// your components should be able to access this `dispatch` function like above.</span>
+<span class="token keyword">let</span> render <span class="token operator">=</span> dom<span class="token punctuation">.</span><span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
+<span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>MyComponent <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> store<span class="token punctuation">.</span><span class="token function">getState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
 <h2 id="how-do-i-delegate-events">How do I delegate events?</h2>
 <p>The renderer doesn&apos;t automatically delegate events. To delegate events you can just add a handler on the parent element:</p>
 <pre><code class="lang-js"><span class="token keyword">let</span> render <span class="token operator">=</span> model <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>

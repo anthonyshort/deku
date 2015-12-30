@@ -38,7 +38,7 @@ export default function patch (dispatch, context) {
               DOMElement.removeChild(childNodes[index])
             },
             updateChild: (index, actions) => {
-              let update = patch(dispatch)
+              let update = patch(dispatch, context)
               actions.forEach(action => update(childNodes[index], action))
             }
           }, change)

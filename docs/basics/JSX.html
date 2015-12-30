@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.3" data-basepath="../.." data-revision="Tue Dec 29 2015 16:20:57 GMT-0800 (PST)">
+    <div class="book" data-level="3.3" data-basepath="../.." data-revision="Tue Dec 29 2015 19:48:28 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -455,16 +455,33 @@
                     <section class="normal" id="section-">
                     
                         <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/basics/JSX.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="jsx">JSX</h1>
-<p>The <code>element</code> function used to create virtual elements is compatible with <a href="http://jsx.github.io" target="_blank">JSX</a> through <a href="https://babeljs.io" target="_blank">Babel</a>. When using Babel you just need to set the <code>jsxPragma</code>. This allows you to automatically transform HTML in your code into <code>element</code> calls.</p>
-<h2 id="setting-the-pragma">Setting the pragma</h2>
-<p>Here&apos;s an example <code>.babelrc</code> that sets the pragma:</p>
-<pre><code>{
-  &quot;presets&quot;: [&quot;es2015&quot;],
-  &quot;plugins&quot;: [
-    [&quot;transform-react-jsx&quot;, {&quot;pragma&quot;: &quot;element&quot;}]
-  ]
-}
-</code></pre><h2 id="how-does-it-work">How does it work?</h2>
+<p>The <code>element</code> function used to create virtual elements is compatible with <a href="https://facebook.github.io/jsx/" target="_blank">JSX</a> through <a href="https://babeljs.io" target="_blank">Babel</a>. When using Babel you just need to set the <code>jsxPragma</code>. This allows you to automatically transform HTML in your code into <code>element</code> calls.</p>
+<h2 id="setting-up-babel">Setting up Babel</h2>
+<p>Be sure to install <a href="http://babeljs.io/docs/plugins/preset-es2015/" target="_blank">babel-preset-es2015</a> and <a href="https://babeljs.io/docs/plugins/transform-react-jsx/" target="_blank">babel-plugin-transform-react-jsx</a>.</p>
+<pre><code>npm install babel-preset-es2015
+npm install babel-plugin-transform-react-jsx
+</code></pre><p>You will need to set the <code>pragma</code>. Here&apos;s an example <code>.babelrc</code> that sets the pragma:</p>
+<pre><code class="lang-json"><span class="token punctuation">{</span>
+  <span class="token string">&quot;presets&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">&quot;es2015&quot;</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token string">&quot;plugins&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">[</span><span class="token string">&quot;transform-react-jsx&quot;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">&quot;pragma&quot;</span><span class="token punctuation">:</span> <span class="token string">&quot;element&quot;</span><span class="token punctuation">}</span><span class="token punctuation">]</span>
+  <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Alternatively, you can specify it in each of your files with a <code>@jsx</code> pragma comment:</p>
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">/** @jsx element */</span>
+
+<span class="token keyword">import</span> <span class="token punctuation">{</span> element <span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+</code></pre>
+<p>From here, you can use <a href="https://www.npmjs.com/package/browserify" target="_blank">browserify</a> with <a href="https://www.npmjs.com/package/babelify" target="_blank">babelify</a> to build your final .js package.</p>
+<pre><code class="lang-sh">npm install --save browserify
+npm install --save babelify
+
+# compile the entry point `index.js` to `dist/application.js`
+browserify -t babelify index.js -o dist/application.js
+</code></pre>
+<p>Alternatively, you can also use <a href="https://www.npmjs.com/package/babel-cli" target="_blank">babel-cli</a> to compile your JS files.</p>
+<h2 id="how-does-it-work">How does it work?</h2>
 <p>JSX is just syntax sugar for creating object trees. You can use Deku perfectly fine without JSX, but if you&apos;re already using Babel you can use JSX without any extra work.</p>
 <p>Instead of writing each <code>element</code> call:</p>
 <pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span>model<span class="token punctuation">)</span> <span class="token punctuation">{</span>
