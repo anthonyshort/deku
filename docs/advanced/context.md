@@ -12,8 +12,12 @@ You can use `context` to:
 
 There are some things to remember when using `context`:
 
-* Context should be **immutable**. Never mutate the object directly. The renderer can perform additional optimizations if you use a different object each time. If you're using Redux, your state should be immutable anyway. You can also use a library to help with immutable structures like [Immutable.js](https://github.com/facebook/immutable-js) or [Mori](https://github.com/swannodette/mori).
+* Context should be **immutable**. Never mutate the object directly. The renderer can perform additional optimizations if you use a different object each time. If you're using Redux, your state should be immutable anyway. You can also use a library to help with immutable structures like [Immutable.js], [Mori] or [Scour].
 * Context can't be modified by components. There's no `getChildContext`.
+
+[Immutable.js]: https://github.com/facebook/immutable-js
+[Mori]: https://github.com/swannodette/mori
+[Scour]: http://ricostacruz.com/scour/
 
 ## Example
 
