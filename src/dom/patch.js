@@ -92,7 +92,9 @@ function removeThunks (vnode) {
     vnode = vnode.data.vnode
   }
 
-  for (var i = 0; i < vnode.children.length; i++) {
-    removeThunks(vnode.children[i])
+  if (vnode.children) {
+    for (var i = 0; i < vnode.children.length; i++) {
+      removeThunks(vnode.children[i])
+    }
   }
 }

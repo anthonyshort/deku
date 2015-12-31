@@ -171,3 +171,22 @@ test('context should be passed down across re-renders even after disappearance',
   t.end()
 })
 
+test('#339 - removing nodes that contain a text node', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let ViewOne = {
+    render: model => <div>Hi!</div>
+  }
+
+  let ViewTwo = {
+    render: model => {
+      let r = Date.now().toString() + 'dh'
+      return <a>{r}</a>
+    }
+  }
+
+  render(<ViewOne />)
+  render(<ViewTwo />)
+  t.end()
+})
