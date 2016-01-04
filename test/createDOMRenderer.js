@@ -136,6 +136,18 @@ test('rendering numbers as text elements', t => {
   t.end()
 })
 
+test('rendering zero as text element', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  render(<span>{0}</span>)
+  t.equal(
+    el.innerHTML,
+    '<span>0</span>',
+    'zero rendered correctly'
+  )
+  t.end()
+})
+
 test('rendering the same node', t => {
   let el = document.createElement('div')
   let render = createDOMRenderer(el)

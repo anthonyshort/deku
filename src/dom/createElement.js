@@ -11,7 +11,10 @@ const cache = {}
 
 export default function createElement (vnode, path, dispatch, context) {
   if (isText(vnode)) {
-    return document.createTextNode(vnode.nodeValue || '')
+    let value = typeof vnode.nodeValue === 'string' || typeof vnode.nodeValue === 'number'
+      ? vnode.nodeValue
+      : ''
+    return document.createTextNode(value)
   }
 
   if (isThunk(vnode)) {
