@@ -14,6 +14,7 @@
   * [Keys](/docs/advanced/keys.md)
   * [Context](/docs/advanced/context.md)
   * [Dispatcher](/docs/advanced/dispatcher.md)
+  * [Hot Module Replacement](/docs/advanced/hmr.md)
 * [API Reference](/docs/api/index.md)
   * [dom](/docs/api/dom.md)
   * [string](/docs/api/string.md)
