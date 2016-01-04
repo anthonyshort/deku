@@ -27,6 +27,10 @@ export default function element (type, attributes, ...children) {
     return createThunkElement(type, key, attributes, children)
   }
 
+  if (typeof type === 'function') {
+    return createThunkElement({render: type, ...type}, key, attributes, children);
+  }
+
   return {
     attributes,
     children,
