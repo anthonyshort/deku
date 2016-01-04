@@ -10,7 +10,7 @@ You should also add documentation for any new feature you'd added. PRs with pass
 
 #### Testing
 
-The tests are run using [hihat](https://github.com/Jam3/hihat). This runs the tape tests in an Electron window with just the console. To run the tests, run `make test`.
+The tests are run using [hihat](https://github.com/Jam3/hihat). This runs the tape tests in an Electron window with just the console. To run the tests, run `npm test`.
 
 #### Releasing
 
