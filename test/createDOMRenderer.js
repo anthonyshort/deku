@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
@@ -95,7 +97,8 @@ test('context should be passed down all elements', t => {
       return <button>Submit</button>
     }
   }
-  let render = createDOMRenderer(document.body)
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
   t.plan(1)
   render(<Form />, { hello: 'there' })
   t.end()
@@ -113,7 +116,8 @@ test('context should be passed down across re-renders', t => {
       return <button>Submit</button>
     }
   }
-  let render = createDOMRenderer(document.body)
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
   t.plan(2)
   render(<Form />, 'the context')
   render(<Form />, 'the context')
@@ -129,5 +133,60 @@ test('rendering numbers as text elements', t => {
     '<span>5</span>',
     'number rendered correctly'
   )
+  t.end()
+})
+
+test('rendering the same node', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  var node = <div></div>
+  render(node)
+  render(node)
+  t.equal(
+    el.innerHTML,
+    '<div></div>',
+    'samenode is handled'
+  )
+  t.end()
+})
+
+test('context should be passed down across re-renders even after disappearance', t => {
+  let Form = {
+    render ({ props }) {
+      return <div>{ props.visible ? <Button /> : [] }</div>
+    }
+  }
+  let Button = {
+    render ({ props, context }) {
+      t.equal(context, 'the context', 'context is passed down')
+      return <button>Submit</button>
+    }
+  }
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  t.plan(2)
+  render(<Form visible />, 'the context')
+  render(<Form />, 'the context')
+  render(<Form visible />, 'the context')
+  t.end()
+})
+
+test('#339 - removing nodes that contain a text node', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let ViewOne = {
+    render: model => <div>Hi!</div>
+  }
+
+  let ViewTwo = {
+    render: model => {
+      let r = Date.now().toString() + 'dh'
+      return <a>{r}</a>
+    }
+  }
+
+  render(<ViewOne />)
+  render(<ViewTwo />)
   t.end()
 })

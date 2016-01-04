@@ -1,5 +1,5 @@
 /**
- * Check if an attribute shoudl be rendered into the DOM.
+ * Check if an attribute should be rendered into the DOM.
  */
 
 export function isValidAttribute (value) {

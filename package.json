@@ -1,6 +1,6 @@
 {
   "name": "deku",
-  "version": "2.0.0-rc6",
+  "version": "2.0.0-rc7",
   "license": "MIT",
   "repository": "dekujs/deku",
   "description": "Render interfaces using pure functions and virtual DOM",
@@ -19,7 +19,8 @@
     "prepublish": "npm run clean && npm run build",
     "preversion": "npm run clean && npm run test:lint",
     "version": "npm run build",
-    "postversion": "git push && git push --tags && npm run clean"
+    "postversion": "git push && git push --tags && npm run clean",
+    "example:basic": "cd examples/basic && budo --live index.js -- -t babelify"
   },
   "devDependencies": {
     "babel-cli": "^6.3.17",
@@ -33,6 +34,7 @@
     "gitbook": "^2.6.6",
     "hihat": "^2.5.0",
     "is-dom": "^1.0.5",
+    "redux": "^3.0.5",
     "rimraf": "^2.5.0",
     "snazzy": "^2.0.1",
     "standard": "^5.4.1",

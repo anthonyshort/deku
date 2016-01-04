@@ -20,6 +20,7 @@ export default function patch (dispatch, context) {
       insertBefore: (index) => {
         insertAtIndex(DOMElement.parentNode, index, DOMElement)
       },
+      sameNode: () => {},
       updateChildren: (changes) => {
         // Create a clone of the children so we can reference them later
         // using their original position even if they move around
@@ -31,7 +32,7 @@ export default function patch (dispatch, context) {
               insertAtIndex(
                 DOMElement,
                 index,
-                createElement(vnode, path, dispatch)
+                createElement(vnode, path, dispatch, context)
               )
             },
             removeChild: (index) => {
@@ -91,7 +92,9 @@ function removeThunks (vnode) {
     vnode = vnode.data.vnode
   }
 
-  for (var i = 0; i < vnode.children.length; i++) {
-    removeThunks(vnode.children[i])
+  if (vnode.children) {
+    for (var i = 0; i < vnode.children.length; i++) {
+      removeThunks(vnode.children[i])
+    }
   }
 }

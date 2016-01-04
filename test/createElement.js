@@ -75,3 +75,11 @@ test('create element with thunk', t => {
   t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
   t.end()
 })
+
+test('crate element with plain function thunk', t => {
+  let Component = () => <div />
+  let DOMElement = createElement(<Component />)
+  t.assert(isDOM(DOMElement), 'is DOM element')
+  t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
+  t.end()
+})
