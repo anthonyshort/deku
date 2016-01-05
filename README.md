@@ -68,6 +68,16 @@ render(
 
 You can [read the documentation online](https://dekujs.github.io/deku).
 
+### Bundling
+
+If you require another format than commonjs, you can bundle deku to AMD, UMD or globals formats. The following commands will create `dist/deku.js`:
+
+```
+npm run standalone -- -f iife [--uglify]
+npm run standalone -- -f amd  [--uglify]
+npm run standalone -- -f umd  [--uglify]
+```
+
 ### License
 
 The MIT License (MIT) Copyright (c) 2015 Anthony Short
