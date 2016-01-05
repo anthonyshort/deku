@@ -3,4 +3,4 @@ node_js:
   - "5"
 script:
   - npm run test:lint
-  - if [ -n "$TRAVIS_TAG" ]; then npm run test:browsers; else npm run test:headless; fi
+  - npm run test:headless
