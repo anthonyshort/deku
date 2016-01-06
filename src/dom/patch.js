@@ -46,9 +46,9 @@ export default function patch (dispatch, context) {
         })
       },
       updateThunk: (prev, next, path) => {
-        let { props, children } = next
-        let { render, onUpdate } = next.data
-        let prevNode = prev.data.vnode
+        let { props, children, component } = next
+        let { render, onUpdate } = component
+        let prevNode = prev.state.vnode
         let model = {
           children,
           props,
@@ -60,8 +60,10 @@ export default function patch (dispatch, context) {
         let changes = diffNode(prevNode, nextNode, path)
         DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
         if (onUpdate) onUpdate(model)
-        next.data.vnode = nextNode
-        next.data.model = model
+        next.state = {
+          vnode: nextNode,
+          model: model
+        }
       },
       replaceNode: (prev, next, path) => {
         let newEl = createElement(next, path, dispatch, context)
@@ -87,9 +89,11 @@ export default function patch (dispatch, context) {
 
 function removeThunks (vnode) {
   while (isThunk(vnode)) {
-    let { onRemove, model } = vnode.data
+    let { component, state } = vnode
+    let { onRemove } = component
+    let { model } = state
     if (onRemove) onRemove(model)
-    vnode = vnode.data.vnode
+    vnode = state.vnode
   }
 
   if (vnode.children) {

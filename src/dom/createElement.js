@@ -18,8 +18,8 @@ export default function createElement (vnode, path, dispatch, context) {
   }
 
   if (isThunk(vnode)) {
-    let { props, data, children } = vnode
-    let { render, onCreate } = data
+    let { props, component, children } = vnode
+    let { render, onCreate } = component
     let model = {
       children,
       props,
@@ -35,8 +35,10 @@ export default function createElement (vnode, path, dispatch, context) {
       context
     )
     if (onCreate) onCreate(model)
-    vnode.data.vnode = output
-    vnode.data.model = model
+    vnode.state = {
+      vnode: output,
+      model: model
+    }
     return DOMElement
   }
 

@@ -96,7 +96,7 @@ test('diffing thunks', t => {
   let Two = { render: renderDiv }
   let Three = { render: renderSpan }
   let one = <One />
-  let two = <Two />
+  let two = <One />
   let three = <Three />
 
   t.deepEqual(

@@ -57,12 +57,12 @@ export function createTextElement (text) {
   }
 }
 
-export function createThunkElement (data, key, props, children) {
+export function createThunkElement (component, key, props, children) {
   return {
     type: '#thunk',
     children,
     props,
-    data,
+    component,
     key
   }
 }

@@ -27,8 +27,8 @@ export default function renderString (element, context, path = '0') {
   }
 
   if (isThunk(element)) {
-    let { props, data, children } = element
-    let { render } = data
+    let { props, component, children } = element
+    let { render } = component
     let output = render({
       children,
       props,

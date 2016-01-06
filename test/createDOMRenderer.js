@@ -202,3 +202,46 @@ test('#339 - removing nodes that contain a text node', t => {
   render(<ViewTwo />)
   t.end()
 })
+
+test('#366 - cached vnodes for thunks are correct', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  const data = [
+    {id: 1, title: 'la french'},
+    {id: 2, title: 'the homesman'},
+    {id: 3, title: 'mr. turner'}
+  ]
+
+  let Card = {
+    render: ({ props }) => {
+      return <li id={props.id}>
+        <div>{props.title}</div>
+      </li>
+    }
+  }
+
+  let App = {
+    render: ({ props }) => {
+      return <ul id='strap-list'>
+        {data.map((card) => <Card
+          key={card.id}
+          id={card.id}
+          title={card.title}
+        />)}
+      </ul>
+    }
+  }
+
+  let vnode = <App />
+  render(vnode)
+
+  let ul = vnode.state.vnode
+
+  t.notEqual(
+    ul.children[0].state.vnode,
+    ul.children[1].state.vnode
+  )
+
+  t.end()
+})

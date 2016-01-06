@@ -50,7 +50,7 @@ export let isText = (node) => {
  */
 
 export let isSameThunk = (left, right) => {
-  return isThunk(left) && isThunk(right) && left.data.render === right.data.render
+  return isThunk(left) && isThunk(right) && left.component === right.component
 }
 
 /**
