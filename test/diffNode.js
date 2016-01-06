@@ -93,7 +93,6 @@ test('diffing thunks', t => {
   let renderDiv = () => <div />
   let renderSpan = () => <span />
   let One = { render: renderDiv }
-  let Two = { render: renderDiv }
   let Three = { render: renderSpan }
   let one = <One />
   let two = <One />
