@@ -20,13 +20,14 @@
     "preversion": "npm run clean && npm run test:lint",
     "version": "npm run build",
     "postversion": "git push && git push --tags && npm run clean",
-    "standalone": "browserify src/index.js -s deku -t babelify -o dist/deku.js"
+    "standalone": "rollup -c"
   },
   "devDependencies": {
     "babel-cli": "^6.3.17",
     "babel-plugin-transform-react-jsx": "^6.1.18",
     "babel-polyfill": "^6.1.19",
     "babel-preset-es2015": "^6.1.18",
+    "babel-preset-es2015-rollup": "^1.0.0",
     "babel-preset-stage-2": "^6.1.18",
     "babelify": "^7.2.0",
     "browserify": "^12.0.1",
@@ -36,15 +37,21 @@
     "hihat": "^2.5.0",
     "is-dom": "^1.0.5",
     "rimraf": "^2.5.0",
+    "rollup": "^0.24.0",
+    "rollup-plugin-babel": "^2.3.5",
+    "rollup-plugin-commonjs": "^2.1.0",
+    "rollup-plugin-npm": "^1.2.0",
+    "rollup-plugin-uglify": "^0.1.0",
     "snazzy": "^2.0.1",
     "standard": "^5.4.1",
     "tap-dev-tool": "^1.3.0",
     "tape": "^4.2.2",
     "trigger-event": "^1.0.0",
+    "yargs": "^3.31.0",
     "zuul": "^3.7.1"
   },
   "dependencies": {
-    "dift": "^0.1.2",
+    "dift": "^0.1.11",
     "index-of": "^0.2.0",
     "is-svg-attribute": "^1.0.2",
     "is-svg-element": "^1.0.1",
