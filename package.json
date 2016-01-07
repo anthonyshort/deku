@@ -10,7 +10,8 @@
     "clean": "rimraf lib _book",
     "build": "babel src --out-dir lib",
     "test": "hihat test/index.js -- --debug -t babelify -p tap-dev-tool",
-    "test:ci": "zuul -- ./test/index.js",
+    "test:headless": "browserify test/index.js -t babelify | tape-run",
+    "test:browsers": "zuul -- ./test/index.js",
     "test:lint": "standard src/*.js test/*.js | snazzy",
     "docs:install": "gitbook install",
     "docs:build": "npm run docs:install && gitbook build",
@@ -40,6 +41,7 @@
     "standard": "^5.4.1",
     "tap-dev-tool": "^1.3.0",
     "tape": "^4.2.2",
+    "tape-run": "^2.1.0",
     "trigger-event": "^1.0.0",
     "zuul": "^3.7.1"
   },
