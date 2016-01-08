@@ -1,6 +1,7 @@
 import 'babel-polyfill'
 import './groupByKey'
 import './setAttribute'
+import './element'
 import './createElement'
 import './patch'
 import './diffAttributes'

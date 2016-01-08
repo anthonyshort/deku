@@ -39,15 +39,16 @@ export default function element (type, attributes, ...children) {
   }
 }
 
-function reduceChildren (children, vnode) {
-  if (typeof vnode === 'string' || typeof vnode === 'number') {
-    children.push(createTextElement(vnode))
-  } else if (Array.isArray(vnode)) {
-    children = [...children, ...vnode]
-  } else if (typeof vnode !== 'undefined') {
-    children.push(vnode)
-  }
-  return children
+function reduceChildren (children, vnodes) {
+  let newChildren =  [].concat(vnodes).map(n => {
+    if (typeof n === 'string' || typeof n === 'number')
+      return createTextElement(n);
+    return n;
+  })
+
+  children.push.apply(children, newChildren);
+
+  return children;
 }
 
 export function createTextElement (text) {
