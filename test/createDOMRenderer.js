@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
-
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
-import h from '../src/element'
+import {create as h} from '../src/element'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
@@ -136,6 +135,18 @@ test('rendering numbers as text elements', t => {
   t.end()
 })
 
+test('rendering zero as text element', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  render(<span>{0}</span>)
+  t.equal(
+    el.innerHTML,
+    '<span>0</span>',
+    'zero rendered correctly'
+  )
+  t.end()
+})
+
 test('rendering the same node', t => {
   let el = document.createElement('div')
   let render = createDOMRenderer(el)
@@ -188,5 +199,48 @@ test('#339 - removing nodes that contain a text node', t => {
 
   render(<ViewOne />)
   render(<ViewTwo />)
+  t.end()
+})
+
+test('#366 - cached vnodes for thunks are correct', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  const data = [
+    {id: 1, title: 'la french'},
+    {id: 2, title: 'the homesman'},
+    {id: 3, title: 'mr. turner'}
+  ]
+
+  let Card = {
+    render: ({ props }) => {
+      return <li id={props.id}>
+        <div>{props.title}</div>
+      </li>
+    }
+  }
+
+  let App = {
+    render: ({ props }) => {
+      return <ul id='strap-list'>
+        {data.map((card) => <Card
+          key={card.id}
+          id={card.id}
+          title={card.title}
+        />)}
+      </ul>
+    }
+  }
+
+  let vnode = <App />
+  render(vnode)
+
+  let ul = vnode.state.vnode
+
+  t.notEqual(
+    ul.children[0].state.vnode,
+    ul.children[1].state.vnode
+  )
+
   t.end()
 })

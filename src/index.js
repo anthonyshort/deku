@@ -1,9 +1,16 @@
-import element from './element'
-import string from './string'
-import dom from './dom'
+import * as diff from './diff'
+import * as vnode from './element'
+import * as string from './string'
+import * as dom from './dom'
+
+const element = vnode.create
+const h = vnode.create
 
 export {
   element,
   string,
-  dom
+  vnode,
+  diff,
+  dom,
+  h
 }

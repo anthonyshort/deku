@@ -1,6 +1,6 @@
+import {isText, isThunk, createPath} from '../element'
 import {setAttribute} from './setAttribute'
-import {isText, isThunk, createPath} from '../shared/utils'
-import svg from '../shared/svg'
+import svg from './svg'
 const cache = {}
 
 /**
@@ -11,12 +11,15 @@ const cache = {}
 
 export default function createElement (vnode, path, dispatch, context) {
   if (isText(vnode)) {
-    return document.createTextNode(vnode.nodeValue || '')
+    let value = typeof vnode.nodeValue === 'string' || typeof vnode.nodeValue === 'number'
+      ? vnode.nodeValue
+      : ''
+    return document.createTextNode(value)
   }
 
   if (isThunk(vnode)) {
-    let { props, data, children } = vnode
-    let { render, onCreate } = data
+    let { props, component, children } = vnode
+    let { render, onCreate } = component
     let model = {
       children,
       props,
@@ -32,8 +35,10 @@ export default function createElement (vnode, path, dispatch, context) {
       context
     )
     if (onCreate) onCreate(model)
-    vnode.data.vnode = output
-    vnode.data.model = model
+    vnode.state = {
+      vnode: output,
+      model: model
+    }
     return DOMElement
   }
 

@@ -1,7 +1,7 @@
 /** @jsx h */
 import test from 'tape'
 import {diffChildren, Actions} from '../src/diff'
-import h, {createTextElement} from '../src/element'
+import {create as h, createTextElement} from '../src/element'
 
 test('diffChildren', t => {
   let {insertChild, removeChild, updateChild, setAttribute, updateChildren} = Actions

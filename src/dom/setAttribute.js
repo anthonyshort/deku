@@ -1,8 +1,8 @@
-import {isValidAttribute} from '../shared/utils'
-import events from '../shared/events'
-import svg from '../shared/svg'
+import {isValidAttribute} from '../element'
 import indexOf from 'index-of'
 import setValue from 'setify'
+import events from './events'
+import svg from './svg'
 
 export function removeAttribute (DOMElement, name, previousValue) {
   let eventType = events[name]
@@ -42,9 +42,6 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     }
     DOMElement.addEventListener(eventType, value)
     return
-  }
-  if (typeof value === 'function') {
-    value = value(DOMElement, name)
   }
   if (!isValidAttribute(value)) {
     removeAttribute(DOMElement, name, previousValue)

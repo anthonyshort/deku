@@ -1,7 +1,7 @@
 /** @jsx h */
 import test from 'tape'
 import {diffNode, Actions} from '../src/diff'
-import h, {createTextElement} from '../src/element'
+import {create as h, createTextElement} from '../src/element'
 
 test('diffing the same nodes should bail', t => {
   let node = <div />
@@ -93,10 +93,9 @@ test('diffing thunks', t => {
   let renderDiv = () => <div />
   let renderSpan = () => <span />
   let One = { render: renderDiv }
-  let Two = { render: renderDiv }
   let Three = { render: renderSpan }
   let one = <One />
-  let two = <Two />
+  let two = <One />
   let three = <Three />
 
   t.deepEqual(

@@ -52,7 +52,7 @@ test('setAttribute (innerHTML)', t => {
   t.end()
 })
 
-test('setAttribute (function value)', t => {
+test.skip('setAttribute (function value)', t => {
   let DOMElement = document.createElement('div')
   setAttribute(DOMElement, 'class', el => 'bar')
   t.equal(DOMElement.className, 'bar', 'function as a value')

@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex, isThunk} from '../shared/utils'
+import {isThunk, createPath} from '../element'
 import createElement from './createElement'
 import {Actions, diffNode} from '../diff'
 
@@ -46,9 +46,9 @@ export default function patch (dispatch, context) {
         })
       },
       updateThunk: (prev, next, path) => {
-        let { props, children } = next
-        let { render, onUpdate } = next.data
-        let prevNode = prev.data.vnode
+        let { props, children, component } = next
+        let { render, onUpdate } = component
+        let prevNode = prev.state.vnode
         let model = {
           children,
           props,
@@ -57,11 +57,13 @@ export default function patch (dispatch, context) {
           context
         }
         let nextNode = render(model)
-        let changes = diffNode(prevNode, nextNode, path)
+        let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
         DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
         if (onUpdate) onUpdate(model)
-        next.data.vnode = nextNode
-        next.data.model = model
+        next.state = {
+          vnode: nextNode,
+          model: model
+        }
       },
       replaceNode: (prev, next, path) => {
         let newEl = createElement(next, path, dispatch, context)
@@ -87,14 +89,29 @@ export default function patch (dispatch, context) {
 
 function removeThunks (vnode) {
   while (isThunk(vnode)) {
-    let { onRemove, model } = vnode.data
+    let { component, state } = vnode
+    let { onRemove } = component
+    let { model } = state
     if (onRemove) onRemove(model)
-    vnode = vnode.data.vnode
+    vnode = state.vnode
   }
 
   if (vnode.children) {
     for (var i = 0; i < vnode.children.length; i++) {
       removeThunks(vnode.children[i])
     }
+  }
+}
+
+/**
+ * Slightly nicer insertBefore
+ */
+
+export let insertAtIndex = (parent, index, el) => {
+  var target = parent.childNodes[index]
+  if (target) {
+    parent.insertBefore(el, target)
+  } else {
+    parent.appendChild(el)
   }
 }

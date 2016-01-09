@@ -1,7 +1,7 @@
 /** @jsx h */
 import test from 'tape'
 import {diffAttributes, Actions} from '../src/diff'
-import h from '../src/element'
+import {create as h} from '../src/element'
 let {setAttribute, removeAttribute} = Actions
 
 test('diffAttributes', t => {

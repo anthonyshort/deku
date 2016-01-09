@@ -11,7 +11,7 @@
  * ])
  */
 
-export default function element (type, attributes, ...children) {
+export function create (type, attributes, ...children) {
   if (!type) throw new TypeError('element() needs a type.')
 
   attributes = attributes || {}
@@ -28,7 +28,7 @@ export default function element (type, attributes, ...children) {
   }
 
   if (typeof type === 'function') {
-    return createThunkElement({render: type, ...type}, key, attributes, children);
+    return createThunkElement({render: type, ...type}, key, attributes, children)
   }
 
   return {
@@ -39,16 +39,27 @@ export default function element (type, attributes, ...children) {
   }
 }
 
+/**
+ * Cleans up the array of child elements.
+ * - Flattens nested arrays
+ * - Converts raw strings and numbers into vnodes
+ * - Filters out undefined elements
+ */
+
 function reduceChildren (children, vnode) {
   if (typeof vnode === 'string' || typeof vnode === 'number') {
     children.push(createTextElement(vnode))
   } else if (Array.isArray(vnode)) {
-    children = [...children, ...vnode]
+    children = [...children, ...(vnode.reduce(reduceChildren, []))]
   } else if (typeof vnode !== 'undefined') {
     children.push(vnode)
   }
   return children
 }
+
+/**
+ * Text nodes are stored as objects to keep things simple
+ */
 
 export function createTextElement (text) {
   return {
@@ -57,12 +68,79 @@ export function createTextElement (text) {
   }
 }
 
-export function createThunkElement (data, key, props, children) {
+/**
+ * Lazily-rendered virtual nodes
+ */
+
+export function createThunkElement (component, key, props, children) {
   return {
     type: '#thunk',
     children,
     props,
-    data,
+    component,
     key
   }
+}
+
+/**
+ * Is a vnode a thunk?
+ */
+
+export let isThunk = (node) => {
+  return node.type === '#thunk'
+}
+
+/**
+ * Is a vnode a text node?
+ */
+
+export let isText = (node) => {
+  return node.type === '#text'
+}
+
+/**
+ * Determine if two virtual nodes are the same type
+ */
+
+export let isSameThunk = (left, right) => {
+  return isThunk(left) && isThunk(right) && left.component === right.component
+}
+
+/**
+ * Group an array of virtual elements by their key, using index as a fallback.
+ */
+
+export let groupByKey = (children) => {
+  return children.reduce((acc, child, i) => {
+    if (child != null && child !== false) {
+      acc.push({
+        key: String(child.key || i),
+        item: child,
+        index: i
+      })
+    }
+    return acc
+  }, [])
+}
+
+/**
+ * Check if an attribute should be rendered into the DOM.
+ */
+
+export function isValidAttribute (value) {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'function') return false
+  if (value === '') return true
+  if (value === undefined) return false
+  if (value === null) return false
+  if (value === false) return false
+  return true
+}
+
+/**
+ * Create a node path, eg. (23,5,2,4) => '23.5.2.4'
+ */
+
+export let createPath = (...args) => {
+  return args.join('.')
 }

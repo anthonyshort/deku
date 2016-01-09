@@ -1,4 +1,4 @@
-import {isText, isValidAttribute, isThunk} from '../shared/utils'
+import {isText, isThunk, isValidAttribute} from '../element'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -21,14 +21,14 @@ function attributesToString (attributes) {
  * object that will be given to all components.
  */
 
-export default function renderString (element, context, path = '0') {
+export function renderString (element, context, path = '0') {
   if (isText(element)) {
     return element.nodeValue
   }
 
   if (isThunk(element)) {
-    let { props, data, children } = element
-    let { render } = data
+    let { props, component, children } = element
+    let { render } = component
     let output = render({
       children,
       props,

@@ -1,6 +1,6 @@
 /** @jsx h */
 import createDOMRenderer from '../src/dom/createRenderer'
-import h from '../src/element'
+import {h} from '../src'
 import test from 'tape'
 import trigger from 'trigger-event'
 
@@ -182,5 +182,52 @@ test('calling onRemove hook correctly', t => {
   t.plan(2)
   render(<Component name='Tom' />)
   render(<div />)
+  t.end()
+})
+
+test('path should stay the same on when thunk is updated', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  document.body.appendChild(el)
+  let MyButton = {
+    onUpdate ({path}) {
+      t.equal(path, '0.0.0', 'onUpdate')
+    },
+    render ({path, children}) {
+      t.equal(path, '0.0.0', 'onRender')
+      return <button onClick={update}>{children}</button>
+    }
+  }
+  let MyWrapper = {
+    render ({path}) {
+      t.equal(path, '0', 'Wrapper onRender')
+      return <div>
+        <MyButton>Hello World!</MyButton>
+      </div>
+    }
+  }
+  let update = () => {
+    render(<MyWrapper />)
+  }
+  update()
+  trigger(el.querySelector('button'), 'click')
+  document.body.removeChild(el)
+  t.end()
+})
+
+test('path should stay the same on when thunk is replaced', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+  let Thunk = {
+    render ({path, children, props}) {
+      t.equal(path, props.expectedPath, 'onRender')
+      return children[0] || <div/>
+    }
+  }
+  render(<div><span /></div>)
+  render(<div><Thunk expectedPath='0.0' /></div>)
+  render(<div><span /></div>)
+  render(<div></div>)
+  render(<div><Thunk expectedPath='0.0'><Thunk expectedPath='0.0.0' /></Thunk></div>)
   t.end()
 })

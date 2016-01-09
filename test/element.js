@@ -1,7 +1,14 @@
 /** @jsx h */
-import {groupByKey} from '../src/shared/utils'
-import h from '../src/element'
 import test from 'tape'
+import {create as h, groupByKey} from '../src/element'
+
+test('Element should accept strings as children', t => {
+  let vnode = h('span', {}, ['Hello'])
+  t.assert(
+    vnode.children[0].type === '#text'
+  )
+  t.end()
+})
 
 test('groupByKey', t => {
   let one = <div/>
