@@ -2,9 +2,12 @@
 
 Being purely functional, Hot Module Replacement (HMR), i.e. code swapping at runtime, comes with virtually no cost while using **deku**.
 
-Here is therefore how to setup HMR for **deku** using [webpack](https://webpack.github.io/).
+* [Webpack](#-webpack)
+* [Browserify](#-browserify)
 
-## 1. Installing the necessary dependencies
+## Webpack
+
+### 1. Install dependencies
 
 First we need to create a project:
 
@@ -21,7 +24,7 @@ npm install --save deku
 npm install --save-dev babel-core babel-loader babel-plugin-transform-react-jsx babel-preset-es2015 express webpack webpack-dev-middleware webpack-hot-middleware
 ```
 
-## 2. Create a webpack config
+### 2. Create a webpack config
 
 The following webpack config will enable HMR and compile ES2015/JSX code.
 
@@ -65,7 +68,7 @@ module.exports = {
 
 ```
 
-## 3. Create a development server
+### 3. Create a development server
 
 We need to setup a little server that will serve our code and assets while being able to send HMR updates.
 
@@ -96,7 +99,7 @@ app.listen(3000, 'localhost', function (err) {
 });
 ```
 
-## 4. Creating our HTML file, JS entry and a root component
+### 4. Creating our HTML file, JS entry and a root component
 
 ```html
 <!DOCTYPE html>
@@ -112,7 +115,7 @@ app.listen(3000, 'localhost', function (err) {
 ```
 
 ```js
-file: components/Application.jsx
+// file: components/Application.jsx
 
 import {element} from 'deku';
 
@@ -120,12 +123,8 @@ export default {
   render() {
     return (
       <div>
-        <p>
-          Hello World!
-        </p>
-        <div>
-          <button>Click Me</button>
-        </div>
+        <p>Hello World!</p>
+        <button>Click Me</button>
       </div>
     );
   }
@@ -133,7 +132,7 @@ export default {
 ```
 
 ```js
-file: main.jsx
+// file: main.jsx
 
 import {dom, element} from 'deku';
 import Application from './components/Application.jsx';
@@ -141,24 +140,24 @@ import Application from './components/Application.jsx';
 const render = dom.createRenderer(document.getElementById('mount'));
 
 // Rendering function
-function renderApplication(Component) {
+function update (Component) {
   render(<Component />)
 }
 
 // First render
-renderApplication(Application);
+update(Application);
 
 // Hooking into HMR
 // This is the important part as it will reload your code and re-render the app accordingly
 if (module.hot) {
   module.hot.accept('./components/Application.jsx', function() {
     const nextApplication = require('./components/Application.jsx').default;
-    renderApplication(nextApplication);
+    update(nextApplication);
   });
 }
 ```
 
-## 5. Starting the development server
+### 5. Starting the development server
 
 Now, our working directory should look like the following:
 
@@ -182,3 +181,55 @@ node server.js
 Wait for webpack to perform the initial compilation and let's visit `localhost:3000`.
 
 You should now be able to edit your components without reloading the browser!
+
+## Browserify
+
+### 1. Install dependencies
+
+We'll use [watchify] to watch for code changes.
+
+```sh
+npm install --save-dev browserify-hmr watchify
+```
+
+[watchify]: https://github.com/substack/watchify
+
+### 2. Set up HMR hooks
+
+Use the HMR API's `module.hot.accept()` to re-run `render()` when code updates happen.
+
+```js
+// The root deku component.
+let App = require('./components/app')
+
+// The deku renderer.
+let store = createStore(/* ... */)
+let render = createRenderer(document.body, store.dispatch)
+
+// Running this will refresh your page with the latest
+// components and the latest state.
+function update () {
+  render(<App />, store.getState())
+}
+
+update()
+
+// This is the important part. It will re-render in place
+// after updating your code.
+if (module.hot) {
+  module.hot.accept('./components/app', function () {
+    App = require('./components/app')
+    update()
+  }
+}
+```
+
+[browserify-hmr]: https://github.com/AgentME/browserify-hmr
+
+### 3. Run watchify
+
+Use watchify with `-p browserify-hmr` to enable hot module replacement.
+
+```sh
+watchify -p browserify-hmr index.js -o public/application.js
+```
