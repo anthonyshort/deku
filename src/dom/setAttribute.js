@@ -43,9 +43,6 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     DOMElement.addEventListener(eventType, value)
     return
   }
-  if (typeof value === 'function') {
-    value = value(DOMElement, name)
-  }
   if (!isValidAttribute(value)) {
     removeAttribute(DOMElement, name, previousValue)
     return
