@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="4.5" data-basepath="../.." data-revision="Sat Jan 09 2016 10:07:34 GMT-0800 (PST)">
+    <div class="book" data-level="4.5" data-basepath="../.." data-revision="Sat Jan 09 2016 11:10:57 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -501,8 +501,12 @@
                     
                         <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/advanced/hmr.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="hot-module-replacement">Hot Module Replacement</h1>
 <p>Being purely functional, Hot Module Replacement (HMR), i.e. code swapping at runtime, comes with virtually no cost while using <strong>deku</strong>.</p>
-<p>Here is therefore how to setup HMR for <strong>deku</strong> using <a href="https://webpack.github.io/" target="_blank">webpack</a>.</p>
-<h2 id="1-installing-the-necessary-dependencies">1. Installing the necessary dependencies</h2>
+<ul>
+<li><a href="#-webpack">Webpack</a></li>
+<li><a href="#-browserify">Browserify</a></li>
+</ul>
+<h2 id="webpack">Webpack</h2>
+<h3 id="1-install-dependencies">1. Install dependencies</h3>
 <p>First we need to create a project:</p>
 <pre><code class="lang-bash"><span class="token function">mkdir</span> project
 <span class="token function">cd</span> project
@@ -512,7 +516,7 @@ npm init
 <pre><code class="lang-bash">npm <span class="token function">install</span> <span class="token operator">--</span>save deku
 npm <span class="token function">install</span> <span class="token operator">--</span>save<span class="token operator">-</span>dev babel<span class="token operator">-</span>core babel<span class="token operator">-</span>loader babel<span class="token operator">-</span>plugin<span class="token operator">-</span>transform<span class="token operator">-</span>react<span class="token operator">-</span>jsx babel<span class="token operator">-</span>preset<span class="token operator">-</span>es2015 express webpack webpack<span class="token operator">-</span>dev<span class="token operator">-</span>middleware webpack<span class="token operator">-</span>hot<span class="token operator">-</span>middleware
 </code></pre>
-<h2 id="2-create-a-webpack-config">2. Create a webpack config</h2>
+<h3 id="2-create-a-webpack-config">2. Create a webpack config</h3>
 <p>The following webpack config will enable HMR and compile ES2015/JSX code.</p>
 <pre><code class="lang-js"><span class="token comment" spellcheck="true">// file: webpack.config.js</span>
 
@@ -551,7 +555,7 @@ module<span class="token punctuation">.</span>exports <span class="token operato
   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span><span class="token punctuation">;</span>
 </code></pre>
-<h2 id="3-create-a-development-server">3. Create a development server</h2>
+<h3 id="3-create-a-development-server">3. Create a development server</h3>
 <p>We need to setup a little server that will serve our code and assets while being able to send HMR updates.</p>
 <pre><code class="lang-js"><span class="token comment" spellcheck="true">// file: server.js</span>
 
@@ -578,7 +582,7 @@ app<span class="token punctuation">.</span><span class="token function">listen</
   <span class="token keyword">if</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token keyword">return</span> console<span class="token punctuation">.</span><span class="token function">err</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 </code></pre>
-<h2 id="4-creating-our-html-file-js-entry-and-a-root-component">4. Creating our HTML file, JS entry and a root component</h2>
+<h3 id="4-creating-our-html-file-js-entry-and-a-root-component">4. Creating our HTML file, JS entry and a root component</h3>
 <pre><code class="lang-html"><span class="token doctype">&lt;!DOCTYPE html&gt;</span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">&gt;</span></span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">&gt;</span></span>
@@ -590,7 +594,7 @@ app<span class="token punctuation">.</span><span class="token function">listen</
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">&gt;</span></span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">&gt;</span></span>
 </code></pre>
-<pre><code class="lang-js">file<span class="token punctuation">:</span> components<span class="token operator">/</span>Application<span class="token punctuation">.</span>jsx
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">// file: components/Application.jsx</span>
 
 <span class="token keyword">import</span> <span class="token punctuation">{</span>element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span><span class="token punctuation">;</span>
 
@@ -598,18 +602,14 @@ app<span class="token punctuation">.</span><span class="token function">listen</
   <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">return</span> <span class="token punctuation">(</span>
       <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
-        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>
-          Hello World<span class="token operator">!</span>
-        <span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
-        <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
-          <span class="token operator">&lt;</span>button<span class="token operator">&gt;</span>Click Me<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
-        <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>p<span class="token operator">&gt;</span>Hello World<span class="token operator">!</span><span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
+        <span class="token operator">&lt;</span>button<span class="token operator">&gt;</span>Click Me<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">&gt;</span>
       <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
     <span class="token punctuation">)</span><span class="token punctuation">;</span>
   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
 </code></pre>
-<pre><code class="lang-js">file<span class="token punctuation">:</span> main<span class="token punctuation">.</span>jsx
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">// file: main.jsx</span>
 
 <span class="token keyword">import</span> <span class="token punctuation">{</span>dom<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span><span class="token punctuation">;</span>
 <span class="token keyword">import</span> Application from <span class="token string">&apos;./components/Application.jsx&apos;</span><span class="token punctuation">;</span>
@@ -617,23 +617,23 @@ app<span class="token punctuation">.</span><span class="token function">listen</
 <span class="token keyword">const</span> render <span class="token operator">=</span> dom<span class="token punctuation">.</span><span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span><span class="token function">getElementById</span><span class="token punctuation">(</span><span class="token string">&apos;mount&apos;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
 <span class="token comment" spellcheck="true">// Rendering function</span>
-<span class="token keyword">function</span> <span class="token function">renderApplication</span><span class="token punctuation">(</span>Component<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token keyword">function</span> update <span class="token punctuation">(</span>Component<span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>Component <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
 
 <span class="token comment" spellcheck="true">// First render</span>
-<span class="token function">renderApplication</span><span class="token punctuation">(</span>Application<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">update</span><span class="token punctuation">(</span>Application<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
 <span class="token comment" spellcheck="true">// Hooking into HMR</span>
 <span class="token comment" spellcheck="true">// This is the important part as it will reload your code and re-render the app accordingly</span>
 <span class="token keyword">if</span> <span class="token punctuation">(</span>module<span class="token punctuation">.</span>hot<span class="token punctuation">)</span> <span class="token punctuation">{</span>
   module<span class="token punctuation">.</span>hot<span class="token punctuation">.</span><span class="token function">accept</span><span class="token punctuation">(</span><span class="token string">&apos;./components/Application.jsx&apos;</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">const</span> nextApplication <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">&apos;./components/Application.jsx&apos;</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">;</span>
-    <span class="token function">renderApplication</span><span class="token punctuation">(</span>nextApplication<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">update</span><span class="token punctuation">(</span>nextApplication<span class="token punctuation">)</span><span class="token punctuation">;</span>
   <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
 </code></pre>
-<h2 id="5-starting-the-development-server">5. Starting the development server</h2>
+<h3 id="5-starting-the-development-server">5. Starting the development server</h3>
 <p>Now, our working directory should look like the following:</p>
 <pre><code>project/
   components/
@@ -648,6 +648,41 @@ app<span class="token punctuation">.</span><span class="token function">listen</
 </code></pre>
 <p>Wait for webpack to perform the initial compilation and let&apos;s visit <code>localhost:3000</code>.</p>
 <p>You should now be able to edit your components without reloading the browser!</p>
+<h2 id="browserify">Browserify</h2>
+<h3 id="1-install-dependencies">1. Install dependencies</h3>
+<p>We&apos;ll use <a href="https://github.com/substack/watchify" target="_blank">watchify</a> to watch for code changes.</p>
+<pre><code class="lang-sh">npm install --save-dev browserify-hmr watchify
+</code></pre>
+<h3 id="2-set-up-hmr-hooks">2. Set up HMR hooks</h3>
+<p>Use the HMR API&apos;s <code>module.hot.accept()</code> to re-run <code>render()</code> when code updates happen.</p>
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">// The root deku component.</span>
+<span class="token keyword">let</span> App <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">&apos;./components/app&apos;</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// The deku renderer.</span>
+<span class="token keyword">let</span> store <span class="token operator">=</span> <span class="token function">createStore</span><span class="token punctuation">(</span><span class="token comment" spellcheck="true">/* ... */</span><span class="token punctuation">)</span>
+<span class="token keyword">let</span> render <span class="token operator">=</span> <span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// Running this will refresh your page with the latest</span>
+<span class="token comment" spellcheck="true">// components and the latest state.</span>
+<span class="token keyword">function</span> update <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>App <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> store<span class="token punctuation">.</span><span class="token function">getState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">update</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// This is the important part. It will re-render in place</span>
+<span class="token comment" spellcheck="true">// after updating your code.</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span>module<span class="token punctuation">.</span>hot<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  module<span class="token punctuation">.</span>hot<span class="token punctuation">.</span><span class="token function">accept</span><span class="token punctuation">(</span><span class="token string">&apos;./components/app&apos;</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    App <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">&apos;./components/app&apos;</span><span class="token punctuation">)</span>
+    <span class="token function">update</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<h3 id="3-run-watchify">3. Run watchify</h3>
+<p>Use watchify with <code>-p browserify-hmr</code> to enable hot module replacement.</p>
+<pre><code class="lang-sh">watchify -p browserify-hmr index.js -o public/application.js
+</code></pre>
 
                     
                     </section>
