@@ -1,8 +1,7 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex, createPath} from '../shared/utils'
+import {isThunk, createPath} from '../element'
 import createElement from './createElement'
 import {Actions, diffNode} from '../diff'
-import {isThunk} from '../element'
 
 /**
  * Modify a DOM element given an array of actions. A context can be set
@@ -101,5 +100,18 @@ function removeThunks (vnode) {
     for (var i = 0; i < vnode.children.length; i++) {
       removeThunks(vnode.children[i])
     }
+  }
+}
+
+/**
+ * Slightly nicer insertBefore
+ */
+
+export let insertAtIndex = (parent, index, el) => {
+  var target = parent.childNodes[index]
+  if (target) {
+    parent.insertBefore(el, target)
+  } else {
+    parent.appendChild(el)
   }
 }

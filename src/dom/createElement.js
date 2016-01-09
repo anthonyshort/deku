@@ -1,7 +1,6 @@
+import {isText, isThunk, createPath} from '../element'
 import {setAttribute} from './setAttribute'
-import {createPath} from '../shared/utils'
-import {isText, isThunk} from '../element'
-import svg from '../shared/svg'
+import svg from './svg'
 const cache = {}
 
 /**
