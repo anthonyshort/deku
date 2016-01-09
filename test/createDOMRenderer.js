@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
