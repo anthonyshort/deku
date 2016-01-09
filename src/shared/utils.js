@@ -13,47 +13,6 @@ export function isValidAttribute (value) {
 }
 
 /**
- * Group an array of virtual elements by their key, using index as a fallback.
- */
-
-export let groupByKey = (children) => {
-  return children.reduce((acc, child, i) => {
-    if (child != null && child !== false) {
-      acc.push({
-        key: String(child.key || i),
-        item: child,
-        index: i
-      })
-    }
-    return acc
-  }, [])
-}
-
-/**
- * Is a vnode a thunk?
- */
-
-export let isThunk = (node) => {
-  return node.type === '#thunk'
-}
-
-/**
- * Is a vnode a text node?
- */
-
-export let isText = (node) => {
-  return node.type === '#text'
-}
-
-/**
- * Determine if two virtual nodes are the same type
- */
-
-export let isSameThunk = (left, right) => {
-  return isThunk(left) && isThunk(right) && left.component === right.component
-}
-
-/**
  * Create a node path, eg. (23,5,2,4) => '23.5.2.4'
  */
 

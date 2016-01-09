@@ -1,4 +1,5 @@
-import {isText, isValidAttribute, isThunk} from '../shared/utils'
+import {isValidAttribute} from '../shared/utils'
+import {isText, isThunk} from '../element'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This

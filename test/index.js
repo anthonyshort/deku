@@ -1,5 +1,5 @@
 import 'babel-polyfill'
-import './groupByKey'
+import './element'
 import './setAttribute'
 import './createElement'
 import './patch'

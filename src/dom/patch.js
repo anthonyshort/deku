@@ -1,7 +1,8 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex, isThunk} from '../shared/utils'
+import {insertAtIndex} from '../shared/utils'
 import createElement from './createElement'
 import {Actions, diffNode} from '../diff'
+import {isThunk} from '../element'
 
 /**
  * Modify a DOM element given an array of actions. A context can be set
