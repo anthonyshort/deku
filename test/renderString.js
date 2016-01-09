@@ -1,7 +1,6 @@
 /** @jsx h */
 import test from 'tape'
-import {string} from '../src'
-import h from '../src/element'
+import {string, h} from '../src'
 const {render} = string
 
 test('render to a string', t => {

@@ -3,7 +3,7 @@ import test from 'tape'
 import createPatch from '../src/dom/patch'
 import trigger from 'trigger-event'
 import {Actions} from '../src/diff'
-import h, {createTextElement} from '../src/element'
+import {create as h, createTextElement} from '../src/element'
 
 // Create a patch function with a dummy dispatcher.
 let patch = createPatch(action => console.log(action))

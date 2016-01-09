@@ -21,7 +21,7 @@ function attributesToString (attributes) {
  * object that will be given to all components.
  */
 
-export default function renderString (element, context, path = '0') {
+export function renderString (element, context, path = '0') {
   if (isText(element)) {
     return element.nodeValue
   }

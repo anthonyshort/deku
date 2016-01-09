@@ -1,9 +1,7 @@
-/* eslint-disable react/prop-types */
-
 /** @jsx h */
 import test from 'tape'
 import createDOMRenderer from '../src/dom/createRenderer'
-import h from '../src/element'
+import {create as h} from '../src/element'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
