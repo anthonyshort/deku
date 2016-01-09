@@ -2,7 +2,7 @@
 import test from 'tape'
 import {string} from '../src'
 import h from '../src/element'
-const {render} = string 
+const {render} = string
 
 test('render to a string', t => {
   t.equal(
