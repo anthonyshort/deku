@@ -2,8 +2,8 @@
 
 Being purely functional, Hot Module Replacement (HMR), i.e. code swapping at runtime, comes with virtually no cost while using **deku**.
 
-* [Webpack](#-webpack)
-* [Browserify](#-browserify)
+* [Webpack](#webpack)
+* [Browserify](#browserify)
 
 ## Webpack
 
