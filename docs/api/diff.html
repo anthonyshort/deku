@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>Components | Deku</title>
+        <title>diff | Deku</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 2.4.3">
@@ -33,10 +33,10 @@
         
     
     
-    <link rel="next" href="../../docs/advanced/index.html" />
+    <link rel="next" href="../../docs/api/vnode.html" />
     
     
-    <link rel="prev" href="../../docs/basics/events.html" />
+    <link rel="prev" href="../../docs/api/element.html" />
     
 
         
@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.5" data-basepath="../.." data-revision="Sat Jan 09 2016 10:07:34 GMT-0800 (PST)">
+    <div class="book" data-level="5.4" data-basepath="../.." data-revision="Sat Jan 09 2016 10:07:34 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -181,7 +181,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.5" data-path="docs/basics/components.html">
+        <li class="chapter " data-level="3.5" data-path="docs/basics/components.html">
             
                 
                     <a href="../../docs/basics/components.html">
@@ -358,7 +358,7 @@
             
         </li>
     
-        <li class="chapter " data-level="5.4" data-path="docs/api/diff.html">
+        <li class="chapter active" data-level="5.4" data-path="docs/api/diff.html">
             
                 
                     <a href="../../docs/api/diff.html">
@@ -499,108 +499,59 @@
                 
                     <section class="normal" id="section-">
                     
-                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/basics/components.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="components">Components</h1>
-<p>Components are a way to define logical, re-usable pieces of your interface - tabs, buttons, forms. In Deku, components are just a special type of virtual element that is not rendered until it&apos;s needed. Internally, components are known as &quot;thunks&quot;. This means that only the minimal number of virtual elements need to be re-created and patched on each render.</p>
-<p>In addition to providing a performance boost, you are able to hook into &quot;lifecycle events&quot; when a component is created, updated, or removed.</p>
-<p>Components are:</p>
-<ul>
-<li>Plain objects with at least <code>render</code> function;</li>
-<li>Able to provide a performance boost by caching the result of each render;</li>
-<li>Uniquely identifiable using the <code>path</code> value, allowing you to store local state;</li>
-<li>Able to trigger actions when they are created, updated, or removed;</li>
-<li>Used like custom elements within your app</li>
-</ul>
-<p>Unlike React, components in Deku are completely stateless, there&apos;s no <code>setState</code> function or <code>this</code> used.</p>
-<h2 id="example">Example</h2>
-<p>Here&apos;s a simple <code><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>App</span> <span class="token punctuation">/&gt;</span></span></code> component:</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> children<span class="token punctuation">,</span> context<span class="token punctuation">,</span> path <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token punctuation">(</span>
-    <span class="token operator">&lt;</span>div <span class="token keyword">class</span><span class="token operator">=</span><span class="token string">&quot;App&quot;</span> hidden<span class="token operator">=</span><span class="token punctuation">{</span>props<span class="token punctuation">.</span>hidden<span class="token punctuation">}</span> color<span class="token operator">=</span><span class="token punctuation">{</span>context<span class="token punctuation">.</span>theme<span class="token punctuation">.</span>color<span class="token punctuation">}</span><span class="token operator">&gt;</span>
-      <span class="token punctuation">{</span>children<span class="token punctuation">}</span>
-    <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
-  <span class="token punctuation">}</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">function</span> onCreate <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> dispatch <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token function">dispatch</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
-    type<span class="token punctuation">:</span> <span class="token string">&apos;APP_STARTED&apos;</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">function</span> onRemove <span class="token punctuation">(</span><span class="token punctuation">{</span> props<span class="token punctuation">,</span> dispatch <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token function">dispatch</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
-    type<span class="token punctuation">:</span> <span class="token string">&apos;APP_STOPPED&apos;</span>
-  <span class="token punctuation">}</span><span class="token punctuation">)</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">{</span>
-  render<span class="token punctuation">,</span>
-  onCreate<span class="token punctuation">,</span>
-  onRemove
-<span class="token punctuation">}</span>
-</code></pre>
-<p>To use this component within other components, you simply import and compose it:</p>
-<pre><code class="lang-js"><span class="token keyword">import</span> App from <span class="token string">&apos;./app&apos;</span>
-
-<span class="token keyword">function</span> render <span class="token punctuation">(</span>model<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token operator">&lt;</span>App hidden<span class="token operator">=</span><span class="token punctuation">{</span><span class="token keyword">false</span><span class="token punctuation">}</span> <span class="token operator">/</span><span class="token operator">&gt;</span>
-<span class="token punctuation">}</span>
-
-<span class="token keyword">export</span> <span class="token punctuation">{</span>
-  render
-<span class="token punctuation">}</span>
-</code></pre>
-<p>And you can do the same at top-level using <code>render</code>, while also setting the <code>context</code>:</p>
-<pre><code class="lang-js"><span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>App hidden<span class="token operator">=</span><span class="token punctuation">{</span><span class="token keyword">false</span><span class="token punctuation">}</span> <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
-  theme<span class="token punctuation">:</span> <span class="token punctuation">{</span>
-    color<span class="token punctuation">:</span> <span class="token string">&apos;red&apos;</span>
-  <span class="token punctuation">}</span>
-<span class="token punctuation">}</span><span class="token punctuation">)</span>
-</code></pre>
-<h2 id="model">Model</h2>
-<p>The model is passed into the Component function and is contains the state that you can use to create virtual nodes. The model is immutable</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> props <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token operator">&lt;</span>p color<span class="token operator">=</span><span class="token punctuation">{</span>props<span class="token punctuation">.</span>color<span class="token punctuation">}</span><span class="token operator">&gt;</span>Hello World<span class="token operator">&lt;</span><span class="token operator">/</span>p<span class="token operator">&gt;</span>
-<span class="token punctuation">}</span>
+                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/api/diff.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="-diff"><code>diff</code></h1>
+<p>The <code>diff</code> object provides functions for comparing two virtual nodes. Mostly useful if you&apos;re creating your own renderer.</p>
+<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>diff<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
 </code></pre>
 <h3 id="properties">Properties</h3>
-<h4 id="-props"><code>props</code></h4>
-<p>The values passed into your component as virtual element attributes. For example, passing these attributes into the component:</p>
-<pre><code class="lang-js"><span class="token operator">&lt;</span>App count<span class="token operator">=</span><span class="token punctuation">{</span><span class="token number">5</span><span class="token punctuation">}</span> type<span class="token operator">=</span><span class="token string">&quot;tasks&quot;</span> <span class="token operator">/</span><span class="token operator">&gt;</span>
+<ul>
+<li><a href="#diffNode"><code>diffNode</code></a></li>
+<li><a href="#Actions"><code>Actions</code></a></li>
+</ul>
+<h2 id="-diffnode-prevnode-nextnode"><code>diffNode(prevNode, nextNode)</code></h2>
+<p>Returns the difference between two virtual nodes as an array of actions that can be used by a renderer to patch a view.</p>
+<h3 id="arguments">Arguments</h3>
+<ol>
+<li><code>prevNode</code> <em>(VirtualElement)</em>: The current renderer vnode</li>
+<li><code>nextNode</code> <em>(VirtualElement)</em>: The updated vnode</li>
+</ol>
+<h3 id="returns">Returns</h3>
+<p><code>actions</code> <em>(Array)</em>: An array of <code>Action</code> objects that describe the change that needs to be made to update the view.</p>
+<h3 id="example">Example</h3>
+<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>diff<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+
+<span class="token keyword">const</span> <span class="token punctuation">{</span>diffNode<span class="token punctuation">,</span> Actions<span class="token punctuation">}</span> <span class="token operator">=</span> diff
+
+<span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;div&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token keyword">class</span><span class="token punctuation">:</span> <span class="token string">&apos;foo&apos;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token keyword">let</span> right <span class="token operator">=</span> <span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;div&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token keyword">class</span><span class="token punctuation">:</span> <span class="token string">&apos;bar&apos;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">let</span> changes <span class="token operator">=</span> <span class="token function">diff</span><span class="token punctuation">(</span>left<span class="token punctuation">,</span> right<span class="token punctuation">)</span>
+
+changes<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span>action <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+  Actions<span class="token punctuation">.</span><span class="token keyword">case</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    setAttribute<span class="token punctuation">:</span> <span class="token punctuation">(</span>name<span class="token punctuation">,</span> value<span class="token punctuation">,</span> previousValue<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+      <span class="token comment" spellcheck="true">// update the attribute</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> action<span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
 </code></pre>
-<p>will yield this as <code>model.props</code>:</p>
-<pre><code class="lang-json"><span class="token punctuation">{</span>
-  <span class="token string">&quot;count&quot;</span><span class="token punctuation">:</span> <span class="token number">5</span><span class="token punctuation">,</span>
-  <span class="token string">&quot;type&quot;</span><span class="token punctuation">:</span> <span class="token string">&quot;tasks&quot;</span>
-<span class="token punctuation">}</span>
+<h2 id="-actions"><code>Actions</code></h2>
+<p>An object containing union types for actions produced during the diff. You can create new actions using this object, but this is usually handled by <code>diffNode</code>.</p>
+<h3 id="example">Example</h3>
+<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>diff<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+
+<span class="token keyword">const</span> <span class="token punctuation">{</span>Actions<span class="token punctuation">}</span> <span class="token operator">=</span> diff
+
+<span class="token comment" spellcheck="true">// Create a new action.</span>
+<span class="token keyword">let</span> action <span class="token operator">=</span> Actions<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">&apos;class&apos;</span><span class="token punctuation">,</span> <span class="token string">&apos;foo&apos;</span><span class="token punctuation">,</span> <span class="token string">&apos;bar&apos;</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// Switch between the different action types</span>
+Actions<span class="token punctuation">.</span><span class="token keyword">case</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  setAttribute<span class="token punctuation">:</span> <span class="token punctuation">(</span>name<span class="token punctuation">,</span> value<span class="token punctuation">,</span> previousValue<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// Use the action</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> action<span class="token punctuation">)</span>
 </code></pre>
-<h4 id="-children"><code>children</code></h4>
-<p>The child nodes that are passed to the component.</p>
-<pre><code class="lang-js"><span class="token operator">&lt;</span>App<span class="token operator">&gt;</span>
-  <span class="token operator">&lt;</span>Sidebar <span class="token operator">/</span><span class="token operator">&gt;</span>
-  <span class="token operator">&lt;</span>Content<span class="token operator">&gt;</span>Hello World<span class="token operator">&lt;</span><span class="token operator">/</span>Content<span class="token operator">&gt;</span>
-<span class="token operator">&lt;</span><span class="token operator">/</span>App<span class="token operator">&gt;</span>
-</code></pre>
-<p>The <code>children</code> property will always be an array:</p>
-<pre><code class="lang-js"><span class="token punctuation">[</span>
-  <span class="token operator">&lt;</span>Sidebar <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">,</span>
-  <span class="token operator">&lt;</span>Content<span class="token operator">&gt;</span>Hello World<span class="token operator">&lt;</span><span class="token operator">/</span>Content<span class="token operator">&gt;</span>
-<span class="token punctuation">]</span>
-</code></pre>
-<p>You can use this to render the passed in nodes somewhere within the rendered DOM.</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> children <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span><span class="token punctuation">{</span>children<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
-<span class="token punctuation">}</span>
-</code></pre>
-<h4 id="-path"><code>path</code></h4>
-<p>The unique path to the component within the entire component tree.</p>
-<pre><code class="lang-js"><span class="token keyword">function</span> render <span class="token punctuation">(</span><span class="token punctuation">{</span> path <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token operator">&lt;</span>a onClick<span class="token operator">=</span><span class="token punctuation">{</span><span class="token function">updateState</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">&gt;</span>Save<span class="token operator">&lt;</span><span class="token operator">/</span>a<span class="token operator">&gt;</span>
-<span class="token punctuation">}</span>
-</code></pre>
-<p>Paths in a tree are strings, like <code>0.1.5.2</code>. Each number represents the index of the node in the parent node, so you can use this to find a node within a tree. If a node within that path has a <code>key</code> attribute, we use that instead of the index so that the path is stable even if any elements move around.</p>
-<h4 id="-context"><code>context</code></h4>
-<p>An object that is available to every component in the tree.</p>
 
                     
                     </section>
@@ -611,10 +562,10 @@
         </div>
 
         
-        <a href="../../docs/basics/events.html" class="navigation navigation-prev " aria-label="Previous page: Events"><i class="fa fa-angle-left"></i></a>
+        <a href="../../docs/api/element.html" class="navigation navigation-prev " aria-label="Previous page: element"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../docs/advanced/index.html" class="navigation navigation-next " aria-label="Next page: Advanced"><i class="fa fa-angle-right"></i></a>
+        <a href="../../docs/api/vnode.html" class="navigation navigation-next " aria-label="Next page: vnode"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>
