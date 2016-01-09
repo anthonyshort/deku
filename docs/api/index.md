@@ -3,3 +3,5 @@
 * [dom](dom.md)
 * [string](string.md)
 * [element](element.md)
+* [diff](diff.md)
+* [vnode](vnode.md)
