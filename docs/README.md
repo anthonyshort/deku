@@ -19,3 +19,5 @@
   * [dom](/docs/api/dom.md)
   * [string](/docs/api/string.md)
   * [element](/docs/api/element.md)
+  * [diff](/docs/api/diff.md)
+  * [vnode](/docs/api/vnode.md)
