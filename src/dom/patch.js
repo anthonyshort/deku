@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {insertAtIndex} from '../shared/utils'
+import {insertAtIndex, createPath} from '../shared/utils'
 import createElement from './createElement'
 import {Actions, diffNode} from '../diff'
 import {isThunk} from '../element'
@@ -58,7 +58,7 @@ export default function patch (dispatch, context) {
           context
         }
         let nextNode = render(model)
-        let changes = diffNode(prevNode, nextNode, path)
+        let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
         DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
         if (onUpdate) onUpdate(model)
         next.state = {

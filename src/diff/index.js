@@ -55,7 +55,7 @@ export function diffAttributes (previous, next) {
  * recursively to build up unique paths for each node.
  */
 
-export function diffChildren (previous, next, path) {
+export function diffChildren (previous, next, parentPath) {
   let { insertChild, updateChild, removeChild, insertBefore, updateChildren } = Actions
   let { CREATE, UPDATE, MOVE, REMOVE } = diffActions
   let previousChildren = groupByKey(previous.children)
@@ -65,7 +65,7 @@ export function diffChildren (previous, next, path) {
 
   function effect (type, prev, next, pos) {
     let nextPath = next
-      ? createPath(path, next.key == null ? next.index : next.key)
+      ? createPath(parentPath, next.key == null ? next.index : next.key)
       : null
     switch (type) {
       case CREATE: {
