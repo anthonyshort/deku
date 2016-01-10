@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>vnode | Deku</title>
+        <title>innerHTML | Deku</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 2.4.3">
@@ -33,8 +33,10 @@
         
     
     
+    <link rel="next" href="../../docs/api/index.html" />
     
-    <link rel="prev" href="../../docs/api/diff.html" />
+    
+    <link rel="prev" href="../../docs/advanced/hmr.html" />
     
 
         
@@ -42,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="6.5" data-basepath="../.." data-revision="Sat Jan 09 2016 16:31:12 GMT-0800 (PST)">
+    <div class="book" data-level="5.1" data-basepath="../.." data-revision="Sat Jan 09 2016 16:31:12 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -303,7 +305,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="5.1" data-path="docs/tips/innerhtml.html">
+        <li class="chapter active" data-level="5.1" data-path="docs/tips/innerhtml.html">
             
                 
                     <a href="../../docs/tips/innerhtml.html">
@@ -399,7 +401,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="6.5" data-path="docs/api/vnode.html">
+        <li class="chapter " data-level="6.5" data-path="docs/api/vnode.html">
             
                 
                     <a href="../../docs/api/vnode.html">
@@ -525,37 +527,17 @@
                 
                     <section class="normal" id="section-">
                     
-                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/api/vnode.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="-vnode"><code>vnode</code></h1>
-<p>Contains helper functions for working with virtual nodes. Mostly useful if you&apos;re creating your own renderer.</p>
-<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>vnode<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/tips/innerhtml.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="innerhtml">innerHTML</h1>
+<p>You sometimes need to set the <code>innerHTML</code> content of an element. For example, when you may transform some markdown content into a HTML string that you want rendered.</p>
+<p>You can use the special <code>innerHTML</code> attribute and it will insert the html for you.</p>
+<pre><code class="lang-js"><span class="token keyword">let</span> html <span class="token operator">=</span> <span class="token function">markdown</span><span class="token punctuation">(</span><span class="token string">&apos;**Hello World**&apos;</span><span class="token punctuation">)</span>
+<span class="token operator">&lt;</span>div innerHTML<span class="token operator">=</span><span class="token punctuation">{</span>html<span class="token punctuation">}</span> <span class="token operator">/</span><span class="token operator">&gt;</span>
 </code></pre>
-<h3 id="properties">Properties</h3>
-<ul>
-<li>create</li>
-<li>createTextElement</li>
-<li>createThunkElement</li>
-<li>isThunk</li>
-<li>isText</li>
-<li>isSameThunk</li>
-<li>isValidAttribute</li>
-<li>createPath</li>
-</ul>
-<h2 id="-create-type-attributes-children"><code>create(type, attributes, children)</code></h2>
-<p>An alias for <code>element</code>.</p>
-<h2 id="-createtextelement-text"><code>createTextElement(text)</code></h2>
-<p>Create a virtual text element.</p>
-<h2 id="-createthunkelement-component-key-props-children"><code>createThunkElement(component, key, props, children)</code></h2>
-<p>Create a virtual thunk element. These are lazily-rendered virtual elements.</p>
-<h2 id="-isthunk-vnode"><code>isThunk(vnode)</code></h2>
-<p>Check if a vnode is a thunk type.</p>
-<h2 id="-istext-vnode"><code>isText(vnode)</code></h2>
-<p>Check if a vnode is a text type.</p>
-<h2 id="-issamethunk-prevnode-nextnode"><code>isSameThunk(prevNode, nextNode)</code></h2>
-<p>Check to see if two virtual elements are both the same type of thunk.</p>
-<h2 id="-isvalidattribute-value"><code>isValidAttribute(value)</code></h2>
-<p>Check to see if an attribute is valid and should be rendered.</p>
-<h2 id="-createpath-paths"><code>createPath(...paths)</code></h2>
-<p>Takes arguments and joins them with a <code>.</code> to produce a path.</p>
+<p>Will produce:</p>
+<pre><code class="lang-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>strong</span><span class="token punctuation">&gt;</span></span>Hello World<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>strong</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
 
                     
                     </section>
@@ -566,8 +548,10 @@
         </div>
 
         
-        <a href="../../docs/api/diff.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: diff"><i class="fa fa-angle-left"></i></a>
+        <a href="../../docs/advanced/hmr.html" class="navigation navigation-prev " aria-label="Previous page: Hot Module Replacement"><i class="fa fa-angle-left"></i></a>
         
+        
+        <a href="../../docs/api/index.html" class="navigation navigation-next " aria-label="Next page: API Reference"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>
