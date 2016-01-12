@@ -43,7 +43,7 @@
     "tape": "^4.2.2",
     "tape-run": "^2.1.0",
     "trigger-event": "^1.0.0",
-    "zuul": "^3.7.1"
+    "zuul": "^3.9.0"
   },
   "dependencies": {
     "dift": "^0.1.2",
