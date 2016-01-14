@@ -83,3 +83,16 @@ test('crate element with plain function thunk', t => {
   t.equal(DOMElement.tagName, 'DIV', 'is correct tag')
   t.end()
 })
+
+test('create select element', t => {
+  let DOMElement = createElement(
+    <select>
+      <option>Hello</option>
+      <option selected>World</option>
+    </select>
+  )
+  t.equal(DOMElement.tagName, 'SELECT', 'is correct tag')
+  t.equal(DOMElement.selectedIndex, 1, 'correct option is selected')
+  t.equal(DOMElement.options[1].selected, true, 'correct option is selected')
+  t.end()
+})

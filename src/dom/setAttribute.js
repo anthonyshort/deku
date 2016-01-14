@@ -57,7 +57,7 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     case 'selected':
       DOMElement.selected = value
       // Fix for IE/Safari where select is not correctly selected on change
-      if (DOMElement.tagName === 'OPTION') {
+      if (DOMElement.tagName === 'OPTION' && DOMElement.parentNode) {
         let select = DOMElement.parentNode
         select.selectedIndex = indexOf(select.options, DOMElement)
       }
