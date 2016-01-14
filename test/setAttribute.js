@@ -131,3 +131,23 @@ test('selecting option elements', t => {
   t.equal(options[1].selected, true, 'is selected')
   t.end()
 })
+
+test('setting value to svg element', t => {
+  let namespace = 'http://www.w3.org/2000/svg';
+  let d = 'M150 0 L75 200 L225 200 Z';
+  let svg = document.createElementNS(namespace, 'svg');
+  let path = document.createElementNS(namespace, 'path');
+
+  svg.appendChild(path);
+  document.body.appendChild(svg);
+
+  // SVG native attributes (not including xlink:href) do not share the SVG namespace
+  // working test case `path.setAttributeNS(null, 'd', d)`;
+  setAttribute(path, 'd', d);
+
+  t.equal(path.getBoundingClientRect().width, 150, 'svg path width');
+  t.equal(path.getBoundingClientRect().height, 200, 'svg path height');
+
+  document.body.removeChild(svg);
+  t.end();
+})
