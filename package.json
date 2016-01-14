@@ -48,7 +48,7 @@
   "dependencies": {
     "dift": "^0.1.2",
     "index-of": "^0.2.0",
-    "is-svg-attribute": "^1.0.2",
+    "is-svg-attribute": "^1.2.0",
     "is-svg-element": "^1.0.1",
     "setify": "^1.0.3",
     "tape-run": "^2.1.1",
