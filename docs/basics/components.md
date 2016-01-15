@@ -24,7 +24,7 @@ function render ({ props, children, context, path }) {
     <div class="App" hidden={props.hidden} color={context.theme.color}>
       {children}
     </div>
-  }
+  )
 }
 
 function onCreate ({ props, dispatch }) {
