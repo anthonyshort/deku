@@ -6,13 +6,14 @@ import * as app from './app'
 
 const element = vnode.create
 const h = vnode.create
+const createApp = app.create
 
 export {
+  createApp,
   element,
   string,
   vnode,
   diff,
-  app,
   dom,
   h
 }

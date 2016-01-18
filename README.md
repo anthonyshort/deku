@@ -12,12 +12,13 @@ Instead of using classes and local state, Deku just uses functions and pushes th
 
 It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.
 
-Deku consists of 4 modules packaged together for convenience:
+Deku consists of 5 modules packaged together for convenience:
 
-* `element`: Creating virtual elements
-* `diff`: Computing the difference between two virtual elements
-* `dom`: DOM renderer
-* `string`: HTML string renderer
+* `element`: Create virtual elements.
+* `diff`: Compute the difference between two virtual elements. You can use this if you're creating a custom renderer.
+* `dom`: Create DOM elements from virtual elements and update them using the result of a diff. You'll only use this directly if you're building your own app creator.
+* `string`: Render a HTML string from virtual elements.
+* `createApp`: Kickstart an app for the browser.
 
 ### Installation
 
@@ -32,10 +33,10 @@ We support the latest two versions of each browser. This means we only support I
 ### Example
 
 ```js
-import {dom, element} from 'deku'
+/** @jsx element */
+import {element, createApp} from 'deku'
 import {createStore} from 'redux'
 import reducer from './reducer'
-let {createRenderer} = dom
 
 // Dispatch an action when the button is clicked
 let log = dispatch => event => {
@@ -54,8 +55,8 @@ let MyButton = {
 // Create a Redux store to handle all UI actions and side-effects
 let store = createStore(reducer)
 
-// Create a renderer that can turn vnodes into real DOM elements
-let render = createRenderer(document.body, store.dispatch)
+// Create an app that can turn vnodes into real DOM elements
+let render = createApp(document.body, store.dispatch)
 
 // Update the page and add redux state to the context
 render(
