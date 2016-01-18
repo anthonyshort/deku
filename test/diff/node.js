@@ -1,7 +1,7 @@
 /** @jsx h */
 import test from 'tape'
-import {diffNode, Actions} from '../src/diff'
-import {create as h, createTextElement} from '../src/element'
+import {diffNode, Actions} from '../../src/diff'
+import {create as h, createTextElement} from '../../src/element'
 
 test('diffing the same nodes should bail', t => {
   let node = <div />

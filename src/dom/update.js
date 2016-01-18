@@ -1,6 +1,6 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {isThunk, createPath} from '../element'
-import createElement from './createElement'
+import createElement from './create'
 import {Actions, diffNode} from '../diff'
 
 /**

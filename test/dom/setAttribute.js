@@ -1,5 +1,5 @@
 import test from 'tape'
-import {setAttribute} from '../src/dom/setAttribute'
+import {setAttribute} from '../../src/dom/setAttribute'
 
 test('setAttribute (checkboxes)', t => {
   let DOMElement = document.createElement('input')

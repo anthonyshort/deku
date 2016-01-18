@@ -1,6 +1,5 @@
-import createElement from './createElement'
+import * as dom from '../dom'
 import {diffNode} from '../diff'
-import patch from './patch'
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
@@ -8,7 +7,7 @@ import patch from './patch'
  * replace what is currently rendered.
  */
 
-export default function createDOMRenderer (container, dispatch, options = {}) {
+export function create (container, dispatch, options = {}) {
   let oldVnode = null
   let node = null
   let rootId = options.id || '0'
@@ -19,13 +18,13 @@ export default function createDOMRenderer (container, dispatch, options = {}) {
 
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
-    node = changes.reduce(patch(dispatch, context), node)
+    node = changes.reduce(dom.update(dispatch, context), node)
     oldVnode = newVnode
     return node
   }
 
   let create = (vnode, context) => {
-    node = createElement(vnode, rootId, dispatch, context)
+    node = dom.create(vnode, rootId, dispatch, context)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node

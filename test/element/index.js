@@ -1,6 +1,6 @@
 /** @jsx h */
 import test from 'tape'
-import {create as h, groupByKey} from '../src/element'
+import {create as h, groupByKey} from '../../src/element'
 
 test('Element should accept strings as children', t => {
   let vnode = h('span', {}, ['Hello'])

@@ -1,9 +1,9 @@
 /** @jsx h */
 import test from 'tape'
 import isDOM from 'is-dom'
-import {create as h} from '../src/element'
+import {create as h} from '../../src/element'
 import trigger from 'trigger-event'
-import createElement from '../src/dom/createElement'
+import {create as createElement} from '../../src/dom'
 
 test('create element', t => {
   let DOMElement = createElement(<div color='red' />)

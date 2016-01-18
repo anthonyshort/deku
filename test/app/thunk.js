@@ -1,6 +1,6 @@
 /** @jsx h */
-import createDOMRenderer from '../src/dom/createRenderer'
-import {h} from '../src'
+import {create as createDOMRenderer} from '../../src/app'
+import {h} from '../../src'
 import test from 'tape'
 import trigger from 'trigger-event'
 
