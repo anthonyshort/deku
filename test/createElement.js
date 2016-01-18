@@ -29,8 +29,8 @@ test('create element with child', t => {
 
 test('create element with null child', t => {
   let DOMElement = createElement(<div>{null}</div>)
-  t.equal(DOMElement.children.length, 0, 'has no children')
-  t.equal(DOMElement.innerHTML, '', 'has correct content')
+  t.equal(DOMElement.children.length, 1, 'has one child')
+  t.equal(DOMElement.innerHTML, '<noscript></noscript>', 'has correct content')
   t.end()
 })
 

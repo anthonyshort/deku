@@ -16,6 +16,19 @@ test('render to a string', t => {
   t.end()
 })
 
+test('render empty nodes to a string', t => {
+  t.equal(
+    render(
+      <div>
+        {null}
+      </div>
+    ),
+    '<div><noscript></noscript></div>',
+    'noscript rendered'
+  )
+  t.end()
+})
+
 test('render innerHTML to a string', t => {
   t.equal(
     render(<div innerHTML='<span>foo</span>' />),

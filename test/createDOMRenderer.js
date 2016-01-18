@@ -244,3 +244,42 @@ test('#366 - cached vnodes for thunks are correct', t => {
 
   t.end()
 })
+
+test('rendering and updating null', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  render(
+    <div>
+      <div key='one'></div>
+      <div key='two'></div>
+    </div>
+  )
+  render(
+    <div>
+      <div key='one'></div>
+      {null}
+      <div key='two'></div>
+    </div>
+  )
+  t.equal(el.innerHTML, '<div><div></div><noscript></noscript><div></div></div>', 'empty node added')
+
+  render(
+    <div>
+      <div key='one'></div>
+      <div key='two'></div>
+      {null}
+    </div>
+  )
+  t.equal(el.innerHTML, '<div><div></div><div></div><noscript></noscript></div>', 'empty node updated')
+
+  render(
+    <div>
+      <div key='one'></div>
+      <div key='two'></div>
+    </div>
+  )
+  t.equal(el.innerHTML, '<div><div></div><div></div></div>', 'empty node updated')
+
+  t.end()
+})

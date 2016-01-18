@@ -1,4 +1,4 @@
-import {isText, isThunk, createPath} from '../element'
+import {isText, isThunk, isEmpty, createPath} from '../element'
 import {setAttribute} from './setAttribute'
 import svg from './svg'
 const cache = {}
@@ -15,6 +15,10 @@ export default function createElement (vnode, path, dispatch, context) {
       ? vnode.nodeValue
       : ''
     return document.createTextNode(value)
+  }
+
+  if (isEmpty(vnode)) {
+    return document.createElement('noscript')
   }
 
   if (isThunk(vnode)) {

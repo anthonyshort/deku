@@ -49,6 +49,8 @@ export function create (type, attributes, ...children) {
 function reduceChildren (children, vnode) {
   if (typeof vnode === 'string' || typeof vnode === 'number') {
     children.push(createTextElement(vnode))
+  } else if (vnode === null) {
+    children.push(createEmptyElement())
   } else if (Array.isArray(vnode)) {
     children = [...children, ...(vnode.reduce(reduceChildren, []))]
   } else if (typeof vnode === 'undefined') {
@@ -67,6 +69,16 @@ export function createTextElement (text) {
   return {
     type: '#text',
     nodeValue: text
+  }
+}
+
+/**
+ * Text nodes are stored as objects to keep things simple
+ */
+
+export function createEmptyElement () {
+  return {
+    type: '#empty'
   }
 }
 
@@ -98,6 +110,14 @@ export let isThunk = (node) => {
 
 export let isText = (node) => {
   return node.type === '#text'
+}
+
+/**
+ * Is a vnode an empty placeholder?
+ */
+
+export let isEmpty = (node) => {
+  return node.type === '#empty'
 }
 
 /**

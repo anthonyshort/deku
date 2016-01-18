@@ -1,4 +1,4 @@
-import {isText, isThunk, isValidAttribute} from '../element'
+import {isText, isThunk, isEmpty, isValidAttribute} from '../element'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -24,6 +24,10 @@ function attributesToString (attributes) {
 export function renderString (element, context, path = '0') {
   if (isText(element)) {
     return element.nodeValue
+  }
+
+  if (isEmpty(element)) {
+    return '<noscript></noscript>'
   }
 
   if (isThunk(element)) {

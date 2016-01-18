@@ -1,10 +1,10 @@
 /** @jsx h */
 import test from 'tape'
 import {diffChildren, Actions} from '../src/diff'
-import {create as h, createTextElement} from '../src/element'
+import {create as h, createTextElement, createEmptyElement} from '../src/element'
 
 test('diffChildren', t => {
-  let {insertChild, removeChild, updateChild, setAttribute, updateChildren} = Actions
+  let {insertChild, removeChild, updateChild, setAttribute, updateChildren, replaceNode} = Actions
 
   t.deepEqual(
     diffChildren(<div/>, <div>hello</div>),
@@ -43,15 +43,25 @@ test('diffChildren', t => {
   t.deepEqual(
     diffChildren(<div><span /></div>, <div>{null}</div>),
     updateChildren([
-      removeChild(0)
+      updateChild(0, [
+        replaceNode(<span />, createEmptyElement(), '.0')
+      ])
     ]),
     'remove element with null'
   )
 
   t.deepEqual(
+    diffChildren(<div>{null}</div>, <div>{null}</div>),
+    updateChildren([]),
+    'updated element with null'
+  )
+
+  t.deepEqual(
     diffChildren(<div>{null}</div>, <div><span /></div>),
     updateChildren([
-      insertChild(<span />, 0, '.0')
+      updateChild(0, [
+        replaceNode(createEmptyElement(), <span />, '.0')
+      ])
     ]),
     'add element from null'
   )
