@@ -49,14 +49,6 @@ test('diffChildren', t => {
   )
 
   t.deepEqual(
-    diffChildren(<div><span /></div>, <div>{undefined}</div>),
-    updateChildren([
-      removeChild(0)
-    ]),
-    'remove element with undefined'
-  )
-
-  t.deepEqual(
     diffChildren(<div>{null}</div>, <div><span /></div>),
     updateChildren([
       insertChild(<span />, 0, '.0')

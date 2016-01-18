@@ -10,6 +10,17 @@ test('Element should accept strings as children', t => {
   t.end()
 })
 
+test('should not allow undefined as a vnode type', t => {
+  try {
+    h('span', {}, [undefined])
+    t.fail()
+  } catch (e) {
+    t.pass('undefined not allowed')
+  } finally {
+    t.end()
+  }
+})
+
 test('groupByKey', t => {
   let one = <div/>
   let two = <div key='foo'/>

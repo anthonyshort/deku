@@ -51,7 +51,9 @@ function reduceChildren (children, vnode) {
     children.push(createTextElement(vnode))
   } else if (Array.isArray(vnode)) {
     children = [...children, ...(vnode.reduce(reduceChildren, []))]
-  } else if (typeof vnode !== 'undefined') {
+  } else if (typeof vnode === 'undefined') {
+    throw new Error(`vnode can't be undefined. Did you mean to use null?`)
+  } else {
     children.push(vnode)
   }
   return children
