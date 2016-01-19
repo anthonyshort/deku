@@ -11,8 +11,10 @@ import {vnode} from 'deku'
 * create
 * createTextElement
 * createThunkElement
+* createEmptyElement
 * isThunk
 * isText
+* isEmpty
 * isSameThunk
 * isValidAttribute
 * createPath
@@ -29,6 +31,10 @@ Create a virtual text element.
 
 Create a virtual thunk element. These are lazily-rendered virtual elements.
 
+## `createEmptyElement()`
+
+Create a virtual element that represents an empty space.
+
 ## `isThunk(vnode)`
 
 Check if a vnode is a thunk type.
@@ -36,6 +42,10 @@ Check if a vnode is a thunk type.
 ## `isText(vnode)`
 
 Check if a vnode is a text type.
+
+## `isEmpty(vnode)`
+
+Check if a vnode is an empty type.
 
 ## `isSameThunk(prevNode, nextNode)`
 

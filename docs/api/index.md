@@ -5,3 +5,4 @@
 * [element](element.md)
 * [diff](diff.md)
 * [vnode](vnode.md)
+* [createApp](create-app.md)

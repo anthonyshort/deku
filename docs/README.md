@@ -18,6 +18,7 @@
 * Tips
   * [innerHTML](/docs/tips/innerhtml.md)
 * [API Reference](/docs/api/index.md)
+  * [createApp](/docs/api/create-app.md)
   * [dom](/docs/api/dom.md)
   * [string](/docs/api/string.md)
   * [element](/docs/api/element.md)
