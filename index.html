@@ -42,7 +42,7 @@
     <body>
         
         
-    <div class="book" data-level="0" data-basepath="." data-revision="Sat Jan 09 2016 16:31:12 GMT-0800 (PST)">
+    <div class="book" data-level="0" data-basepath="." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -339,14 +339,29 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="6.1" data-path="docs/api/dom.html">
+        <li class="chapter " data-level="6.1" data-path="docs/api/create-app.html">
+            
+                
+                    <a href="./docs/api/create-app.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>6.1.</b>
+                        
+                        createApp
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="docs/api/dom.html">
             
                 
                     <a href="./docs/api/dom.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>6.1.</b>
+                            <b>6.2.</b>
                         
                         dom
                     </a>
@@ -354,14 +369,14 @@
             
         </li>
     
-        <li class="chapter " data-level="6.2" data-path="docs/api/string.html">
+        <li class="chapter " data-level="6.3" data-path="docs/api/string.html">
             
                 
                     <a href="./docs/api/string.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>6.2.</b>
+                            <b>6.3.</b>
                         
                         string
                     </a>
@@ -369,14 +384,14 @@
             
         </li>
     
-        <li class="chapter " data-level="6.3" data-path="docs/api/element.html">
+        <li class="chapter " data-level="6.4" data-path="docs/api/element.html">
             
                 
                     <a href="./docs/api/element.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>6.3.</b>
+                            <b>6.4.</b>
                         
                         element
                     </a>
@@ -384,14 +399,14 @@
             
         </li>
     
-        <li class="chapter " data-level="6.4" data-path="docs/api/diff.html">
+        <li class="chapter " data-level="6.5" data-path="docs/api/diff.html">
             
                 
                     <a href="./docs/api/diff.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>6.4.</b>
+                            <b>6.5.</b>
                         
                         diff
                     </a>
@@ -399,14 +414,14 @@
             
         </li>
     
-        <li class="chapter " data-level="6.5" data-path="docs/api/vnode.html">
+        <li class="chapter " data-level="6.6" data-path="docs/api/vnode.html">
             
                 
                     <a href="./docs/api/vnode.html">
                 
                         <i class="fa fa-check"></i>
                         
-                            <b>6.5.</b>
+                            <b>6.6.</b>
                         
                         vnode
                     </a>
@@ -534,22 +549,23 @@
 <p>Deku is a library for rendering interfaces using pure functions and virtual DOM.</p>
 <p>Instead of using classes and local state, Deku just uses functions and pushes the responsibility of all state management and side-effects onto tools like <a href="http://redux.js.org/" target="_blank">Redux</a>. It also aims to support only modern browsers to keep things simple.</p>
 <p>It can be used in place of libraries like React and works well with Redux and other libraries in the React ecosystem.</p>
-<p>Deku consists of 4 modules packaged together for convenience:</p>
+<p>Deku consists of 5 modules packaged together for convenience:</p>
 <ul>
-<li><code>element</code>: Creating virtual elements</li>
-<li><code>diff</code>: Computing the difference between two virtual elements</li>
-<li><code>dom</code>: DOM renderer</li>
-<li><code>string</code>: HTML string renderer</li>
+<li><code>element</code>: Create virtual elements.</li>
+<li><code>diff</code>: Compute the difference between two virtual elements. You can use this if you&apos;re creating a custom renderer.</li>
+<li><code>dom</code>: Create DOM elements from virtual elements and update them using the result of a diff. You&apos;ll only use this directly if you&apos;re building your own app creator.</li>
+<li><code>string</code>: Render a HTML string from virtual elements.</li>
+<li><code>createApp</code>: Kickstart an app for the browser.</li>
 </ul>
 <h3 id="installation">Installation</h3>
 <pre><code>npm install --save deku
 </code></pre><p>We support the latest two versions of each browser. This means we only support IE10+.</p>
 <p><a href="https://saucelabs.com/u/deku" target="_blank"><img src="https://saucelabs.com/browser-matrix/deku.svg" alt="Sauce Test Status"></a></p>
 <h3 id="example">Example</h3>
-<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>dom<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+<pre><code class="lang-js"><span class="token comment" spellcheck="true">/** @jsx element */</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span>element<span class="token punctuation">,</span> createApp<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
 <span class="token keyword">import</span> <span class="token punctuation">{</span>createStore<span class="token punctuation">}</span> from <span class="token string">&apos;redux&apos;</span>
 <span class="token keyword">import</span> reducer from <span class="token string">&apos;./reducer&apos;</span>
-<span class="token keyword">let</span> <span class="token punctuation">{</span>createRenderer<span class="token punctuation">}</span> <span class="token operator">=</span> dom
 
 <span class="token comment" spellcheck="true">// Dispatch an action when the button is clicked</span>
 <span class="token keyword">let</span> log <span class="token operator">=</span> dispatch <span class="token operator">=</span><span class="token operator">&gt;</span> event <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
@@ -568,8 +584,8 @@
 <span class="token comment" spellcheck="true">// Create a Redux store to handle all UI actions and side-effects</span>
 <span class="token keyword">let</span> store <span class="token operator">=</span> <span class="token function">createStore</span><span class="token punctuation">(</span>reducer<span class="token punctuation">)</span>
 
-<span class="token comment" spellcheck="true">// Create a renderer that can turn vnodes into real DOM elements</span>
-<span class="token keyword">let</span> render <span class="token operator">=</span> <span class="token function">createRenderer</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// Create an app that can turn vnodes into real DOM elements</span>
+<span class="token keyword">let</span> render <span class="token operator">=</span> <span class="token function">createApp</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
 
 <span class="token comment" spellcheck="true">// Update the page and add redux state to the context</span>
 <span class="token function">render</span><span class="token punctuation">(</span>

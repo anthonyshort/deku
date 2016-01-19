@@ -5,7 +5,7 @@
         
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>element | Deku</title>
+        <title>createApp | Deku</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="generator" content="GitBook 2.4.3">
@@ -33,10 +33,10 @@
         
     
     
-    <link rel="next" href="../../docs/api/diff.html" />
+    <link rel="next" href="../../docs/api/dom.html" />
     
     
-    <link rel="prev" href="../../docs/api/string.html" />
+    <link rel="prev" href="../../docs/api/index.html" />
     
 
         
@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="6.4" data-basepath="../.." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
+    <div class="book" data-level="6.1" data-basepath="../.." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -341,7 +341,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="6.1" data-path="docs/api/create-app.html">
+        <li class="chapter active" data-level="6.1" data-path="docs/api/create-app.html">
             
                 
                     <a href="../../docs/api/create-app.html">
@@ -386,7 +386,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="6.4" data-path="docs/api/element.html">
+        <li class="chapter " data-level="6.4" data-path="docs/api/element.html">
             
                 
                     <a href="../../docs/api/element.html">
@@ -542,31 +542,39 @@
                 
                     <section class="normal" id="section-">
                     
-                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/api/element.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="-element-type-attributes-children"><code>element(type, attributes, children)</code></h1>
-<p>Returns a <code>render</code> function that you can use to render elements within <code>DOMElement</code>. The function signature is compatible with JSX.</p>
+                        <a id="edit-link" href="https://github.com/dekujs/deku/tree/master/docs/api/create-app.md" class="btn fa fa-edit pull-left">&nbsp;&nbsp;Edit This Page</a><h1 id="-createapp"><code>createApp</code></h1>
+<p>Returns a <code>render</code> function that you can use to render elements within <code>DOMElement</code>.</p>
 <h3 id="arguments">Arguments</h3>
 <ol>
-<li><code>type</code> <em>(String|Object)</em>: Each node in a tree has a type. This is only used when rendering the tree.</li>
-<li><code>attributes</code> <em>(Object)</em> (Optional): The attributes of this node, similar to HTML attributes.</li>
-<li><code>children</code> <em>(Array)</em> (Optional): An array of children. Each child should also be an <code>element</code>. Strings are also accepted for text nodes.</li>
+<li><code>el</code> <em>(HTMLElement)</em>: A container element that will have virtual elements rendered inside of it. The element will never be touched.</li>
+<li><code>dispatch</code> <em>(Function)</em>: A function that can receive actions from the interface. This function will be passed into every component. It usually takes an <a href="http://redux.js.org/docs/basics/Actions.html" target="_blank">action</a> that can be handled by a <a href="http://redux.js.org/docs/basics/Store.html" target="_blank">store</a></li>
 </ol>
 <h3 id="returns">Returns</h3>
-<p><code>vnode</code> <em>(Object)</em>: An object representing a node within a tree.</p>
+<p><code>render</code> <em>(Function)</em>: A function that will update the current virtual element. It accepts a new <code>vnode</code> and a <code>context</code> object that will be passed to every component. You can use the context object to send shared state to every component. The <code>context</code> object should be immutable if possible as internally the renderer can provide extra optimizations.</p>
 <h3 id="example">Example</h3>
-<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+<pre><code class="lang-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>createApp<span class="token punctuation">,</span> element<span class="token punctuation">}</span> from <span class="token string">&apos;deku&apos;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span>createStore<span class="token punctuation">}</span> from <span class="token string">&apos;redux&apos;</span>
+<span class="token keyword">import</span> reducer from <span class="token string">&apos;./reducer&apos;</span>
+<span class="token keyword">import</span> App from <span class="token string">&apos;./app&apos;</span>
 
-<span class="token comment" spellcheck="true">// Native elements</span>
-<span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;div&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> <span class="token keyword">class</span><span class="token punctuation">:</span> <span class="token string">&quot;greeting&quot;</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>
-  <span class="token function">element</span><span class="token punctuation">(</span><span class="token string">&apos;span&apos;</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">&apos;Hello&apos;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
-<span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// Create a redux store to handle actions</span>
+<span class="token keyword">let</span> store <span class="token operator">=</span> <span class="token function">createStore</span><span class="token punctuation">(</span>reducer<span class="token punctuation">)</span>
 
-<span class="token comment" spellcheck="true">// Components</span>
-<span class="token keyword">let</span> App <span class="token operator">=</span> <span class="token punctuation">{</span>
-  render<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">{</span> props <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>Hello <span class="token punctuation">{</span>props<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token operator">!</span><span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
-<span class="token punctuation">}</span>
+<span class="token comment" spellcheck="true">// Create a renderer</span>
+<span class="token keyword">let</span> render <span class="token operator">=</span> <span class="token function">createApp</span><span class="token punctuation">(</span>document<span class="token punctuation">.</span>body<span class="token punctuation">,</span> store<span class="token punctuation">.</span>dispatch<span class="token punctuation">)</span>
 
-<span class="token function">element</span><span class="token punctuation">(</span>App<span class="token punctuation">,</span> <span class="token punctuation">{</span> name<span class="token punctuation">:</span> <span class="token string">&quot;Tom&quot;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// This renders the content into document.body</span>
+<span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>App size<span class="token operator">=</span><span class="token string">&quot;small&quot;</span> <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">// Update the UI</span>
+<span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>App size<span class="token operator">=</span><span class="token string">&quot;large&quot;</span> <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">)</span>
 </code></pre>
+<h3 id="notes">Notes</h3>
+<p>The container DOM element should:</p>
+<ul>
+<li><strong>Not be the document.body</strong>. You&apos;ll probably run into problems with other libraries. They&apos;ll often add elements to the <code>document.body</code> which can confuse the diff algorithm.</li>
+<li><strong>Be empty</strong>. All elements inside of the container will be removed when a virtual element is rendered into it. The renderer needs to have complete control of all of the elements within the container.</li>
+</ul>
 
                     
                     </section>
@@ -577,10 +585,10 @@
         </div>
 
         
-        <a href="../../docs/api/string.html" class="navigation navigation-prev " aria-label="Previous page: string"><i class="fa fa-angle-left"></i></a>
+        <a href="../../docs/api/index.html" class="navigation navigation-prev " aria-label="Previous page: API Reference"><i class="fa fa-angle-left"></i></a>
         
         
-        <a href="../../docs/api/diff.html" class="navigation navigation-next " aria-label="Next page: diff"><i class="fa fa-angle-right"></i></a>
+        <a href="../../docs/api/dom.html" class="navigation navigation-next " aria-label="Next page: dom"><i class="fa fa-angle-right"></i></a>
         
     </div>
 </div>

@@ -1,4 +1,4 @@
-import {isText, isThunk, isSameThunk, groupByKey, createPath} from '../element'
+import {isText, isThunk, isSameThunk, isEmpty, groupByKey, createPath} from '../element'
 import dift, * as diffActions from 'dift'
 import Type from 'union-type'
 let Any = () => true
@@ -156,6 +156,11 @@ export function diffNode (prev, next, path) {
     } else {
       changes.push(replaceNode(prev, next, path))
     }
+    return changes
+  }
+
+  // Empty
+  if (isEmpty(next)) {
     return changes
   }
 

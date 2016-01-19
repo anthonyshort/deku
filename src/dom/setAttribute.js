@@ -1,8 +1,8 @@
+import svgAttributeNS from 'svg-attribute-namespace'
 import {isValidAttribute} from '../element'
 import indexOf from 'index-of'
 import setValue from 'setify'
 import events from './events'
-import svg from './svg'
 
 export function removeAttribute (DOMElement, name, previousValue) {
   let eventType = events[name]
@@ -57,7 +57,7 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     case 'selected':
       DOMElement.selected = value
       // Fix for IE/Safari where select is not correctly selected on change
-      if (DOMElement.tagName === 'OPTION') {
+      if (DOMElement.tagName === 'OPTION' && DOMElement.parentNode) {
         let select = DOMElement.parentNode
         select.selectedIndex = indexOf(select.options, DOMElement)
       }
@@ -66,11 +66,7 @@ export function setAttribute (DOMElement, name, value, previousValue) {
       setValue(DOMElement, value)
       break
     default:
-      if (svg.isAttribute(name)) {
-        DOMElement.setAttributeNS(svg.namespace, name, value)
-      } else {
-        DOMElement.setAttribute(name, value)
-      }
+      DOMElement.setAttributeNS(svgAttributeNS(name), name, value)
       break
   }
 }

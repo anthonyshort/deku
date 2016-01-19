@@ -1,9 +1,7 @@
-import createRenderer from './createRenderer'
-import createElement from './createElement'
-import patch from './patch'
+import create from './create'
+import update from './update'
 
 export {
-  createRenderer,
-  createElement,
-  patch
+  create,
+  update
 }

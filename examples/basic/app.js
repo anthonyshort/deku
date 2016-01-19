@@ -1,21 +1,63 @@
-import {element} from '../../src'
+import {h} from '../../src'
 
 /**
- * App
+ * Takes some state and returns a virtual element
  */
 
-function app (state) {
-  return element('div', {onClick: increment}, 'Counter: ' + state.counter)
+function view (state, dispatch) {
+  return (
+    h('div', {}, [
+      h('div', {}, 'Counter: ' + state.count),
+      h('button', {onClick: increment(dispatch)}, 'Increment'),
+      h('button', {onClick: decrement(dispatch)}, 'Decrement')
+    ])
+  )
 }
 
-function increment () {
+/**
+ * Update the state
+ */
+
+function update (state, action) {
+  switch (action.type) {
+    case 'INCREMENT':
+      return {
+        ...state,
+        count: state.count + 10
+      }
+    case 'DECREMENT':
+      return {
+        ...state,
+        count: state.count - 1
+      }
+  }
+  return state
+}
+
+/**
+ * Get the initial state
+ */
+
+function init () {
   return {
-    type: 'INCREMENT'
+    count: 10
   }
 }
 
 /**
- * Exports
+ * Action creators
  */
 
-export default app
+function increment (dispatch) {
+  return e => dispatch({
+    type: 'INCREMENT'
+  })
+}
+
+function decrement (dispatch) {
+  return e => dispatch({
+    type: 'DECREMENT'
+  })
+}
+
+export {view, update, init}
