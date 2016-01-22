@@ -37,7 +37,7 @@ let el =
 
 ## Why do we need keys?
 
-To see why we need to do this we need to explain how the renderer compares lists of elements. Imagine on the first render these elements are return:
+To see why we need to do this we need to explain how the renderer compares lists of elements. Imagine on the first render these elements are returned:
 
 ```html
 <div>
@@ -47,7 +47,7 @@ To see why we need to do this we need to explain how the renderer compares lists
 </div>
 ```
 
-Then on the next render this element is returned:
+Then on the next render this is returned:
 
 ```html
 <div>
@@ -57,7 +57,7 @@ Then on the next render this element is returned:
 </div>
 ```
 
-The third element has moved up. This is obvious to humans. But when the renderer is performing the diff it is just comparing the left and right sides one after the other:
+It is obvious to humans that the third element has moved up. But when the renderer is performing the diff it is just comparing the left and right sides one after the other:
 
 ```
 <span>One</span>    -> <span>One</span>     // No change. Leave it.
@@ -80,7 +80,7 @@ To get around this we can just add a `key` attribute:
 </div>
 ```
 
-Now during the diff the renderer will know that elements have just moved:
+Now during the diff the renderer will know precisely which elements have just moved:
 
 ```
 <span>One</span>    -> <span>One</span>     // No change. Leave it.
@@ -88,9 +88,9 @@ Now during the diff the renderer will know that elements have just moved:
 <span>Three</span>  -> <span>Three</span>   // Move to position 1!
 ```
 
-**These keys only need to be unique to siblings.** They don't need to be globally unique like the `id` attribute.
+**These keys only need to be unique to siblings.** They need not be globally unique like the `id` attribute.
 
-You can also add keys only to the elements you want moved around if that's easier.
+You can also add keys only to the elements that will be moved around if that makes things easier.
 
 ```js
 <div>

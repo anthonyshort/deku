@@ -65,7 +65,7 @@ let onClick = event => {
 
 You can probably find some libraries on npm to make this easier too.
 
-## How do I access my the model in an event handler?
+## How do I access my model in an event handler?
 
 If you want to send extra information to the handler you can curry or partially apply the handler function. We don't provide any special parameters to the event handlers, so it's as if you called `el.addEventListener` directly.
 

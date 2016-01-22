@@ -5,9 +5,9 @@ Context is an object you can set when you call render. It will be accessible fro
 You can use `context` to:
 
 * Access your Redux state throughout the tree.
-* Passing in `window` properties, like the size of the browser window.
-* Viewing device information like the user agent, or the orientation.
-* Setting global theme variables.
+* Pass in `window` properties, like the size of the browser window.
+* View device information like the user agent, or the orientation.
+* Set global theme variables.
 * Store local state for components using their `path` as the key.
 
 There are some things to remember when using `context`:
@@ -74,7 +74,7 @@ Context can change in a few ways. You should listen for changes at the top level
 * You can listen for `window` events like `resize`
 * Trigger actions using the `dispatcher`
 
-The easiest way to use context is to use the Redux state, a it's almost guaranteed to be immutable and you can easily keep `window` and device information in your Redux store.
+The easiest way to use context is to use the Redux state. It's almost guaranteed to be immutable and you can easily keep `window` and device information in your Redux store.
 
 ```js
 render(<App />, store.getState())

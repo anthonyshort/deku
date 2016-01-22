@@ -72,7 +72,7 @@ render(<App hidden={false} />, {
 
 ## Model
 
-The model is passed into the Component function and is contains the state that you can use to create virtual nodes. The model is immutable
+The model is passed into the Component function and contains the state that you can use to create virtual nodes. The model is immutable
 
 ```js
 function render ({ props }) {
