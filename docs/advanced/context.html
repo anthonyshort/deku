@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="4.3" data-basepath="../.." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
+    <div class="book" data-level="4.3" data-basepath="../.." data-revision="Fri Jan 22 2016 09:46:51 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -547,9 +547,9 @@
 <p>You can use <code>context</code> to:</p>
 <ul>
 <li>Access your Redux state throughout the tree.</li>
-<li>Passing in <code>window</code> properties, like the size of the browser window.</li>
-<li>Viewing device information like the user agent, or the orientation.</li>
-<li>Setting global theme variables.</li>
+<li>Pass in <code>window</code> properties, like the size of the browser window.</li>
+<li>View device information like the user agent, or the orientation.</li>
+<li>Set global theme variables.</li>
 <li>Store local state for components using their <code>path</code> as the key.</li>
 </ul>
 <p>There are some things to remember when using <code>context</code>:</p>
@@ -601,7 +601,7 @@
 <li>You can listen for <code>window</code> events like <code>resize</code></li>
 <li>Trigger actions using the <code>dispatcher</code></li>
 </ul>
-<p>The easiest way to use context is to use the Redux state, a it&apos;s almost guaranteed to be immutable and you can easily keep <code>window</code> and device information in your Redux store.</p>
+<p>The easiest way to use context is to use the Redux state. It&apos;s almost guaranteed to be immutable and you can easily keep <code>window</code> and device information in your Redux store.</p>
 <pre><code class="lang-js"><span class="token function">render</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>App <span class="token operator">/</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> store<span class="token punctuation">.</span><span class="token function">getState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 </code></pre>
 <p>You would modify context by dispatching actions and reducing them with Redux:</p>

@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="3.4" data-basepath="../.." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
+    <div class="book" data-level="3.4" data-basepath="../.." data-revision="Fri Jan 22 2016 09:46:51 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -593,7 +593,7 @@
 <span class="token punctuation">}</span>
 </code></pre>
 <p>You can probably find some libraries on npm to make this easier too.</p>
-<h2 id="how-do-i-access-my-the-model-in-an-event-handler">How do I access my the model in an event handler?</h2>
+<h2 id="how-do-i-access-my-model-in-an-event-handler">How do I access my model in an event handler?</h2>
 <p>If you want to send extra information to the handler you can curry or partially apply the handler function. We don&apos;t provide any special parameters to the event handlers, so it&apos;s as if you called <code>el.addEventListener</code> directly.</p>
 <pre><code class="lang-js"><span class="token keyword">let</span> render <span class="token operator">=</span> model <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
   <span class="token keyword">return</span> <span class="token operator">&lt;</span>div onClick<span class="token operator">=</span><span class="token punctuation">{</span><span class="token function">onClick</span><span class="token punctuation">(</span>model<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token operator">&gt;</span>Hello World<span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>

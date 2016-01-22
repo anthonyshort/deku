@@ -7,7 +7,7 @@ import {diffNode} from '../diff'
  * replace what is currently rendered.
  */
 
-export function create (container, dispatch, options = {}) {
+export function createApp (container, store, options = {}) {
   let oldVnode = null
   let node = null
   let rootId = options.id || '0'
@@ -16,21 +16,22 @@ export function create (container, dispatch, options = {}) {
     container.innerHTML = ''
   }
 
-  let update = (newVnode, context) => {
+  let update = newVnode => {
     let changes = diffNode(oldVnode, newVnode, rootId)
-    node = changes.reduce(dom.update(dispatch, context), node)
+    node = changes.reduce(dom.update(dispatch), node)
     oldVnode = newVnode
     return node
   }
 
-  let create = (vnode, context) => {
+
+  let create = vnode => {
     node = dom.create(vnode, rootId, dispatch, context)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node
   }
 
-  return (vnode, context = {}) => {
+  return vnode => {
     return node !== null
       ? update(vnode, context)
       : create(vnode, context)

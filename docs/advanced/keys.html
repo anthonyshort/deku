@@ -44,7 +44,7 @@
     <body>
         
         
-    <div class="book" data-level="4.2" data-basepath="../.." data-revision="Mon Jan 18 2016 16:45:42 GMT-0800 (PST)">
+    <div class="book" data-level="4.2" data-basepath="../.." data-revision="Fri Jan 22 2016 09:46:51 GMT-0800 (PST)">
     
 
 <div class="book-summary">
@@ -572,21 +572,21 @@
   <span class="token operator">&lt;</span><span class="token operator">/</span>ul<span class="token operator">&gt;</span>
 </code></pre>
 <h2 id="why-do-we-need-keys">Why do we need keys?</h2>
-<p>To see why we need to do this we need to explain how the renderer compares lists of elements. Imagine on the first render these elements are return:</p>
+<p>To see why we need to do this we need to explain how the renderer compares lists of elements. Imagine on the first render these elements are returned:</p>
 <pre><code class="lang-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
 </code></pre>
-<p>Then on the next render this element is returned:</p>
+<p>Then on the next render this is returned:</p>
 <pre><code class="lang-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>
   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>
 </code></pre>
-<p>The third element has moved up. This is obvious to humans. But when the renderer is performing the diff it is just comparing the left and right sides one after the other:</p>
+<p>It is obvious to humans that the third element has moved up. But when the renderer is performing the diff it is just comparing the left and right sides one after the other:</p>
 <pre><code><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>    -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>     // No change. Leave it.
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>      -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>   // Different element. Replace!
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>  -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>       // Different element. Replace!
@@ -602,12 +602,12 @@
   <span class="token operator">&lt;</span>span key<span class="token operator">=</span><span class="token string">&quot;three&quot;</span><span class="token operator">&gt;</span>Three<span class="token operator">&lt;</span><span class="token operator">/</span>span<span class="token operator">&gt;</span>
 <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
 </code></pre>
-<p>Now during the diff the renderer will know that elements have just moved:</p>
+<p>Now during the diff the renderer will know precisely which elements have just moved:</p>
 <pre><code><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>    -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>One<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>     // No change. Leave it.
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>      -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">&gt;</span></span>Two<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span>       // Move to position 2!
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>  -&gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">&gt;</span></span>Three<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">&gt;</span></span>   // Move to position 1!
-</code></pre><p><strong>These keys only need to be unique to siblings.</strong> They don&apos;t need to be globally unique like the <code>id</code> attribute.</p>
-<p>You can also add keys only to the elements you want moved around if that&apos;s easier.</p>
+</code></pre><p><strong>These keys only need to be unique to siblings.</strong> They need not be globally unique like the <code>id</code> attribute.</p>
+<p>You can also add keys only to the elements that will be moved around if that makes things easier.</p>
 <pre><code class="lang-js"><span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>
   <span class="token operator">&lt;</span>span<span class="token operator">&gt;</span>One<span class="token operator">&lt;</span><span class="token operator">/</span>span<span class="token operator">&gt;</span>
   <span class="token operator">&lt;</span>div<span class="token operator">&gt;</span>Two<span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">&gt;</span>
