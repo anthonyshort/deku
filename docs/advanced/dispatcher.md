@@ -1,6 +1,6 @@
 # Dispatcher
 
-The `dispatcher` is a function you can pass to `createRenderer` that will handle actions that are triggered within the UI. You will typically use a library like Redux to handle reducing actions into state and side-effects.
+The `dispatcher` is a function you can pass to `createRenderer` that will handle actions triggered within the UI. You will typically use a library like Redux to handle reducing actions into state and side-effects.
 
 * All actions a user or program trigger should be dispatched
 * Side-effects, like DOM manipulation, should also be dispatched as actions and handled by this function

@@ -30,7 +30,7 @@ But these objects aren't easy to read or write so we can use the `element` funct
 element('button', { class: "Button" }, ['Click Me!'])
 ```
 
-This function signature is the same that is expected by [JSX](https://github.com/dekujs/deku/blob/master/docs/guides/jsx.md), so if you're using Babel you can use JSX. This will just compile back down to our simple `element` function above and end up becoming a plain object, just like what we started with:
+This function signature is the same that is expected by [JSX](/deku/docs/basics/JSX.html), so if you're using Babel you can use JSX. This will just compile back down to our simple `element` function above and end up becoming a plain object, just like what we started with:
 
 ```js
 {
