@@ -79,50 +79,6 @@ test('emptying the container', t => {
   t.end()
 })
 
-test('context should be passed down all elements', t => {
-  let Form = {
-    render ({ props, context }) {
-      return <div>
-        <h2>My form</h2>
-        <div>
-          <Button label='press me!' />
-        </div>
-      </div>
-    }
-  }
-  let Button = {
-    render ({ props, context }) {
-      t.equal(context.hello, 'there')
-      return <button>Submit</button>
-    }
-  }
-  let el = document.createElement('div')
-  let render = createDOMRenderer(el)
-  t.plan(1)
-  render(<Form />, { hello: 'there' })
-  t.end()
-})
-
-test('context should be passed down across re-renders', t => {
-  let Form = {
-    render () {
-      return <div><Button /></div>
-    }
-  }
-  let Button = {
-    render ({ props, context }) {
-      t.equal(context, 'the context', 'context is passed down')
-      return <button>Submit</button>
-    }
-  }
-  let el = document.createElement('div')
-  let render = createDOMRenderer(el)
-  t.plan(2)
-  render(<Form />, 'the context')
-  render(<Form />, 'the context')
-  t.end()
-})
-
 test('rendering numbers as text elements', t => {
   let el = document.createElement('div')
   let render = createDOMRenderer(el)
@@ -158,27 +114,6 @@ test('rendering the same node', t => {
     '<div></div>',
     'samenode is handled'
   )
-  t.end()
-})
-
-test('context should be passed down across re-renders even after disappearance', t => {
-  let Form = {
-    render ({ props }) {
-      return <div>{ props.visible ? <Button /> : [] }</div>
-    }
-  }
-  let Button = {
-    render ({ props, context }) {
-      t.equal(context, 'the context', 'context is passed down')
-      return <button>Submit</button>
-    }
-  }
-  let el = document.createElement('div')
-  let render = createDOMRenderer(el)
-  t.plan(2)
-  render(<Form visible />, 'the context')
-  render(<Form />, 'the context')
-  render(<Form visible />, 'the context')
   t.end()
 })
 

@@ -17,11 +17,10 @@ function attributesToString (attributes) {
 }
 
 /**
- * Render a virtual element to a string. You can pass in an option state context
- * object that will be given to all components.
+ * Render a virtual element to a string.
  */
 
-export function renderString (element, context, path = '0') {
+export function renderString (element, path = '0') {
   if (isText(element)) {
     return element.nodeValue
   }
@@ -36,12 +35,10 @@ export function renderString (element, context, path = '0') {
     let output = render({
       children,
       props,
-      path,
-      context
+      path
     })
     return renderString(
       output,
-      context,
       path
     )
   }
@@ -53,7 +50,7 @@ export function renderString (element, context, path = '0') {
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => renderString(child, context, path + '.' + (child.key == null ? i : child.key))).join('')
+    str += children.map((child, i) => renderString(child, path + '.' + (child.key == null ? i : child.key))).join('')
   }
 
   str += '</' + type + '>'

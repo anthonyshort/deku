@@ -4,11 +4,10 @@ import createElement from './create'
 import {Actions, diffNode} from '../diff'
 
 /**
- * Modify a DOM element given an array of actions. A context can be set
- * that will be used to render any custom elements.
+ * Modify a DOM element given an array of actions.
  */
 
-export default function patch (dispatch, context) {
+export default function patch (dispatch) {
   return (DOMElement, action) => {
     Actions.case({
       setAttribute: (name, value, previousValue) => {
@@ -32,14 +31,14 @@ export default function patch (dispatch, context) {
               insertAtIndex(
                 DOMElement,
                 index,
-                createElement(vnode, path, dispatch, context)
+                createElement(vnode, path, dispatch)
               )
             },
             removeChild: (index) => {
               DOMElement.removeChild(childNodes[index])
             },
             updateChild: (index, actions) => {
-              let update = patch(dispatch, context)
+              let update = patch(dispatch)
               actions.forEach(action => update(childNodes[index], action))
             }
           }, change)
@@ -54,12 +53,11 @@ export default function patch (dispatch, context) {
           children,
           props,
           path,
-          dispatch,
-          context
+          dispatch
         }
         let nextNode = render(model)
         let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
-        DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
+        DOMElement = changes.reduce(patch(dispatch), DOMElement)
         if (onUpdate) onUpdate(model)
         next.state = {
           vnode: nextNode,
@@ -67,7 +65,7 @@ export default function patch (dispatch, context) {
         }
       },
       replaceNode: (prev, next, path) => {
-        let newEl = createElement(next, path, dispatch, context)
+        let newEl = createElement(next, path, dispatch)
         let parentEl = DOMElement.parentNode
         if (parentEl) parentEl.replaceChild(newEl, DOMElement)
         DOMElement = newEl

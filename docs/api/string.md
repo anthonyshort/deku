@@ -8,18 +8,15 @@ import {string} from 'deku'
 
 ### Properties
 
-* [`render`](#-render-vnode-context)
+* [`render`](#-render-vnode)
 
-## `render(vnode, [context])`
+## `render(vnode)`
 
 This function renders a virtual element to a string. It will render components and call all hooks as normal. This can be used on the server to pre-render an app as HTML, and then replaced on the client.
-
-The `context` object will be passed into each component function.
 
 ### Arguments
 
 1. `vnode` _(VirtualElement)_: A virtual element to render as a string.
-2. `context` _(Object)_: You can use the context object to send shared state to every component. The `context` object should be immutable if possible as internally the renderer can provide extra optimizations.
 
 ### Returns
 

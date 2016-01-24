@@ -10,7 +10,6 @@ Here are the major changes:
 * `setState` has been removed. The reason why we needed something like `app` was because it managed the re-renders for you. Now there's only one way to re-render, and that's to call `render` again. You'll need to store local state on your own using the components `path` property.
 * `initialState` has been removed.
 * `defaultProps` has been removed.
-* `context` has been added.
 * Lifecycle hooks have changed.
 
 

@@ -16,23 +16,23 @@ export function create (container, dispatch, options = {}) {
     container.innerHTML = ''
   }
 
-  let update = (newVnode, context) => {
+  let update = (newVnode) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
-    node = changes.reduce(dom.update(dispatch, context), node)
+    node = changes.reduce(dom.update(dispatch), node)
     oldVnode = newVnode
     return node
   }
 
-  let create = (vnode, context) => {
-    node = dom.create(vnode, rootId, dispatch, context)
+  let create = (vnode) => {
+    node = dom.create(vnode, rootId, dispatch)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node
   }
 
-  return (vnode, context = {}) => {
+  return (vnode) => {
     return node !== null
-      ? update(vnode, context)
-      : create(vnode, context)
+      ? update(vnode)
+      : create(vnode)
   }
 }

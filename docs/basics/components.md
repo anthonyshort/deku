@@ -19,9 +19,9 @@ Unlike React, components in Deku are completely stateless, there's no `setState`
 Here's a simple `<App />` component:
 
 ```js
-function render ({ props, children, context, path }) {
+function render ({ props, children, path }) {
   return (
-    <div class="App" hidden={props.hidden} color={context.theme.color}>
+    <div class="App" hidden={props.hidden}>
       {children}
     </div>
   )
@@ -58,16 +58,6 @@ function render (model) {
 export {
   render
 }
-```
-
-And you can do the same at top-level using `render`, while also setting the `context`:
-
-```js
-render(<App hidden={false} />, {
-  theme: {
-    color: 'red'
-  }
-})
 ```
 
 ## Model

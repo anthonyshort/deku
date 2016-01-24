@@ -9,7 +9,7 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode, path, dispatch, context) {
+export default function createElement (vnode, path, dispatch) {
   if (isText(vnode)) {
     let value = typeof vnode.nodeValue === 'string' || typeof vnode.nodeValue === 'number'
       ? vnode.nodeValue
@@ -29,15 +29,13 @@ export default function createElement (vnode, path, dispatch, context) {
       children,
       props,
       path,
-      dispatch,
-      context
+      dispatch
     }
     let output = render(model)
     let DOMElement = createElement(
       output,
       createPath(path, output.key || '0'),
-      dispatch,
-      context
+      dispatch
     )
     if (onCreate) onCreate(model)
     vnode.state = {
@@ -68,8 +66,7 @@ export default function createElement (vnode, path, dispatch, context) {
     let child = createElement(
       node,
       createPath(path, node.key || index),
-      dispatch,
-      context
+      dispatch
     )
     DOMElement.appendChild(child)
   })

@@ -9,7 +9,7 @@ Returns a `render` function that you can use to render elements within `DOMEleme
 
 ### Returns
 
-`render` _(Function)_: A function that will update the current virtual element. It accepts a new `vnode` and a `context` object that will be passed to every component. You can use the context object to send shared state to every component. The `context` object should be immutable if possible as internally the renderer can provide extra optimizations.
+`render` _(Function)_: A function that will update the current virtual element. It accepts a new `vnode`.
 
 ### Example
 

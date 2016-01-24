@@ -55,23 +55,6 @@ test('calling dispatch', t => {
   t.end()
 })
 
-test('accessing context', t => {
-  let state = {
-    name: 'Tom'
-  }
-  let Component = {
-    render: ({ context }) => {
-      t.equal(context, state, 'same object is used')
-      return <div>{context.name}</div>
-    }
-  }
-  let el = document.createElement('div')
-  let render = createDOMRenderer(el)
-  render(<Component />, state)
-  t.equal(el.innerHTML, '<div>Tom</div>')
-  t.end()
-})
-
 test('swapping a thunks root element', t => {
   let el = document.createElement('div')
   let render = createDOMRenderer(el)

@@ -12,11 +12,11 @@ import {dom} from 'deku'
 * `update`
 
 ## `create`
-`(vnode, path, dispatch, context) -> DOMElement`
+`(vnode, path, dispatch) -> DOMElement`
 
 Create a DOM element from a virtual element.
 
 ## `update`
-`(dispatch, context) -> (DOMElement, action) -> DOMElement`
+`(dispatch) -> (DOMElement, action) -> DOMElement`
 
 Create a function to patch a DOM element using an action.
