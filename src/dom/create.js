@@ -23,7 +23,8 @@ export default function createElement (vnode, path, dispatch, context) {
 
   if (isThunk(vnode)) {
     let { props, component, children } = vnode
-    let { render, onCreate } = component
+    let { onCreate } = component
+    let render = typeof component === 'function' ? component : component.render
     let model = {
       children,
       props,
