@@ -23,12 +23,8 @@ export function create (type, attributes, ...children) {
 
   delete attributes.key
 
-  if (typeof type === 'object') {
+  if (typeof type === 'object' || typeof type === 'function') {
     return createThunkElement(type, key, attributes, children)
-  }
-
-  if (typeof type === 'function') {
-    return createThunkElement({render: type, ...type}, key, attributes, children)
   }
 
   return {

@@ -21,6 +21,19 @@ test('rendering and updating thunks', t => {
   t.end()
 })
 
+test('rendering and updating plain function thunks', t => {
+  let el = document.createElement('div')
+  let render = createDOMRenderer(el)
+
+  let Component = (model) => <div name={model.props.name} />
+
+  render(<Component name='Tom' />)
+  render(<Component name='Bob' />)
+  t.equal(el.innerHTML, `<div name="Bob"></div>`, 'thunk updated')
+
+  t.end()
+})
+
 test('calling dispatch', t => {
   let Component = {
     render: ({ dispatch }) => (
@@ -151,6 +164,19 @@ test('calling onCreate hook correctly', t => {
   t.end()
 })
 
+test('calling plain function onCreate hook correctly', t => {
+  let render = createDOMRenderer()
+
+  let Component = m => <div />
+
+  Component.onCreate = () => t.pass('onCreate called')
+
+  t.plan(1)
+  render(<Component />)
+  render(<Component />)
+  t.end()
+})
+
 test('calling onUpdate hook correctly', t => {
   let render = createDOMRenderer()
 
@@ -168,6 +194,22 @@ test('calling onUpdate hook correctly', t => {
   t.end()
 })
 
+test('calling plain function onUpdate hook correctly', t => {
+  let render = createDOMRenderer()
+
+  let Component = m => <div />
+
+  Component.onUpdate = ({ path, props, children }) => {
+    t.assert(path, 'path available')
+    t.equal(props.name, 'Tom', 'props available')
+  }
+
+  t.plan(2)
+  render(<Component name='Bob' />)
+  render(<Component name='Tom' />)
+  t.end()
+})
+
 test('calling onRemove hook correctly', t => {
   let render = createDOMRenderer()
 
@@ -177,6 +219,22 @@ test('calling onRemove hook correctly', t => {
       t.equal(props.name, 'Tom', 'props available')
     },
     render: m => <div />
+  }
+
+  t.plan(2)
+  render(<Component name='Tom' />)
+  render(<div />)
+  t.end()
+})
+
+test('calling plain function onRemove hook correctly', t => {
+  let render = createDOMRenderer()
+
+  let Component = m => <div />
+
+  Component.onRemove = ({ path, props, children }) => {
+    t.assert(path, 'path available')
+    t.equal(props.name, 'Tom', 'props available')
   }
 
   t.plan(2)

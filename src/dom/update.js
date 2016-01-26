@@ -47,7 +47,8 @@ export default function patch (dispatch, context) {
       },
       updateThunk: (prev, next, path) => {
         let { props, children, component } = next
-        let { render, onUpdate } = component
+        let { onUpdate } = component
+        let render = typeof component === 'function' ? component : component.render
         let prevNode = prev.state.vnode
         let model = {
           children,
