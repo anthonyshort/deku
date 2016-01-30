@@ -66,19 +66,6 @@ test('moving elements using keys', t => {
   t.end()
 })
 
-test('emptying the container', t => {
-  let el = document.createElement('div')
-  el.innerHTML = '<div></div>'
-  let render = createDOMRenderer(el)
-  render(<span></span>)
-  t.equal(
-    el.innerHTML,
-    '<span></span>',
-    'container emptied'
-  )
-  t.end()
-})
-
 test('context should be passed down all elements', t => {
   let Form = {
     render ({ props, context }) {
@@ -287,7 +274,7 @@ test('rendering and updating null', t => {
 test('rendering in a container with pre-rendered HTML', t => {
   /*
   In the first call to render:
-  For container with pre-rendered HTML (i.e., with preRendered attribute)
+  For container with pre-rendered HTML (i.e. childNodes.length > 0)
     If the container has attribute `checksum `:
       we compute checksum for both rendered the to-be-rendered HTML,
       destroy-and-recreate if there's difference in the checksums
@@ -296,17 +283,17 @@ test('rendering in a container with pre-rendered HTML', t => {
   */
 
   let el = document.createElement('div')
-  el.attributes.preRendered = ''
+
   el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
   let render = createDOMRenderer(el)
   render(<div><span id="2"></span></div>)
   t.equal(
     el.innerHTML,
     '<div><span id="1"></span><span id="2"></span></div>',
-    'nothing happens'
+    'no comparison of checksums occurs (nothing should happen)'
   )
 
-  el.attributes.checksum = ''
+  el.attributes.checksum = ' '
   el.innerHTML = '<div><span>Meow</span></div>'
   render = createDOMRenderer(el)
   render(<div><span>Thrr</span></div>)
