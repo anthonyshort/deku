@@ -48,6 +48,7 @@
     "zuul": "3.9.0"
   },
   "dependencies": {
+    "adler-32": "^0.3.0",
     "dift": "0.1.12",
     "index-of": "0.2.0",
     "is-svg-element": "1.0.1",
