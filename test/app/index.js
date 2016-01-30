@@ -283,3 +283,46 @@ test('rendering and updating null', t => {
 
   t.end()
 })
+
+test('rendering in a container with pre-rendered HTML', t => {
+  /*
+  In the first call to render:
+  For container with pre-rendered HTML (i.e., with preRendered attribute)
+    If the container has attribute `checksum `:
+      we compute checksum for both rendered the to-be-rendered HTML,
+      destroy-and-recreate if there's difference in the checksums
+    Otherwise:
+      we assume there are no errors in the pre-rendered HTML
+  */
+
+  let el = document.createElement('div')
+  el.attributes.preRendered = ''
+  el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
+  let render = createDOMRenderer(el)
+  render(<div><span id="2"></span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span id="1"></span><span id="2"></span></div>',
+    'nothing happens'
+  )
+
+  el.attributes.checksum = ''
+  el.innerHTML = '<div><span>Meow</span></div>'
+  render = createDOMRenderer(el)
+  render(<div><span>Thrr</span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span>Thrr</span></div>',
+    'destory and re-rendered due to checksums difference'
+  )
+
+  el.innerHTML = '<div><span>Cat</span></div>'
+  render(<div><span>Neko</span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span>Cat</span></div>',
+    'nothing should happen because this is not the first call to render'
+  )
+
+  t.end()
+})
