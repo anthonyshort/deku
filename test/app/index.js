@@ -3,6 +3,7 @@
 import test from 'tape'
 import {create as createDOMRenderer} from '../../src/app'
 import {create as h} from '../../src/element'
+import {str as adler32} from 'adler-32'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
@@ -272,16 +273,6 @@ test('rendering and updating null', t => {
 })
 
 test('rendering in a container with pre-rendered HTML', t => {
-  /*
-  In the first call to render:
-  For container with pre-rendered HTML (i.e. childNodes.length > 0)
-    If the container has attribute `checksum `:
-      we compute checksum for both rendered the to-be-rendered HTML,
-      destroy-and-recreate if there's difference in the checksums
-    Otherwise:
-      we assume there are no errors in the pre-rendered HTML
-  */
-
   let el = document.createElement('div')
 
   el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
@@ -290,17 +281,17 @@ test('rendering in a container with pre-rendered HTML', t => {
   t.equal(
     el.innerHTML,
     '<div><span id="1"></span><span id="2"></span></div>',
-    'no comparison of checksums occurs (nothing should happen)'
+    'no string-comparison occurs (nothing should happen)'
   )
 
-  el.attributes.checksum = ' '
+  el.attributes.autoFix = ' '
   el.innerHTML = '<div><span>Meow</span></div>'
   render = createDOMRenderer(el)
   render(<div><span>Thrr</span></div>)
   t.equal(
     el.innerHTML,
     '<div><span>Thrr</span></div>',
-    'destory and re-rendered due to checksums difference'
+    'destory and re-rendered due to string inequivalence'
   )
 
   el.innerHTML = '<div><span>Cat</span></div>'
@@ -309,6 +300,26 @@ test('rendering in a container with pre-rendered HTML', t => {
     el.innerHTML,
     '<div><span>Cat</span></div>',
     'nothing should happen because this is not the first call to render'
+  )
+
+  el.innerHTML = 'whatever'
+  el.attributes.checksum = adler32("<p>pre-rendered text</p>")
+  render = createDOMRenderer(el)
+  render(<p>pre-rendered text</p>)
+  t.equal(
+    el.innerHTML,
+    'whatever',
+    'nothing should happen because checksums are the same'
+  )
+
+  el.innerHTML = '<div>Nyan!</div>'
+  el.attributes.checksum = adler32(el.innerHTML)
+  render = createDOMRenderer(el)
+  render(<p>Nyan!</p>)
+  t.equal(
+    el.innerHTML,
+    '<p>Nyan!</p>',
+    'destory and re-rendered due to checksum inequivalence'
   )
 
   t.end()
