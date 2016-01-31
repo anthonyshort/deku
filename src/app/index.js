@@ -34,13 +34,15 @@ export function createApp (container, handler = noop, options = {}) {
       if(container.childNodes.length === 0){
         container.appendChild(node)
       }else{
-        if (container.attributes.checksum){
-          let preRendered = adler32(container.innerHTML)
-          let toBeRendered = adler32(node.outerHTML)
-          if(preRendered != toBeRendered){
-            container.innerHTML = ''
-            container.appendChild(node)
-          }
+        let isRenderedCorrectly = true
+        if(container.attributes.checksum){
+          isRenderedCorrectly = container.attributes.checksum ===  adler32(node.outerHTML)
+        }else if(container.attributes.autoFix){
+          isRenderedCorrectly = container.innerHTML ===  node.outerHTML
+        }
+        if(!isRenderedCorrectly){
+          container.innerHTML = ''
+          container.appendChild(node)
         }
       }
     }
