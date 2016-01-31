@@ -4,6 +4,7 @@ import test from 'tape'
 import {createApp} from '../../src/app'
 import {create as h} from '../../src/element'
 import {str as adler32} from 'adler-32'
+import trigger from 'trigger-event'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
@@ -335,6 +336,21 @@ test('rendering in a container with pre-rendered HTML', t => {
     '<p>Nyan!</p>',
     'destory and re-rendered due to checksum inequivalence'
   )
+  t.end()
+})
 
+test('rendering in a container with pre-rendered HTML and click events', t => {
+  t.plan(12)
+  let el = document.createElement('div')
+  el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
+  let render = createDOMRenderer(el)
+  let a = function(){t.assert("clicked")}
+  let b = function(){t.assert("clicked"); t.assert("clicked")}
+  render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
+  let arr = el.querySelectorAll('button, span')
+  for (var item of arr) {
+    trigger(item, 'click')
+    trigger(item, 'click')
+  }
   t.end()
 })
