@@ -21,20 +21,28 @@ export function create (container, dispatch, options = {}) {
   }
 
   let create = (vnode, context) => {
-    node = dom.create(vnode, rootId, dispatch, context)
     if (container){
       if(container.childNodes.length === 0){
+        node = dom.create(vnode, rootId, dispatch, context)
         container.appendChild(node)
       }else{
-        if (container.attributes.checksum){
-          let preRendered = adler32(container.innerHTML)
-          let toBeRendered = adler32(node.outerHTML)
-          if(preRendered != toBeRendered){
-            container.innerHTML = ''
-            container.appendChild(node)
-          }
+        let {DOMnode, attachEvents} = dom.createElementThenEvents(vnode, rootId, dispatch, context)
+        let isRenderedCorrectly = true
+        if(container.attributes.checksum){
+          isRenderedCorrectly = container.attributes.checksum ===  adler32(DOMnode.outerHTML)
+        }else if(container.attributes.autoFix){
+          isRenderedCorrectly = container.innerHTML ===  DOMnode.outerHTML
+        }
+        if(isRenderedCorrectly){
+          node = attachEvents(container.firstChild)
+        }else{
+          node = DOMnode
+          container.innerHTML = ''
+          container.appendChild(node)
         }
       }
+    }else{
+      node = dom.create(vnode, rootId, dispatch, context)
     }
     oldVnode = vnode
     return node
