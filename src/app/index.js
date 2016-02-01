@@ -22,14 +22,14 @@ export function create (container, dispatch, options = {}) {
 
   let create = (vnode, context) => {
     node = dom.create(vnode, rootId, dispatch, context)
-    if (container){
-      if(container.childNodes.length === 0){
+    if (container) {
+      if (container.childNodes.length === 0) {
         container.appendChild(node)
-      }else{
-        if (container.attributes.checksum){
+      } else {
+        if (container.attributes.checksum) {
           let preRendered = adler32(container.innerHTML)
           let toBeRendered = adler32(node.outerHTML)
-          if(preRendered != toBeRendered){
+          if (preRendered !== toBeRendered) {
             container.innerHTML = ''
             container.appendChild(node)
           }

@@ -286,7 +286,7 @@ test('rendering in a container with pre-rendered HTML', t => {
 
   el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
   let render = createDOMRenderer(el)
-  render(<div><span id="2"></span></div>)
+  render(<div><span id='2'></span></div>)
   t.equal(
     el.innerHTML,
     '<div><span id="1"></span><span id="2"></span></div>',

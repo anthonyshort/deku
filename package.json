@@ -12,7 +12,7 @@
     "test": "hihat test/index.js -- --debug -t babelify -p tap-dev-tool",
     "test:headless": "browserify test/index.js -t babelify | tape-run",
     "test:browsers": "zuul -- ./test/index.js",
-    "test:lint": "standard src/*.js test/*.js | snazzy",
+    "test:lint": "standard src/**/*.js test/**/*.js | snazzy",
     "docs:install": "gitbook install",
     "docs:build": "npm run docs:install && gitbook build",
     "docs:serve": "npm run docs:install && gitbook serve",
