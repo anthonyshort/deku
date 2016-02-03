@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@f/create-element": "1.0.0",
+    "@f/empty-element": "^1.0.0",
     "@f/foreach": "1.2.2",
     "@f/is-function": "1.1.1",
     "@f/is-null": "1.0.0",
