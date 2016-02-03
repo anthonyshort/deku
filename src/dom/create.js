@@ -54,7 +54,7 @@ function createThunk (vnode, path, dispatch, context) {
   let output = vnode.fn(model)
   let childPath = createPath(path, output.key || '0')
   let DOMElement = createElement(output, childPath, dispatch, context)
-  if (onCreate) onCreate(model)
+  if (onCreate) dispatch(onCreate(model))
   vnode.state = {
     vnode: output,
     model: model

@@ -116,7 +116,6 @@ export function diffChildren (previous, next, parentPath) {
  */
 
 export function diffNode (prev, next, path) {
-  let changes = []
   let {replaceNode, setAttribute, sameNode, removeNode, updateThunk} = Actions
 
   // No left node to compare it to
@@ -127,41 +126,37 @@ export function diffNode (prev, next, path) {
 
   // Bail out and skip updating this whole sub-tree
   if (prev === next) {
-    changes.push(sameNode())
-    return changes
+    return [sameNode()]
   }
 
   // Remove
   if (!isUndefined(prev) && isUndefined(next)) {
-    changes.push(removeNode(prev))
-    return changes
+    return [removeNode(prev)]
   }
 
   // Replace with empty
   if (!isNull(prev) && isNull(next) || isNull(prev) && !isNull(next)) {
-    changes.push(replaceNode(prev, next, path))
-    return changes
+    return [replaceNode(prev, next, path)]
   }
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceNode(prev, next, path))
-    return changes
+    return [replaceNode(prev, next, path)]
   }
 
   // Native
   if (isNative(next)) {
     if (prev.tagName !== next.tagName) {
-      changes.push(replaceNode(prev, next, path))
-    } else {
-      changes = diffAttributes(prev, next)
-      changes.push(diffChildren(prev, next, path))
+      return [replaceNode(prev, next, path)]
     }
+    let changes = diffAttributes(prev, next)
+    changes.push(diffChildren(prev, next, path))
     return changes
   }
 
   // Text
   if (isText(next)) {
+    let changes = []
     if (prev.nodeValue !== next.nodeValue) {
       changes.push(setAttribute('nodeValue', next.nodeValue, prev.nodeValue))
     }
@@ -170,6 +165,7 @@ export function diffNode (prev, next, path) {
 
   // Thunk
   if (isThunk(next)) {
+    let changes = []
     if (isSameThunk(prev, next)) {
       changes.push(updateThunk(prev, next, path))
     } else {
@@ -180,8 +176,8 @@ export function diffNode (prev, next, path) {
 
   // Empty
   if (isEmpty(next)) {
-    return changes
+    return []
   }
 
-  return changes
+  return []
 }

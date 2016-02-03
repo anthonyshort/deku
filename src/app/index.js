@@ -1,6 +1,7 @@
 import * as dom from '../dom'
 import {diffNode} from '../diff'
 import empty from '@f/empty-element'
+import noop from '@f/noop'
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
@@ -8,10 +9,11 @@ import empty from '@f/empty-element'
  * replace what is currently rendered.
  */
 
-export function createApp (container, dispatch, options = {}) {
+export function createApp (container, handler = noop, options = {}) {
   let oldVnode = null
   let node = null
   let rootId = options.id || '0'
+  let dispatch = effect => effect && handler(effect)
 
   if (container) {
     empty(container)

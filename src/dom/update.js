@@ -35,7 +35,7 @@ export function updateElement (dispatch, context) {
         let parentEl = DOMElement.parentNode
         if (parentEl) parentEl.replaceChild(newEl, DOMElement)
         DOMElement = newEl
-        removeThunks(prev)
+        removeThunks(prev, dispatch)
       },
       removeNode: (prev) => {
         removeThunks(prev)
@@ -90,7 +90,7 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
   let nextNode = next.fn(model)
   let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
   DOMElement = reduceArray(updateElement(dispatch, context), DOMElement, changes)
-  if (onUpdate) onUpdate(model)
+  if (onUpdate) dispatch(onUpdate(model))
   next.state = {
     vnode: nextNode,
     model: model
@@ -102,15 +102,15 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
  * Recursively remove all thunks
  */
 
-function removeThunks (vnode) {
+function removeThunks (vnode, dispatch) {
   while (isThunk(vnode)) {
     let onRemove = vnode.options.onRemove
     let { model } = vnode.state
-    if (onRemove) onRemove(model)
+    if (onRemove) dispatch(onRemove(model))
     vnode = vnode.state.vnode
   }
   if (vnode.children) {
-    forEach(vnode.children, removeThunks)
+    forEach(vnode.children, child => removeThunks(child, dispatch))
   }
 }
 
