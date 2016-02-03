@@ -1,15 +1,14 @@
-import svgAttributeNS from 'svg-attribute-namespace'
-import {isValidAttribute} from '../element'
+import setNativeAttribute from '@f/set-attribute'
+import isValidAttribute from '@f/is-valid-attr'
+import isFunction from '@f/is-function'
 import indexOf from 'index-of'
 import setValue from 'setify'
 import events from './events'
 
 export function removeAttribute (DOMElement, name, previousValue) {
   let eventType = events[name]
-  if (eventType) {
-    if (typeof previousValue === 'function') {
-      DOMElement.removeEventListener(eventType, previousValue)
-    }
+  if (eventType && isFunction(previousValue)) {
+    DOMElement.removeEventListener(eventType, previousValue)
     return
   }
   switch (name) {
@@ -20,10 +19,8 @@ export function removeAttribute (DOMElement, name, previousValue) {
       break
     case 'innerHTML':
     case 'nodeValue':
-      DOMElement.innerHTML = ''
-      break
     case 'value':
-      DOMElement.value = ''
+      DOMElement[name] = ''
       break
     default:
       DOMElement.removeAttribute(name)
@@ -37,7 +34,7 @@ export function setAttribute (DOMElement, name, value, previousValue) {
     return
   }
   if (eventType) {
-    if (typeof previousValue === 'function') {
+    if (isFunction(previousValue)) {
       DOMElement.removeEventListener(eventType, previousValue)
     }
     DOMElement.addEventListener(eventType, value)
@@ -66,7 +63,7 @@ export function setAttribute (DOMElement, name, value, previousValue) {
       setValue(DOMElement, value)
       break
     default:
-      DOMElement.setAttributeNS(svgAttributeNS(name), name, value)
+      setNativeAttribute(DOMElement, name, value)
       break
   }
 }

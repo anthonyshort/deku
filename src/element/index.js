@@ -142,19 +142,6 @@ export let groupByKey = (children) => {
 }
 
 /**
- * Check if an attribute should be rendered into the DOM.
- */
-
-export function isValidAttribute (value) {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'function') return false
-  if (value === '') return true
-  if (value === undefined) return false
-  if (value === null) return false
-  return true
-}
-
-/**
  * Create a node path, eg. (23,5,2,4) => '23.5.2.4'
  */
 

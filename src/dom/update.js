@@ -1,14 +1,13 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {isThunk, createPath} from '../element'
-import createElement from './create'
+import {create as createElement} from './create'
 import {Actions, diffNode} from '../diff'
 
 /**
- * Modify a DOM element given an array of actions. A context can be set
- * that will be used to render any custom elements.
+ * Modify a DOM element given an array of actions.
  */
 
-export default function patch (dispatch, context) {
+export function update (dispatch) {
   return (DOMElement, action) => {
     Actions.case({
       setAttribute: (name, value, previousValue) => {
@@ -32,34 +31,32 @@ export default function patch (dispatch, context) {
               insertAtIndex(
                 DOMElement,
                 index,
-                createElement(vnode, path, dispatch, context)
+                createElement(vnode, path, dispatch)
               )
             },
             removeChild: (index) => {
               DOMElement.removeChild(childNodes[index])
             },
             updateChild: (index, actions) => {
-              let update = patch(dispatch, context)
-              actions.forEach(action => update(childNodes[index], action))
+              let _update = update(dispatch)
+              actions.forEach(action => _update(childNodes[index], action))
             }
           }, change)
         })
       },
       updateThunk: (prev, next, path) => {
         let { props, children, component } = next
-        let { onUpdate } = component
-        let render = typeof component === 'function' ? component : component.render
+        let { render, onUpdate } = component
         let prevNode = prev.state.vnode
         let model = {
           children,
           props,
           path,
-          dispatch,
-          context
+          dispatch
         }
         let nextNode = render(model)
         let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
-        DOMElement = changes.reduce(patch(dispatch, context), DOMElement)
+        DOMElement = changes.reduce(update(dispatch), DOMElement)
         if (onUpdate) onUpdate(model)
         next.state = {
           vnode: nextNode,
@@ -67,7 +64,7 @@ export default function patch (dispatch, context) {
         }
       },
       replaceNode: (prev, next, path) => {
-        let newEl = createElement(next, path, dispatch, context)
+        let newEl = createElement(next, path, dispatch)
         let parentEl = DOMElement.parentNode
         if (parentEl) parentEl.replaceChild(newEl, DOMElement)
         DOMElement = newEl

@@ -1,5 +1,7 @@
 import {isText, isThunk, isSameThunk, isEmpty, groupByKey, createPath} from '../element'
 import dift, * as diffActions from 'dift'
+import isUndefined from '@f/is-undefined'
+import isNull from '@f/is-null'
 import Type from 'union-type'
 let Any = () => true
 let Path = () => String
@@ -119,7 +121,7 @@ export function diffNode (prev, next, path) {
 
   // No left node to compare it to
   // TODO: This should just return a createNode action
-  if (prev === null || prev === undefined) {
+  if (isUndefined(prev)) {
     throw new Error('Left node must not be null or undefined')
   }
 
@@ -130,8 +132,14 @@ export function diffNode (prev, next, path) {
   }
 
   // Remove
-  if (prev != null && next == null) {
+  if (!isUndefined(prev) && isUndefined(next)) {
     changes.push(removeNode(prev))
+    return changes
+  }
+
+  // Replace with empty
+  if (!isNull(prev) && isNull(next) || isNull(prev) && !isNull(next)) {
+    changes.push(replaceNode(prev, next, path))
     return changes
   }
 

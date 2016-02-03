@@ -1,6 +1,10 @@
 import {isText, isThunk, isEmpty, createPath} from '../element'
 import {setAttribute} from './setAttribute'
-import svg from './svg'
+import createElement from '@f/create-element'
+import isUndefined from '@f/is-undefined'
+import isString from '@f/is-string'
+import isNumber from '@f/is-number'
+import isNull from '@f/is-null'
 const cache = {}
 
 /**
@@ -9,35 +13,33 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export default function createElement (vnode, path, dispatch, context) {
+export function create (vnode, path, dispatch) {
   if (isText(vnode)) {
-    let value = typeof vnode.nodeValue === 'string' || typeof vnode.nodeValue === 'number'
+    let text = vnode.nodeValue
+    let value = isString(text) || isNumber(text)
       ? vnode.nodeValue
       : ''
     return document.createTextNode(value)
   }
 
   if (isEmpty(vnode)) {
-    return document.createElement('noscript')
+    return getCachedElement('noscript')
   }
 
   if (isThunk(vnode)) {
     let { props, component, children } = vnode
-    let { onCreate } = component
-    let render = typeof component === 'function' ? component : component.render
+    let { render, onCreate } = component
     let model = {
       children,
       props,
       path,
-      dispatch,
-      context
+      dispatch
     }
     let output = render(model)
-    let DOMElement = createElement(
+    let DOMElement = create(
       output,
       createPath(path, output.key || '0'),
-      dispatch,
-      context
+      dispatch
     )
     if (onCreate) onCreate(model)
     vnode.state = {
@@ -47,32 +49,33 @@ export default function createElement (vnode, path, dispatch, context) {
     return DOMElement
   }
 
-  let cached = cache[vnode.type]
-
-  if (typeof cached === 'undefined') {
-    cached = cache[vnode.type] = svg.isElement(vnode.type)
-      ? document.createElementNS(svg.namespace, vnode.type)
-      : document.createElement(vnode.type)
-  }
-
-  let DOMElement = cached.cloneNode(false)
+  let DOMElement = getCachedElement(vnode.type)
 
   for (let name in vnode.attributes) {
     setAttribute(DOMElement, name, vnode.attributes[name])
   }
 
   vnode.children.forEach((node, index) => {
-    if (node === null || node === undefined) {
+    if (isNull(node) || isUndefined(node)) {
       return
     }
-    let child = createElement(
+    let child = create(
       node,
       createPath(path, node.key || index),
-      dispatch,
-      context
+      dispatch
     )
     DOMElement.appendChild(child)
   })
 
   return DOMElement
+}
+
+function getCachedElement (type) {
+  let cached = cache[type]
+
+  if (isUndefined(cached)) {
+    cached = cache[type] = createElement(type)
+  }
+
+  return cached.cloneNode(false)
 }

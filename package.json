@@ -48,12 +48,18 @@
     "zuul": "3.9.0"
   },
   "dependencies": {
+    "@f/create-element": "1.0.0",
+    "@f/foreach": "1.2.2",
+    "@f/is-function": "1.1.1",
+    "@f/is-null": "1.0.0",
+    "@f/is-number": "1.1.1",
+    "@f/is-string": "1.1.1",
+    "@f/is-undefined": "1.1.1",
+    "@f/is-valid-attr": "1.0.0",
+    "@f/set-attribute": "1.0.1",
     "dift": "0.1.12",
     "index-of": "0.2.0",
-    "is-svg-element": "1.0.1",
     "setify": "1.0.3",
-    "svg-attribute-namespace": "2.1.0",
-    "uid": "0.0.2",
     "union-type": "0.1.6"
   },
   "keywords": [

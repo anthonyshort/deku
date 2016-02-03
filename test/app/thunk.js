@@ -1,12 +1,12 @@
 /** @jsx h */
-import {create as createDOMRenderer} from '../../src/app'
+import {createApp} from '../../src/app'
 import {h} from '../../src'
 import test from 'tape'
 import trigger from 'trigger-event'
 
 test('rendering and updating thunks', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = {
     render: (model) => (
@@ -44,7 +44,7 @@ test('calling dispatch', t => {
   let el = document.createElement('div')
   document.body.appendChild(el)
 
-  let render = createDOMRenderer(el, action => {
+  let render = createApp(el, action => {
     t.equal(action.type, 'CLICK', 'Action received')
   })
 
@@ -74,7 +74,7 @@ test('accessing context', t => {
 
 test('swapping a thunks root element', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = {
     render: (model) => (
@@ -93,7 +93,7 @@ test('swapping a thunks root element', t => {
 
 test('rendering a thunk with props', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = {
     render: (model) => <button>{model.props.text}</button>
@@ -110,7 +110,7 @@ test('rendering a thunk with props', t => {
 
 test('rendering a thunk with children', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = {
     render: ({ children }) => children[0]
@@ -128,7 +128,7 @@ test('rendering a thunk with children', t => {
 
 test('rendering a thunk with a path', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = {
     render: ({ path }) => {
@@ -151,7 +151,7 @@ test('rendering a thunk with a path', t => {
 })
 
 test('calling onCreate hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = {
     onCreate: () => t.pass('onCreate called'),
@@ -178,7 +178,7 @@ test('calling plain function onCreate hook correctly', t => {
 })
 
 test('calling onUpdate hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = {
     onUpdate: ({ path, props, children }) => {
@@ -211,7 +211,7 @@ test('calling plain function onUpdate hook correctly', t => {
 })
 
 test('calling onRemove hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = {
     onRemove: ({ path, props, children }) => {
@@ -245,7 +245,7 @@ test('calling plain function onRemove hook correctly', t => {
 
 test('path should stay the same on when thunk is updated', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   document.body.appendChild(el)
   let MyButton = {
     onUpdate ({path}) {
@@ -275,7 +275,7 @@ test('path should stay the same on when thunk is updated', t => {
 
 test('path should stay the same on when thunk is replaced', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   let Thunk = {
     render ({path, children, props}) {
       t.equal(path, props.expectedPath, 'onRender')

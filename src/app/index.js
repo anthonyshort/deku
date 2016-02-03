@@ -1,5 +1,6 @@
 import * as dom from '../dom'
 import {diffNode} from '../diff'
+import empty from '@f/empty-element'
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
@@ -7,13 +8,13 @@ import {diffNode} from '../diff'
  * replace what is currently rendered.
  */
 
-export function create (container, dispatch, options = {}) {
+export function createApp (container, dispatch, options = {}) {
   let oldVnode = null
   let node = null
   let rootId = options.id || '0'
 
-  if (container && container.childNodes.length > 0) {
-    container.innerHTML = ''
+  if (container) {
+    empty(container)
   }
 
   let update = (newVnode, context) => {

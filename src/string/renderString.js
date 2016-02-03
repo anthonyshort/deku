@@ -1,4 +1,5 @@
-import {isText, isThunk, isEmpty, isValidAttribute} from '../element'
+import {isText, isThunk, isEmpty} from '../element'
+import isValidAttribute from '@f/is-valid-attr'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
