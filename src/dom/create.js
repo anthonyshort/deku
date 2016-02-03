@@ -1,5 +1,5 @@
 import createNativeElement from '@f/create-element'
-import {createPath, type} from '../element'
+import {createPath} from '../element'
 import {setAttribute} from './setAttribute'
 import isUndefined from '@f/is-undefined'
 import isString from '@f/is-string'
