@@ -34,10 +34,7 @@ render(<App size="large" />)
 
 ### Notes
 
+The container DOM element should:
 
-* You should **avoid using document.body as the container element**. You'll probably run into problems with other libraries. They'll often add elements to the `document.body` which can confuse the diff algorithm.
-
-* When the container element is not empty, **deku would assume that the HTML elements inside the container are the pre-rendered elements**. Read [this page](/deku/docs/tips/pre-rendered.md) to learn more about working with pre-rendered elements.
-
-
-. All elements inside of the container will be removed when a virtual element is rendered into it. The renderer needs to have complete control of all of the elements within the container.
+* **Not be the document.body**. You'll probably run into problems with other libraries. They'll often add elements to the `document.body` which can confuse the diff algorithm.
+* **Be empty**. All elements inside of the container will be removed when a virtual element is rendered into it. The renderer needs to have complete control of all of the elements within the container.
