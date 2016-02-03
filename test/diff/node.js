@@ -25,12 +25,12 @@ test('diffing nodes with different types', t => {
 })
 
 test('diffing node with null', t => {
-  let {removeNode} = Actions
+  let {replaceNode} = Actions
   let left = <div />
   let right = null
   t.deepEqual(
     diffNode(left, right, '0'),
-    [removeNode(left)],
+    [replaceNode(left, right, '0')],
     'removed node'
   )
   t.end()
@@ -60,15 +60,17 @@ test('diffing text nodes', t => {
   t.end()
 })
 
-test('diffing with a current node should throw an error', t => {
+test('diffing with a current node as null', t => {
+  let {replaceNode} = Actions
   let left = null
   let right = <div />
-  try {
-    diffNode(left, right, '0')
-    t.fail('error not thrown')
-  } catch (e) {
-    t.equal(e.message, 'Left node must not be null or undefined')
-  }
+
+  t.deepEqual(
+    diffNode(left, right, '0'),
+    [replaceNode(left, right, '0')],
+    'replaced node'
+  )
+
   t.end()
 })
 

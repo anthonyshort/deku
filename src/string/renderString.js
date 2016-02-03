@@ -1,4 +1,5 @@
-import {isText, isThunk, isEmpty, isValidAttribute} from '../element'
+import isValidAttribute from '@f/is-valid-attr'
+import isNull from '@f/is-null'
 
 /**
  * Turn an object of key/value pairs into a HTML attribute string. This
@@ -21,41 +22,44 @@ function attributesToString (attributes) {
  * object that will be given to all components.
  */
 
-export function renderString (element, context, path = '0') {
-  if (isText(element)) {
-    return element.nodeValue
+export function renderString (vnode, context, path = '0') {
+  switch (vnode.type) {
+    case 'text':
+      return renderTextNode(vnode)
+    case 'empty':
+      return renderEmptyNode()
+    case 'thunk':
+      return renderThunk(vnode, path, context)
+    case 'native':
+      return renderHTML(vnode, path, context)
   }
+}
 
-  if (isEmpty(element)) {
-    return '<noscript></noscript>'
-  }
+function renderTextNode (vnode) {
+  return vnode.nodeValue
+}
 
-  if (isThunk(element)) {
-    let { props, component, children } = element
-    let { render } = component
-    let output = render({
-      children,
-      props,
-      path,
-      context
-    })
-    return renderString(
-      output,
-      context,
-      path
-    )
-  }
+function renderEmptyNode () {
+  return '<noscript></noscript>'
+}
 
-  let {attributes, type, children} = element
+function renderThunk (vnode, path, context) {
+  let { props, children } = vnode
+  let output = vnode.fn({ children, props, path, context })
+  return renderString(output, context, path)
+}
+
+function renderHTML (vnode, path, context) {
+  let {attributes, tagName, children} = vnode
   let innerHTML = attributes.innerHTML
-  let str = '<' + type + attributesToString(attributes) + '>'
+  let str = '<' + tagName + attributesToString(attributes) + '>'
 
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => renderString(child, context, path + '.' + (child.key == null ? i : child.key))).join('')
+    str += children.map((child, i) => renderString(child, context, path + '.' + (isNull(child.key) ? i : child.key))).join('')
   }
 
-  str += '</' + type + '>'
+  str += '</' + tagName + '>'
   return str
 }

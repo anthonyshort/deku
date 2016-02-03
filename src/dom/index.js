@@ -1,7 +1,7 @@
-import create from './create'
-import update from './update'
+import {createElement} from './create'
+import {updateElement} from './update'
 
 export {
-  create,
-  update
+  createElement,
+  updateElement
 }

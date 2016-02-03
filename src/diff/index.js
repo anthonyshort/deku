@@ -1,5 +1,7 @@
-import {isText, isThunk, isSameThunk, isEmpty, groupByKey, createPath} from '../element'
+import {isText, isThunk, isSameThunk, isNative, isEmpty, groupByKey, createPath} from '../element'
 import dift, * as diffActions from 'dift'
+import isUndefined from '@f/is-undefined'
+import isNull from '@f/is-null'
 import Type from 'union-type'
 let Any = () => true
 let Path = () => String
@@ -114,35 +116,47 @@ export function diffChildren (previous, next, parentPath) {
  */
 
 export function diffNode (prev, next, path) {
-  let changes = []
   let {replaceNode, setAttribute, sameNode, removeNode, updateThunk} = Actions
 
   // No left node to compare it to
   // TODO: This should just return a createNode action
-  if (prev === null || prev === undefined) {
+  if (isUndefined(prev)) {
     throw new Error('Left node must not be null or undefined')
   }
 
   // Bail out and skip updating this whole sub-tree
   if (prev === next) {
-    changes.push(sameNode())
-    return changes
+    return [sameNode()]
   }
 
   // Remove
-  if (prev != null && next == null) {
-    changes.push(removeNode(prev))
-    return changes
+  if (!isUndefined(prev) && isUndefined(next)) {
+    return [removeNode(prev)]
+  }
+
+  // Replace with empty
+  if (!isNull(prev) && isNull(next) || isNull(prev) && !isNull(next)) {
+    return [replaceNode(prev, next, path)]
   }
 
   // Replace
   if (prev.type !== next.type) {
-    changes.push(replaceNode(prev, next, path))
+    return [replaceNode(prev, next, path)]
+  }
+
+  // Native
+  if (isNative(next)) {
+    if (prev.tagName !== next.tagName) {
+      return [replaceNode(prev, next, path)]
+    }
+    let changes = diffAttributes(prev, next)
+    changes.push(diffChildren(prev, next, path))
     return changes
   }
 
   // Text
   if (isText(next)) {
+    let changes = []
     if (prev.nodeValue !== next.nodeValue) {
       changes.push(setAttribute('nodeValue', next.nodeValue, prev.nodeValue))
     }
@@ -151,6 +165,7 @@ export function diffNode (prev, next, path) {
 
   // Thunk
   if (isThunk(next)) {
+    let changes = []
     if (isSameThunk(prev, next)) {
       changes.push(updateThunk(prev, next, path))
     } else {
@@ -161,11 +176,8 @@ export function diffNode (prev, next, path) {
 
   // Empty
   if (isEmpty(next)) {
-    return changes
+    return []
   }
 
-  changes = diffAttributes(prev, next)
-  changes.push(diffChildren(prev, next, path))
-
-  return changes
+  return []
 }

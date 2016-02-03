@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
 /** @jsx h */
 import test from 'tape'
-import {create as createDOMRenderer} from '../../src/app'
+import {createApp} from '../../src/app'
 import {create as h} from '../../src/element'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   render(<span />)
   t.equal(el.innerHTML, '<span></span>', 'rendered')
@@ -31,7 +31,7 @@ test('rendering elements', t => {
 
 test('moving elements using keys', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   render(
     <div>
@@ -69,7 +69,7 @@ test('moving elements using keys', t => {
 test('emptying the container', t => {
   let el = document.createElement('div')
   el.innerHTML = '<div></div>'
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   render(<span></span>)
   t.equal(
     el.innerHTML,
@@ -97,7 +97,7 @@ test('context should be passed down all elements', t => {
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(1)
   render(<Form />, { hello: 'there' })
   t.end()
@@ -116,7 +116,7 @@ test('context should be passed down across re-renders', t => {
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(2)
   render(<Form />, 'the context')
   render(<Form />, 'the context')
@@ -125,7 +125,7 @@ test('context should be passed down across re-renders', t => {
 
 test('rendering numbers as text elements', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   render(<span>{5}</span>)
   t.equal(
     el.innerHTML,
@@ -137,7 +137,7 @@ test('rendering numbers as text elements', t => {
 
 test('rendering zero as text element', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   render(<span>{0}</span>)
   t.equal(
     el.innerHTML,
@@ -149,7 +149,7 @@ test('rendering zero as text element', t => {
 
 test('rendering the same node', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   var node = <div></div>
   render(node)
   render(node)
@@ -174,7 +174,7 @@ test('context should be passed down across re-renders even after disappearance',
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(2)
   render(<Form visible />, 'the context')
   render(<Form />, 'the context')
@@ -184,7 +184,7 @@ test('context should be passed down across re-renders even after disappearance',
 
 test('#339 - removing nodes that contain a text node', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let ViewOne = {
     render: model => <div>Hi!</div>
@@ -204,7 +204,7 @@ test('#339 - removing nodes that contain a text node', t => {
 
 test('#366 - cached vnodes for thunks are correct', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   const data = [
     {id: 1, title: 'la french'},
@@ -247,7 +247,7 @@ test('#366 - cached vnodes for thunks are correct', t => {
 
 test('rendering and updating null', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   render(
     <div>

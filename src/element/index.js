@@ -1,3 +1,9 @@
+import isUndefined from '@f/is-undefined'
+import reduceArray from '@f/reduce-array'
+import isString from '@f/is-string'
+import isNumber from '@f/is-number'
+import isNull from '@f/is-null'
+
 /**
  * This function lets us create virtual nodes using a simple
  * syntax. It is compatible with JSX transforms so you can use
@@ -13,24 +19,28 @@
 
 export function create (type, attributes, ...children) {
   if (!type) throw new TypeError('element() needs a type.')
-
   attributes = attributes || {}
-  children = (children || []).reduce(reduceChildren, [])
+  children = reduceArray(reduceChildren, [], children || [])
 
-  let key = typeof attributes.key === 'string' || typeof attributes.key === 'number'
+  let key = isString(attributes.key) || isNumber(attributes.key)
     ? attributes.key
-    : undefined
+    : null
 
   delete attributes.key
 
-  if (typeof type === 'object' || typeof type === 'function') {
-    return createThunkElement(type, key, attributes, children)
+  if (typeof type === 'object') {
+    return createThunkElement(type.render, key, attributes, children, type)
+  }
+
+  if (typeof type === 'function') {
+    return createThunkElement(type, key, attributes, children, type)
   }
 
   return {
+    type: 'native',
+    tagName: type,
     attributes,
     children,
-    type,
     key
   }
 }
@@ -43,13 +53,13 @@ export function create (type, attributes, ...children) {
  */
 
 function reduceChildren (children, vnode) {
-  if (typeof vnode === 'string' || typeof vnode === 'number') {
+  if (isString(vnode) || isNumber(vnode)) {
     children.push(createTextElement(vnode))
-  } else if (vnode === null) {
+  } else if (isNull(vnode)) {
     children.push(createEmptyElement())
   } else if (Array.isArray(vnode)) {
     children = [...children, ...(vnode.reduce(reduceChildren, []))]
-  } else if (typeof vnode === 'undefined') {
+  } else if (isUndefined(vnode)) {
     throw new Error(`vnode can't be undefined. Did you mean to use null?`)
   } else {
     children.push(vnode)
@@ -63,7 +73,7 @@ function reduceChildren (children, vnode) {
 
 export function createTextElement (text) {
   return {
-    type: '#text',
+    type: 'text',
     nodeValue: text
   }
 }
@@ -74,7 +84,7 @@ export function createTextElement (text) {
 
 export function createEmptyElement () {
   return {
-    type: '#empty'
+    type: 'empty'
   }
 }
 
@@ -82,46 +92,39 @@ export function createEmptyElement () {
  * Lazily-rendered virtual nodes
  */
 
-export function createThunkElement (component, key, props, children) {
+export function createThunkElement (fn, key, props, children, options) {
   return {
-    type: '#thunk',
+    type: 'thunk',
+    fn,
     children,
     props,
-    component,
+    options,
     key
   }
 }
 
 /**
- * Is a vnode a thunk?
+ * Functional type checking
  */
 
 export let isThunk = (node) => {
-  return node.type === '#thunk'
+  return node.type === 'thunk'
 }
-
-/**
- * Is a vnode a text node?
- */
 
 export let isText = (node) => {
-  return node.type === '#text'
+  return node.type === 'text'
 }
-
-/**
- * Is a vnode an empty placeholder?
- */
 
 export let isEmpty = (node) => {
-  return node.type === '#empty'
+  return node.type === 'empty'
 }
 
-/**
- * Determine if two virtual nodes are the same type
- */
+export let isNative = (node) => {
+  return node.type === 'native'
+}
 
 export let isSameThunk = (left, right) => {
-  return isThunk(left) && isThunk(right) && left.component === right.component
+  return isThunk(left) && isThunk(right) && left.fn === right.fn
 }
 
 /**
@@ -129,29 +132,19 @@ export let isSameThunk = (left, right) => {
  */
 
 export let groupByKey = (children) => {
-  return children.reduce((acc, child, i) => {
-    if (child != null && child !== false) {
+  let iterator = (acc, child, i) => {
+    if (!isUndefined(child) && child !== false) {
+      let key = isNull(child) ? i : (child.key || i)
       acc.push({
-        key: String(child.key || i),
+        key: String(key),
         item: child,
         index: i
       })
     }
     return acc
-  }, [])
-}
+  }
 
-/**
- * Check if an attribute should be rendered into the DOM.
- */
-
-export function isValidAttribute (value) {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'function') return false
-  if (value === '') return true
-  if (value === undefined) return false
-  if (value === null) return false
-  return true
+  return reduceArray(iterator, [], children)
 }
 
 /**
