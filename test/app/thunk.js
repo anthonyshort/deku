@@ -23,7 +23,7 @@ test('rendering and updating thunks', t => {
 
 test('rendering and updating plain function thunks', t => {
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
 
   let Component = (model) => <div name={model.props.name} />
 
@@ -66,7 +66,7 @@ test('accessing context', t => {
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   render(<Component />, state)
   t.equal(el.innerHTML, '<div>Tom</div>')
   t.end()
@@ -165,7 +165,7 @@ test('calling onCreate hook correctly', t => {
 })
 
 test('calling plain function onCreate hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = m => <div />
 
@@ -195,7 +195,7 @@ test('calling onUpdate hook correctly', t => {
 })
 
 test('calling plain function onUpdate hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = m => <div />
 
@@ -228,7 +228,7 @@ test('calling onRemove hook correctly', t => {
 })
 
 test('calling plain function onRemove hook correctly', t => {
-  let render = createDOMRenderer()
+  let render = createApp()
 
   let Component = m => <div />
 

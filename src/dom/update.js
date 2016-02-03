@@ -1,15 +1,20 @@
 import {setAttribute, removeAttribute} from './setAttribute'
 import {isThunk, createPath} from '../element'
-import {create as createElement} from './create'
 import {Actions, diffNode} from '../diff'
+import reduceArray from '@f/reduce-array'
+import {createElement} from './create'
+import toArray from '@f/to-array'
+import forEach from '@f/foreach'
+import noop from '@f/noop'
 
 /**
  * Modify a DOM element given an array of actions.
  */
 
-export function update (dispatch) {
+export function updateElement (dispatch, context) {
   return (DOMElement, action) => {
     Actions.case({
+      sameNode: noop,
       setAttribute: (name, value, previousValue) => {
         setAttribute(DOMElement, name, value, previousValue)
       },
@@ -19,52 +24,14 @@ export function update (dispatch) {
       insertBefore: (index) => {
         insertAtIndex(DOMElement.parentNode, index, DOMElement)
       },
-      sameNode: () => {},
       updateChildren: (changes) => {
-        // Create a clone of the children so we can reference them later
-        // using their original position even if they move around
-        let childNodes = Array.prototype.slice.apply(DOMElement.childNodes)
-
-        changes.forEach(change => {
-          Actions.case({
-            insertChild: (vnode, index, path) => {
-              insertAtIndex(
-                DOMElement,
-                index,
-                createElement(vnode, path, dispatch)
-              )
-            },
-            removeChild: (index) => {
-              DOMElement.removeChild(childNodes[index])
-            },
-            updateChild: (index, actions) => {
-              let _update = update(dispatch)
-              actions.forEach(action => _update(childNodes[index], action))
-            }
-          }, change)
-        })
+        updateChildren(DOMElement, changes, dispatch, context)
       },
       updateThunk: (prev, next, path) => {
-        let { props, children, component } = next
-        let { render, onUpdate } = component
-        let prevNode = prev.state.vnode
-        let model = {
-          children,
-          props,
-          path,
-          dispatch
-        }
-        let nextNode = render(model)
-        let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
-        DOMElement = changes.reduce(update(dispatch), DOMElement)
-        if (onUpdate) onUpdate(model)
-        next.state = {
-          vnode: nextNode,
-          model: model
-        }
+        DOMElement = updateThunk(DOMElement, prev, next, path, dispatch, context)
       },
       replaceNode: (prev, next, path) => {
-        let newEl = createElement(next, path, dispatch)
+        let newEl = createElement(next, path, dispatch, context)
         let parentEl = DOMElement.parentNode
         if (parentEl) parentEl.replaceChild(newEl, DOMElement)
         DOMElement = newEl
@@ -82,22 +49,68 @@ export function update (dispatch) {
 }
 
 /**
+ * Update all the children of a DOMElement using an array of actions
+ */
+
+function updateChildren (DOMElement, changes, dispatch, context) {
+  // Create a clone of the children so we can reference them later
+  // using their original position even if they move around
+  let childNodes = toArray(DOMElement.childNodes)
+  changes.forEach(change => {
+    Actions.case({
+      insertChild: (vnode, index, path) => {
+        insertAtIndex(DOMElement, index, createElement(vnode, path, dispatch, context))
+      },
+      removeChild: (index) => {
+        DOMElement.removeChild(childNodes[index])
+      },
+      updateChild: (index, actions) => {
+        let _update = updateElement(dispatch, context)
+        actions.forEach(action => _update(childNodes[index], action))
+      }
+    }, change)
+  })
+}
+
+/**
+ * Update a thunk and only re-render the subtree if needed.
+ */
+
+function updateThunk (DOMElement, prev, next, path, dispatch, context) {
+  let { props, children } = next
+  let { onUpdate } = next.options
+  let prevNode = prev.state.vnode
+  let model = {
+    children,
+    props,
+    path,
+    dispatch,
+    context
+  }
+  let nextNode = next.fn(model)
+  let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
+  DOMElement = reduceArray(updateElement(dispatch, context), DOMElement, changes)
+  if (onUpdate) onUpdate(model)
+  next.state = {
+    vnode: nextNode,
+    model: model
+  }
+  return DOMElement
+}
+
+/**
  * Recursively remove all thunks
  */
 
 function removeThunks (vnode) {
   while (isThunk(vnode)) {
-    let { component, state } = vnode
-    let { onRemove } = component
-    let { model } = state
+    let onRemove = vnode.options.onRemove
+    let { model } = vnode.state
     if (onRemove) onRemove(model)
-    vnode = state.vnode
+    vnode = vnode.state.vnode
   }
-
   if (vnode.children) {
-    for (var i = 0; i < vnode.children.length; i++) {
-      removeThunks(vnode.children[i])
-    }
+    forEach(vnode.children, removeThunks)
   }
 }
 

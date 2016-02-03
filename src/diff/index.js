@@ -1,4 +1,4 @@
-import {isText, isThunk, isSameThunk, isEmpty, groupByKey, createPath} from '../element'
+import {isText, isThunk, isSameThunk, isNative, isEmpty, groupByKey, createPath} from '../element'
 import dift, * as diffActions from 'dift'
 import isUndefined from '@f/is-undefined'
 import isNull from '@f/is-null'
@@ -149,6 +149,17 @@ export function diffNode (prev, next, path) {
     return changes
   }
 
+  // Native
+  if (isNative(next)) {
+    if (prev.tagName !== next.tagName) {
+      changes.push(replaceNode(prev, next, path))
+    } else {
+      changes = diffAttributes(prev, next)
+      changes.push(diffChildren(prev, next, path))
+    }
+    return changes
+  }
+
   // Text
   if (isText(next)) {
     if (prev.nodeValue !== next.nodeValue) {
@@ -171,9 +182,6 @@ export function diffNode (prev, next, path) {
   if (isEmpty(next)) {
     return changes
   }
-
-  changes = diffAttributes(prev, next)
-  changes.push(diffChildren(prev, next, path))
 
   return changes
 }

@@ -3,7 +3,7 @@ import test from 'tape'
 import isDOM from 'is-dom'
 import {create as h} from '../../src/element'
 import trigger from 'trigger-event'
-import {create as createElement} from '../../src/dom'
+import {createElement} from '../../src/dom'
 
 test('create element', t => {
   let DOMElement = createElement(<div color='red' />)

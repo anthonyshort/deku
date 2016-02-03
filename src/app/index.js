@@ -19,13 +19,13 @@ export function createApp (container, dispatch, options = {}) {
 
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
-    node = changes.reduce(dom.update(dispatch, context), node)
+    node = changes.reduce(dom.updateElement(dispatch, context), node)
     oldVnode = newVnode
     return node
   }
 
   let create = (vnode, context) => {
-    node = dom.create(vnode, rootId, dispatch, context)
+    node = dom.createElement(vnode, rootId, dispatch, context)
     if (container) container.appendChild(node)
     oldVnode = vnode
     return node

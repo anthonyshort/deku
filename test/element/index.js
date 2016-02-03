@@ -5,7 +5,7 @@ import {create as h, groupByKey} from '../../src/element'
 test('Element should accept strings as children', t => {
   let vnode = h('span', {}, ['Hello'])
   t.assert(
-    vnode.children[0].type === '#text'
+    vnode.children[0].type === 'text'
   )
   t.end()
 })
@@ -25,12 +25,13 @@ test('groupByKey', t => {
   let one = <div/>
   let two = <div key='foo'/>
   let three = <div/>
-  let result = groupByKey([one, two, three, null, 'foo'])
+  let result = groupByKey([one, two, three, undefined, null, 'foo'])
   t.deepEqual(result, [
     { key: '0', item: one, index: 0 },
     { key: 'foo', item: two, index: 1 },
     { key: '2', item: three, index: 2 },
-    { key: '4', item: 'foo', index: 4 }
+    { key: '4', item: null, index: 4 },
+    { key: '5', item: 'foo', index: 5 }
   ])
   t.end()
 })

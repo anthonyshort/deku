@@ -97,7 +97,7 @@ test('context should be passed down all elements', t => {
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(1)
   render(<Form />, { hello: 'there' })
   t.end()
@@ -116,7 +116,7 @@ test('context should be passed down across re-renders', t => {
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(2)
   render(<Form />, 'the context')
   render(<Form />, 'the context')
@@ -174,7 +174,7 @@ test('context should be passed down across re-renders even after disappearance',
     }
   }
   let el = document.createElement('div')
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   t.plan(2)
   render(<Form visible />, 'the context')
   render(<Form />, 'the context')

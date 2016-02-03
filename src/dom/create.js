@@ -1,6 +1,6 @@
-import {isText, isThunk, isEmpty, createPath} from '../element'
+import createNativeElement from '@f/create-element'
+import {createPath, type} from '../element'
 import {setAttribute} from './setAttribute'
-import createElement from '@f/create-element'
 import isUndefined from '@f/is-undefined'
 import isString from '@f/is-string'
 import isNumber from '@f/is-number'
@@ -13,69 +13,69 @@ const cache = {}
  * so they are treated like any other native element.
  */
 
-export function create (vnode, path, dispatch) {
-  if (isText(vnode)) {
-    let text = vnode.nodeValue
-    let value = isString(text) || isNumber(text)
-      ? vnode.nodeValue
-      : ''
-    return document.createTextNode(value)
+export function createElement (vnode, path, dispatch, context) {
+  switch (vnode.type) {
+    case 'text':
+      return createTextNode(vnode.nodeValue)
+    case 'empty':
+      return getCachedElement('noscript')
+    case 'thunk':
+      return createThunk(vnode, path, dispatch, context)
+    case 'native':
+      return createHTMLElement(vnode, path, dispatch, context)
   }
-
-  if (isEmpty(vnode)) {
-    return getCachedElement('noscript')
-  }
-
-  if (isThunk(vnode)) {
-    let { props, component, children } = vnode
-    let { render, onCreate } = component
-    let model = {
-      children,
-      props,
-      path,
-      dispatch
-    }
-    let output = render(model)
-    let DOMElement = create(
-      output,
-      createPath(path, output.key || '0'),
-      dispatch
-    )
-    if (onCreate) onCreate(model)
-    vnode.state = {
-      vnode: output,
-      model: model
-    }
-    return DOMElement
-  }
-
-  let DOMElement = getCachedElement(vnode.type)
-
-  for (let name in vnode.attributes) {
-    setAttribute(DOMElement, name, vnode.attributes[name])
-  }
-
-  vnode.children.forEach((node, index) => {
-    if (isNull(node) || isUndefined(node)) {
-      return
-    }
-    let child = create(
-      node,
-      createPath(path, node.key || index),
-      dispatch
-    )
-    DOMElement.appendChild(child)
-  })
-
-  return DOMElement
 }
 
 function getCachedElement (type) {
   let cached = cache[type]
-
   if (isUndefined(cached)) {
-    cached = cache[type] = createElement(type)
+    cached = cache[type] = createNativeElement(type)
+  }
+  return cached.cloneNode(false)
+}
+
+function createTextNode (text) {
+  let value = isString(text) || isNumber(text)
+    ? text
+    : ''
+  return document.createTextNode(value)
+}
+
+function createThunk (vnode, path, dispatch, context) {
+  let { props, children } = vnode
+  let { onCreate } = vnode.options
+  let model = {
+    children,
+    props,
+    path,
+    dispatch,
+    context
+  }
+  let output = vnode.fn(model)
+  let childPath = createPath(path, output.key || '0')
+  let DOMElement = createElement(output, childPath, dispatch, context)
+  if (onCreate) onCreate(model)
+  vnode.state = {
+    vnode: output,
+    model: model
+  }
+  return DOMElement
+}
+
+function createHTMLElement (vnode, path, dispatch, context) {
+  let { tagName, attributes, children } = vnode
+  let DOMElement = getCachedElement(tagName)
+
+  for (let name in attributes) {
+    setAttribute(DOMElement, name, attributes[name])
   }
 
-  return cached.cloneNode(false)
+  children.forEach((node, index) => {
+    if (isNull(node) || isUndefined(node)) return
+    let childPath = createPath(path, node.key || index)
+    let child = createElement(node, childPath, dispatch, context)
+    DOMElement.appendChild(child)
+  })
+
+  return DOMElement
 }
