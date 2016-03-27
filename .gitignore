@@ -3,4 +3,5 @@ node_modules
 _book
 dist
 lib
+es
 npm-debug.log
