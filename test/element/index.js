@@ -43,7 +43,7 @@ test('should alias the className attribute to class', t => {
     'attribute named "className" is now named "class"'
   )
   t.assert(
-    ! ('className' in vnode.attributes),
+    'className' in vnode.attributes === false,
     'attributes no longer has className property'
   )
   t.end()
