@@ -28,9 +28,9 @@ export function create (type, attributes, ...children) {
 
   delete attributes.key
 
-  if (isString(attributes.className)) {
-    attributes.class = attributes.className;
-    delete attributes.className;
+  if ('className' in attributes) {
+    attributes.class = attributes.className
+    delete attributes.className
   }
 
   if (typeof type === 'object') {
