@@ -75,7 +75,7 @@ let render = model => {
 }
 
 let onClick = model => event => {
-  console.log(model, e)
+  console.log(model, event)
 }
 ```
 
