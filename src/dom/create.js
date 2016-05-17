@@ -64,8 +64,16 @@ export function createWithSideEffects (vnode, path, dispatch, context) {
     case 'thunk':
       return {element: createThunk(vnode, path, dispatch, context), sideEffects: null}
     case 'native':
-      return {element: createHTMLElement(vnode, path, dispatch, context), sideEffects: null}
+      return createHTMLElement(vnode, path, dispatch, context)
   }
+}
+
+function getCachedElement (type) {
+  let cached = cache[type]
+  if (isUndefined(cached)) {
+    cached = cache[type] = createNativeElement(type)
+  }
+  return cached.cloneNode(false)
 }
 
 function createTextNode (text) {
@@ -116,7 +124,6 @@ function createHTMLElement (vnode, path, dispatch, context) {
         context
     )
     sideEffects.ofChildren.push(DOM.sideEffects)
-    
     DOMElement.appendChild(DOM.element)
   })
 

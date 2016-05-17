@@ -16,11 +16,6 @@ export function createApp (container, handler = noop, options = {}) {
   let rootId = options.id || '0'
   let dispatch = effect => effect && handler(effect)
 
-  // TODO: требуется ли?
-  if (container) {
-    empty(container)
-  }
-
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
     node = changes.reduce(dom.updateElement(dispatch, context), node)
@@ -31,7 +26,7 @@ export function createApp (container, handler = noop, options = {}) {
   let create = (vnode, context) => {
     if (container){
       if(container.childNodes.length === 0){
-        node = dom.create(vnode, rootId, dispatch, context)
+        node = dom.createElement(vnode, rootId, dispatch, context)
         container.appendChild(node)
       }else{
         let {DOMnode, attachEvents} = dom.createElementThenEvents(vnode, rootId, dispatch, context)
@@ -50,7 +45,7 @@ export function createApp (container, handler = noop, options = {}) {
         }
       }
     }else{
-      node = dom.create(vnode, rootId, dispatch, context)
+      node = dom.createElement(vnode, rootId, dispatch, context)
     }
     oldVnode = vnode
     return node

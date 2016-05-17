@@ -68,20 +68,6 @@ test('moving elements using keys', t => {
   t.end()
 })
 
-// TODO: требуется ли это?
-test('emptying the container', t => {
-  let el = document.createElement('div')
-  el.innerHTML = '<div></div>'
-  let render = createApp(el)
-  render(<span></span>)
-  t.equal(
-    el.innerHTML,
-    '<span></span>',
-    'container emptied'
-  )
-  t.end()
-})
-
 test('context should be passed down all elements', t => {
   let Form = {
     render ({ props, context }) {
@@ -291,7 +277,7 @@ test('rendering in a container with pre-rendered HTML', t => {
   let el = document.createElement('div')
 
   el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   render(<div><span id="2"></span></div>)
   t.equal(
     el.innerHTML,
@@ -301,7 +287,7 @@ test('rendering in a container with pre-rendered HTML', t => {
 
   el.attributes.autoFix = ' '
   el.innerHTML = '<div><span>Meow</span></div>'
-  render = createDOMRenderer(el)
+  render = createApp(el)
   render(<div><span>Thrr</span></div>)
   t.equal(
     el.innerHTML,
@@ -319,7 +305,7 @@ test('rendering in a container with pre-rendered HTML', t => {
 
   el.innerHTML = 'whatever'
   el.attributes.checksum = adler32("<p>pre-rendered text</p>")
-  render = createDOMRenderer(el)
+  render = createApp(el)
   render(<p>pre-rendered text</p>)
   t.equal(
     el.innerHTML,
@@ -329,7 +315,7 @@ test('rendering in a container with pre-rendered HTML', t => {
 
   el.innerHTML = '<div>Nyan!</div>'
   el.attributes.checksum = adler32(el.innerHTML)
-  render = createDOMRenderer(el)
+  render = createApp(el)
   render(<p>Nyan!</p>)
   t.equal(
     el.innerHTML,
@@ -343,7 +329,7 @@ test('rendering in a container with pre-rendered HTML and click events', t => {
   t.plan(12)
   let el = document.createElement('div')
   el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
-  let render = createDOMRenderer(el)
+  let render = createApp(el)
   let a = function(){t.assert("clicked")}
   let b = function(){t.assert("clicked"); t.assert("clicked")}
   render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
