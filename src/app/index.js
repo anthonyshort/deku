@@ -36,10 +36,11 @@ export function createApp (container, handler = noop, options = {}) {
         }else if(container.attributes.autoFix){
           isRenderedCorrectly = container.innerHTML ===  DOMnode.outerHTML
         }
+
+        node = DOMnode
         if(isRenderedCorrectly){
-          node = attachEvents(container.firstChild)
+          attachEvents(container.firstChild)
         }else{
-          node = DOMnode
           container.innerHTML = ''
           container.appendChild(node)
         }
