@@ -88,7 +88,7 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
     context
   }
   let nextNode = next.fn(model)
-  let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
+  let changes = diffNode(prevNode, nextNode, path)
   DOMElement = reduceArray(updateElement(dispatch, context), DOMElement, changes)
   if (onUpdate) dispatch(onUpdate(model))
   next.state = {

@@ -2,7 +2,6 @@ import * as dom from '../dom'
 import {diffNode} from '../diff'
 import empty from '@f/empty-element'
 import noop from '@f/noop'
-import {str as adler32} from 'adler-32'
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
@@ -25,26 +24,15 @@ export function createApp (container, handler = noop, options = {}) {
 
   let create = (vnode, context) => {
     if (container){
-      if(container.childNodes.length === 0){
+      if (container.childNodes.length === 0) {
         node = dom.createElement(vnode, rootId, dispatch, context)
         container.appendChild(node)
-      }else{
+      } else {
         let {DOMnode, attachEvents} = dom.createElementThenEvents(vnode, rootId, dispatch, context)
-        let isRenderedCorrectly = true
-        if(container.attributes.checksum){
-          isRenderedCorrectly = container.attributes.checksum ===  adler32(DOMnode.outerHTML)
-        }else if(container.attributes.autoFix){
-          isRenderedCorrectly = container.innerHTML ===  DOMnode.outerHTML
-        }
-        if(isRenderedCorrectly){
-          node = attachEvents(container.firstChild)
-        }else{
-          node = DOMnode
-          container.innerHTML = ''
-          container.appendChild(node)
-        }
+        node = DOMnode
+        attachEvents(container.firstChild)
       }
-    }else{
+    } else {
       node = dom.createElement(vnode, rootId, dispatch, context)
     }
     oldVnode = vnode

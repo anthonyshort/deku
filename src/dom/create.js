@@ -60,7 +60,9 @@ export function createWithSideEffects (vnode, path, dispatch, context) {
     case 'text':
       return {element: createTextNode(vnode.nodeValue), sideEffects: null}
     case 'empty':
-      return {element: getCachedElement('noscript'), sideEffects: null}
+      const el = getCachedElement('noscript')
+      el.attributes['__created'] = true
+      return {element: el, sideEffects: null}
     case 'thunk':
       return {element: createThunk(vnode, path, dispatch, context), sideEffects: null}
     case 'native':
@@ -94,8 +96,8 @@ function createThunk (vnode, path, dispatch, context) {
     context
   }
   let output = vnode.fn(model)
-  let childPath = createPath(path, output.key || '0')
-  let DOMElement = createElement(output, childPath, dispatch, context)
+  // let childPath = createPath(path, output.key || '0')
+  let DOMElement = createElement(output, path, dispatch, context)
   if (onCreate) dispatch(onCreate(model))
   vnode.state = {
     vnode: output,
@@ -105,27 +107,71 @@ function createThunk (vnode, path, dispatch, context) {
 }
 
 function createHTMLElement (vnode, path, dispatch, context) {
-  let DOMElement = getCachedElement(vnode.tagName)
+  let DOMElement;
   let sideEffects = {ofParent: [], ofChildren: []}
 
-  let attributes = Object.keys(vnode.attributes)
-  sideEffects.ofParent = attributes.map(function(name){
-    return function(option, element = DOMElement){
-      setAttribute(element, name, vnode.attributes[name], null, option)
+  DOMElement = document.getElementById('_id' + path)
+  if (!DOMElement) {
+    // no such element on client -> create
+    DOMElement = getCachedElement(vnode.tagName)
+    DOMElement.attributes['__created'] = true; // Parent will append this node when this flag is set
+  } else if (DOMElement.tagName.toLowerCase() != vnode.tagName.toLowerCase()) {
+    // found element, but with wrong type -> recreate
+    let newDOMElement = getCachedElement(vnode.tagName)
+
+    Array.prototype.forEach.call(DOMElement.childNodes, function(nodeChild){
+      newDOMElement.appendChild(nodeChild);
+    });   
+
+    DOMElement.parentNode.replaceChild(newDOMElement, DOMElement);
+    DOMElement = newDOMElement;
+  }
+
+  let textIterator = document.createNodeIterator(DOMElement, NodeFilter.SHOW_TEXT);
+  vnode.children.forEach((node, index) => {
+    if (isNull(node) || isUndefined(node)) return
+
+    if (node.type == 'text') {
+      let textnode = textIterator.nextNode();
+
+      if (!textnode || textnode.nodeValue != node.nodeValue) {
+        let DOM = createWithSideEffects(
+          node,
+          createPath(path, node.key || index),
+          dispatch,
+          context
+        )
+        sideEffects.ofChildren.push(DOM.sideEffects)
+
+        if (!textnode) {
+          DOMElement.appendChild(DOM.element);
+        } else { // node values not equal
+          DOMElement.replaceChild(DOM.element, textnode)
+        }
+      }
+
+      return
+    }
+
+    let DOM = createWithSideEffects(
+      node,
+      createPath(path, node.key || index),
+      dispatch,
+      context
+    )
+    sideEffects.ofChildren.push(DOM.sideEffects)
+    if (DOM.element.attributes && DOM.element.attributes['__created']) {
+      // newly created html node: add it
+      DOMElement.appendChild(DOM.element)
     }
   })
 
-  vnode.children.forEach((node, index) => {
-    if (isNull(node) || isUndefined(node)) return
-    let DOM = createWithSideEffects(
-        node,
-        createPath(path, node.key || index),
-        dispatch,
-        context
-    )
-    sideEffects.ofChildren.push(DOM.sideEffects)
-    DOMElement.appendChild(DOM.element)
+  let attributes = Object.keys(vnode.attributes)
+  sideEffects.ofParent = attributes.map(function(name){
+    return function(option, element = DOMElement) {
+      setAttribute(element, name, vnode.attributes[name], null, option)
+    }
   })
-
+  
   return {element: DOMElement, sideEffects: sideEffects}
 }

@@ -1,7 +1,6 @@
 import setNativeAttribute from '@f/set-attribute'
 import isValidAttribute from '@f/is-valid-attr'
 import isFunction from '@f/is-function'
-import indexOf from 'index-of'
 import setValue from 'setify'
 import events from './events'
 
@@ -55,7 +54,9 @@ export function setAttribute (DOMElement, name, value, previousValue, option = {
       // Fix for IE/Safari where select is not correctly selected on change
       if (DOMElement.tagName === 'OPTION' && DOMElement.parentNode) {
         let select = DOMElement.parentNode
-        select.selectedIndex = indexOf(select.options, DOMElement)
+        if (select.options.indexOf) {
+          select.selectedIndex = select.options.indexOf(DOMElement)
+        }
       }
       break
     case 'value':

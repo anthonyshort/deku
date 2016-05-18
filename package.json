@@ -84,9 +84,7 @@
     "@f/reduce-array": "^0.2.1",
     "@f/set-attribute": "1.0.1",
     "@f/to-array": "1.1.1",
-    "adler-32": "^0.3.0",
     "dift": "0.1.12",
-    "index-of": "0.2.0",
     "setify": "1.0.3",
     "union-type": "0.1.6"
   },

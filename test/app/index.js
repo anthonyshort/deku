@@ -275,55 +275,68 @@ test('rendering and updating null', t => {
 
 test('rendering in a container with pre-rendered HTML', t => {
   let el = document.createElement('div')
+  document.body.appendChild(el);
 
-  el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
+  el.innerHTML = '<div id="_id0"><span id="_id0.0">Meow</span></div>'
   let render = createApp(el)
-  render(<div><span id="2"></span></div>)
-  t.equal(
-    el.innerHTML,
-    '<div><span id="1"></span><span id="2"></span></div>',
-    'no string-comparison occurs (nothing should happen)'
-  )
-
-  el.attributes.autoFix = ' '
-  el.innerHTML = '<div><span>Meow</span></div>'
-  render = createApp(el)
   render(<div><span>Thrr</span></div>)
   t.equal(
     el.innerHTML,
-    '<div><span>Thrr</span></div>',
-    'destory and re-rendered due to string inequivalence'
+    '<div id="_id0"><span id="_id0.0">Thrr</span></div>',
+    'inequivalent string updated'
   )
 
-  el.innerHTML = '<div><span>Cat</span></div>'
-  render(<div><span>Neko</span></div>)
-  t.equal(
-    el.innerHTML,
-    '<div><span>Cat</span></div>',
-    'nothing should happen because this is not the first call to render'
-  )
-
-  el.innerHTML = 'whatever'
-  el.attributes.checksum = adler32("<p>pre-rendered text</p>")
-  render = createApp(el)
-  render(<p>pre-rendered text</p>)
-  t.equal(
-    el.innerHTML,
-    'whatever',
-    'nothing should happen because checksums are the same'
-  )
-
-  el.innerHTML = '<div>Nyan!</div>'
-  el.attributes.checksum = adler32(el.innerHTML)
+  el.innerHTML = '<div id="_id0">Nyan!</div>'
   render = createApp(el)
   render(<p>Nyan!</p>)
   t.equal(
     el.innerHTML,
     '<p>Nyan!</p>',
-    'destory and re-rendered due to checksum inequivalence'
+    're-rendered due to changed tagName'
   )
+  
+  document.body.removeChild(el);
   t.end()
 })
+
+test('rerendering custom element with changing props', t => {
+  let el = document.createElement('div')
+  document.body.appendChild(el);
+  const Comp = {
+    render({props, path}) {
+      return (
+        <span data-id={props.dataid}>woot</span>
+      );
+    }
+  }
+
+  let render = createApp(el);
+
+  el.innerHTML = '<div id="_id0"><span id="_id0.0" data-id="100">woot</span></div>';
+  el.children[0].attributes.chck = 1;
+  el.children[0].children[0].attributes.chck = 2;
+
+  render(<div><Comp dataid="200" /></div>);
+
+  t.equal(
+    el.children[0].attributes.chck,
+    1,
+    'should not rerender outer div'
+  )
+  t.equal(
+    el.children[0].children[0].attributes.chck,
+    2,
+    'should not rerender inner span'
+  )
+  t.equal(
+    el.innerHTML,
+    '<div id="_id0"><span id="_id0.0" data-id="200">woot</span></div>',
+    'attributes should be updated when needed'
+  )
+
+  document.body.removeChild(el);
+  t.end();
+});
 
 test('rendering in a container with pre-rendered HTML and click events', t => {
   t.plan(12)
