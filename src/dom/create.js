@@ -64,7 +64,7 @@ export function createWithSideEffects (vnode, path, dispatch, context) {
       el.attributes['__created'] = true
       return {element: el, sideEffects: null}
     case 'thunk':
-      return {element: createThunk(vnode, path, dispatch, context), sideEffects: null}
+      return createThunk(vnode, path, dispatch, context)
     case 'native':
       return createHTMLElement(vnode, path, dispatch, context)
   }
@@ -87,6 +87,8 @@ function createTextNode (text) {
 
 function createThunk (vnode, path, dispatch, context) {
   let { props, children } = vnode
+  let thunkSideEffects = {ofParent: [], ofChildren: []}
+
   let { onCreate } = vnode.options
   let model = {
     children,
@@ -96,14 +98,15 @@ function createThunk (vnode, path, dispatch, context) {
     context
   }
   let output = vnode.fn(model)
-  // let childPath = createPath(path, output.key || '0')
-  let DOMElement = createElement(output, path, dispatch, context)
+  let { element, sideEffects } = createWithSideEffects(output, path, dispatch, context)
+  thunkSideEffects.ofChildren.push(sideEffects)
+
   if (onCreate) dispatch(onCreate(model))
   vnode.state = {
     vnode: output,
     model: model
   }
-  return DOMElement
+  return {element: element, sideEffects: thunkSideEffects}
 }
 
 function createHTMLElement (vnode, path, dispatch, context) {
@@ -127,15 +130,17 @@ function createHTMLElement (vnode, path, dispatch, context) {
     DOMElement = newDOMElement;
   }
 
-  let textIterator = document.createNodeIterator(DOMElement, NodeFilter.SHOW_TEXT);
-  vnode.children.forEach((node, index) => {
-    if (isNull(node) || isUndefined(node)) return
+  var textIterator = document.createNodeIterator(DOMElement, NodeFilter.SHOW_TEXT);
+  for (var index in vnode.children) {
+    var DOM
+    var node = vnode.children[index]
+    if (isNull(node) || isUndefined(node)) continue
 
     if (node.type == 'text') {
-      let textnode = textIterator.nextNode();
+      var textnode = textIterator.nextNode();
 
       if (!textnode || textnode.nodeValue != node.nodeValue) {
-        let DOM = createWithSideEffects(
+        DOM = createWithSideEffects(
           node,
           createPath(path, node.key || index),
           dispatch,
@@ -150,10 +155,10 @@ function createHTMLElement (vnode, path, dispatch, context) {
         }
       }
 
-      return
+      continue
     }
 
-    let DOM = createWithSideEffects(
+    DOM = createWithSideEffects(
       node,
       createPath(path, node.key || index),
       dispatch,
@@ -164,7 +169,7 @@ function createHTMLElement (vnode, path, dispatch, context) {
       // newly created html node: add it
       DOMElement.appendChild(DOM.element)
     }
-  })
+  }
 
   let attributes = Object.keys(vnode.attributes)
   sideEffects.ofParent = attributes.map(function(name){
