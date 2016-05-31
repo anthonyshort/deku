@@ -52,9 +52,6 @@ function renderThunk (vnode, path, context, opts) {
 function renderHTML (vnode, path, context, opts) {
   let {attributes, tagName, children} = vnode
   let innerHTML = attributes.innerHTML
-  if (opts.appendUids) {
-    attributes.id = '_id' + path; // for client-side restoration
-  }
   let str = '<' + tagName + attributesToString(attributes) + '>'
 
   if (innerHTML) {

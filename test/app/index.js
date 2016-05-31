@@ -274,48 +274,49 @@ test('rendering and updating null', t => {
 
 test('rendering in a container with pre-rendered HTML', t => {
   let el = document.createElement('div')
-  document.body.appendChild(el);
+  document.body.appendChild(el)
 
-  el.innerHTML = '<div id="_id0"><span id="_id0.0">Meow</span></div>'
+  el.innerHTML = '<div><span>Meow</span></div>'
   let render = createApp(el)
   render(<div><span>Thrr</span></div>)
   t.equal(
     el.innerHTML,
-    '<div id="_id0"><span id="_id0.0">Thrr</span></div>',
+    '<div><span>Thrr</span></div>',
     'inequivalent string updated'
   )
 
-  el.innerHTML = '<div id="_id0">Nyan!</div>'
+  // Should work fine for all except root element
+  el.innerHTML = '<div><div>Nyan!</div></div>'
   render = createApp(el)
-  render(<p>Nyan!</p>)
+  render(<div><p>Nyan!</p></div>)
   t.equal(
     el.innerHTML,
-    '<p>Nyan!</p>',
+    '<div><p>Nyan!</p></div>',
     're-rendered due to changed tagName'
   )
   
-  document.body.removeChild(el);
+  document.body.removeChild(el)
   t.end()
 })
 
 test('rerendering custom element with changing props', t => {
   let el = document.createElement('div')
-  document.body.appendChild(el);
+  document.body.appendChild(el)
   const Comp = {
     render({props, path}) {
       return (
         <span data-id={props.dataid}>woot</span>
-      );
+      )
     }
   }
 
-  let render = createApp(el);
+  let render = createApp(el, { reuseMarkup: true })
 
-  el.innerHTML = '<div id="_id0"><span id="_id0.0" data-id="100">woot</span></div>';
-  el.children[0].attributes.chck = 1;
-  el.children[0].children[0].attributes.chck = 2;
+  el.innerHTML = '<div><span data-id="100">woot</span></div>'
+  el.children[0].attributes.chck = 1
+  el.children[0].children[0].attributes.chck = 2
 
-  render(<div><Comp dataid="200" /></div>);
+  render(<div><Comp dataid="200" /></div>)
 
   t.equal(
     el.children[0].attributes.chck,
@@ -329,21 +330,26 @@ test('rerendering custom element with changing props', t => {
   )
   t.equal(
     el.innerHTML,
-    '<div id="_id0"><span id="_id0.0" data-id="200">woot</span></div>',
+    '<div><span data-id="200">woot</span></div>',
     'attributes should be updated when needed'
   )
 
-  document.body.removeChild(el);
-  t.end();
-});
+  document.body.removeChild(el)
+  t.end()
+})
 
 test('rendering in a container with pre-rendered HTML and click events', t => {
   t.plan(12)
   let el = document.createElement('div')
   el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
   let render = createApp(el)
-  let a = function(){t.assert("clicked")}
-  let b = function(){t.assert("clicked"); t.assert("clicked")}
+  let a = () => {
+    t.assert("clicked")
+  }
+  let b = () => {
+    t.assert("clicked")
+    t.assert("clicked")
+  }
   render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
   let arr = el.querySelectorAll('button, span')
   for (var item of arr) {
