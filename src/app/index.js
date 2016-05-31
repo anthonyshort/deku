@@ -1,6 +1,5 @@
 import * as dom from '../dom'
 import {diffNode} from '../diff'
-import empty from '@f/empty-element'
 import noop from '@f/noop'
 
 /**

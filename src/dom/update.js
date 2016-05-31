@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {isThunk, createPath} from '../element'
+import {isThunk} from '../element'
 import {Actions, diffNode} from '../diff'
 import reduceArray from '@f/reduce-array'
 import createElement from './create'
@@ -93,7 +93,7 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
   if (onUpdate) dispatch(onUpdate(model))
   next.state = {
     vnode: nextNode,
-    model: model
+    model
   }
   return DOMElement
 }
@@ -119,7 +119,7 @@ function removeThunks (vnode, dispatch) {
  */
 
 export let insertAtIndex = (parent, index, el) => {
-  var target = parent.childNodes[index]
+  let target = parent.childNodes[index]
   if (target) {
     parent.insertBefore(el, target)
   } else {

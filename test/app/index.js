@@ -3,7 +3,6 @@
 import test from 'tape'
 import {createApp} from '../../src/app'
 import {create as h} from '../../src/element'
-import {str as adler32} from 'adler-32'
 import trigger from 'trigger-event'
 
 test('rendering elements', t => {
