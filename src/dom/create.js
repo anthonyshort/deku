@@ -1,11 +1,12 @@
-import createNativeElement from '@f/create-element'
 import {createPath} from '../element/index'
 import {setAttribute} from './setAttribute'
 import isUndefined from '@f/is-undefined'
 import isString from '@f/is-string'
 import isNumber from '@f/is-number'
 import isNull from '@f/is-null'
-const cache = {}
+import Pool from './pool'
+
+const cache = new Pool()
 
 // node manipulation action types
 const CREATE = 'create'
@@ -27,6 +28,14 @@ export function createElementThenEvents(vnode, path, dispatch, context, containe
       runSideEffects(DOM.sideEffects, {onlyEventListeners: true}, PreRenderedElement)
     }
   }
+}
+
+export function enableNodeRecycling(flag) {
+  cache.enableRecycling(flag)
+}
+
+export function storeInCache(node) {
+  cache.store(node)
 }
 
 /**
@@ -61,20 +70,12 @@ export function createWithSideEffects (vnode, path, dispatch, context, options =
     case 'text':
       return createTextNode(vnode, options)
     case 'empty':
-      return {element: getCachedElement('noscript'), sideEffects: null, action: CREATE}
+      return {element: cache.get('noscript'), sideEffects: null, action: CREATE}
     case 'thunk':
       return createThunk(vnode, path, dispatch, context, options)
     case 'native':
       return createHTMLElement(vnode, path, dispatch, context, options)
   }
-}
-
-function getCachedElement (type) {
-  let cached = cache[type]
-  if (isUndefined(cached)) {
-    cached = cache[type] = createNativeElement(type)
-  }
-  return cached.cloneNode(false)
 }
 
 function createTextNode ({nodeValue}, {originNode}) {
@@ -128,11 +129,11 @@ function createHTMLElement (vnode, path, dispatch, context, {originNode}) {
   let action = NOOP
 
   if (!originNode) { // no such element in markup -> create & append
-    DOMElement = getCachedElement(vnode.tagName)
+    DOMElement = cache.get(vnode.tagName)
     action = CREATE
   } else if (!originNode.tagName || originNode.tagName.toLowerCase() != vnode.tagName.toLowerCase()) {
     // found element, but with wrong type -> recreate & replace
-    let newDOMElement = getCachedElement(vnode.tagName)
+    let newDOMElement = cache.get(vnode.tagName)
     Array.prototype.forEach.call(originNode.childNodes, (nodeChild) => {
       newDOMElement.appendChild(nodeChild)
     })
@@ -188,7 +189,7 @@ function nodesUpdater(parentNode, path, dispatch, context) {
         parentNode.appendChild(DOM.element)
         break
       case REPLACE:
-        parentNode.replaceChild(DOM.element, originNode)
+        cache.store(parentNode.replaceChild(DOM.element, originNode))
         break
       default:
     }

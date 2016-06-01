@@ -2,7 +2,7 @@ import {setAttribute, removeAttribute} from './setAttribute'
 import {isThunk} from '../element'
 import {Actions, diffNode} from '../diff'
 import reduceArray from '@f/reduce-array'
-import createElement from './create'
+import createElement, {storeInCache} from './create'
 import toArray from '@f/to-array'
 import forEach from '@f/foreach'
 import noop from '@f/noop'
@@ -33,13 +33,13 @@ export default function updateElement (dispatch, context) {
       replaceNode: (prev, next, path) => {
         let newEl = createElement(next, path, dispatch, context)
         let parentEl = DOMElement.parentNode
-        if (parentEl) parentEl.replaceChild(newEl, DOMElement)
+        if (parentEl) storeInCache(parentEl.replaceChild(newEl, DOMElement))
         DOMElement = newEl
         removeThunks(prev, dispatch)
       },
       removeNode: (prev) => {
         removeThunks(prev)
-        DOMElement.parentNode.removeChild(DOMElement)
+        storeInCache(DOMElement.parentNode.removeChild(DOMElement))
         DOMElement = null
       }
     }, action)
@@ -62,7 +62,7 @@ function updateChildren (DOMElement, changes, dispatch, context) {
         insertAtIndex(DOMElement, index, createElement(vnode, path, dispatch, context))
       },
       removeChild: (index) => {
-        DOMElement.removeChild(childNodes[index])
+        storeInCache(DOMElement.removeChild(childNodes[index]))
       },
       updateChild: (index, actions) => {
         let _update = updateElement(dispatch, context)

@@ -7,6 +7,11 @@ import empty from '@f/empty-element'
  * Create a DOM renderer using a container element. Everything will be rendered
  * inside of that container. Can reuse markup inside the container (if any).
  * Returns a function that accepts new state that can replace what is currently rendered.
+ *
+ * Options:
+ *  - reuseMarkup (bool): try to reuse already rendered markup inside the container.
+ *    This might be useful for isomorphic apps.
+ *  - enableNodeRecycling (bool): try to reuse existing DOM nodes to minimize DOM GC
  */
 
 export function createApp (container, handler = noop, options = {}) {
@@ -19,6 +24,7 @@ export function createApp (container, handler = noop, options = {}) {
     options = handler;
     handler = noop;
   }
+  dom.enableNodeRecycling(options.enableNodeRecycling || false)
 
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
