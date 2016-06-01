@@ -10,39 +10,20 @@ When the browser requests the HTML file, some of the elements may have been pre-
 On the client side, if we just create a render function as usual, the first call to the render function would not do anything. This is because deku would assume that the container's pre-rendered content is properly rendered.
 
 ```js
-var render = createApp(document.getElementById("container"))
-render(<p>pre-rendered text</p>) //do nothing
+var render = createApp(document.getElementById("container"), { reuseMarkup: true })
+render(<p>pre-rendered text</p>) // do nothing, just assign event listeners, if any
 ```
 
-This means if the virtualDOM describes a different HTML element, deku is not going to fix it for you.
+If the virtualDOM describes a different HTML element, deku will rerender it completely, even if `reuseMarkup` flag is set.
 
 ```js
-var render = createApp(document.getElementById("container"))
-render(<p>Meow!</p>) //do nothing
+var render = createApp(document.getElementById("container"), { reuseMarkup: true })
+render(<p>Meow!</p>) // will perform full rerender
 ```
 
-Therefore, to be 100% safe, one may want to use the `autoFix` attribute:
+### Notes
 
-```html
-<div id="container" autoFix> <p>pre-rendered text</p> </div>
-```
+- To avoid injecting 'react-id'-like attributes into tags, Deku hardly relies on order of pre-rendered nodes. 
+- If starting part of pre-rendered nodes matches virtualDOM, Deku will reuse this part, but will rerender the rest.
+- So this leads to the tip: if some components of your app are to be rendered on client-side only, it would be wise to place their markup closer to the end of the container to avoid full rerender of all other components.
 
-In this case, on the first call to the render function, deku would destroy and recreate the elements inside the container, after a quick string-comparison of the pre-rendered and to-be-rendered versions:
-
-```js
-var render = createApp(document.getElementById("container"))
-render(<p>Meow!</p>) //re-rendered the HTML due to difference in HTML strings
-```
-
-Alternatively, one can also choose to do a [checksum comparison](https://en.wikipedia.org/wiki/Checksum) between the HTML strings instead. This can be done by getting the server to compute the [Adler32](https://en.wikipedia.org/wiki/Adler-32) checksum value of the string and add it to the container element's `checksum` attribute.
-
-```html
-<div id="container" checksum="1838352550"><p>pre-rendered text</p></div>
-```
-
-and similar to the using `autoFix` attribute, deku would fix the incorrect pre-rendered HTML on the first call to the render function.
-
-```js
-var render = createApp(document.getElementById("container"))
-render(<p>Meow!</p>) //re-rendered the HTML due to difference in adler32 checksums
-```
