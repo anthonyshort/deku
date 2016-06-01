@@ -13,28 +13,28 @@ const CREATE = 'create'
 const REPLACE = 'replace'
 const NOOP = 'noop'
 
-export default function createElement(vnode, path, dispatch, context) {
+export default function createElement (vnode, path, dispatch, context) {
   let DOM = createWithSideEffects(vnode, path, dispatch, context)
   runSideEffects(DOM.sideEffects)
   return DOM.element
 }
 
-export function createElementThenEvents(vnode, path, dispatch, context, container = null) {
+export function createElementThenEvents (vnode, path, dispatch, context, container = null) {
   let DOM = createWithSideEffects(vnode, path, dispatch, context, {originNode: container})
   runSideEffects(DOM.sideEffects, {noEventListeners: true})
   return {
     DOMnode: DOM.element,
-    attachEvents(PreRenderedElement) {
+    attachEvents (PreRenderedElement) {
       runSideEffects(DOM.sideEffects, {onlyEventListeners: true}, PreRenderedElement)
     }
   }
 }
 
-export function enableNodeRecycling(flag) {
+export function enableNodeRecycling (flag) {
   cache.enableRecycling(flag)
 }
 
-export function storeInCache(node) {
+export function storeInCache (node) {
   cache.store(node)
 }
 
@@ -47,10 +47,10 @@ export function storeInCache(node) {
  * where P is either an empty array or an array of functions
  * and C is either an empty array or an array of trees of side effects
  */
-function runSideEffects(sideEffects, option, DOMElement) {
+function runSideEffects (sideEffects, option, DOMElement) {
   if (sideEffects) {
     sideEffects.ofParent.map((sideEffect) => { sideEffect(option, DOMElement) })
-    sideEffects.ofChildren.map((child,index) => {
+    sideEffects.ofChildren.map((child, index) => {
       if (DOMElement) {
         runSideEffects(child, option, DOMElement.childNodes[index])
       } else {
@@ -87,13 +87,13 @@ function createTextNode ({nodeValue}, {originNode}) {
   let action = CREATE
   if (originNode && originNode.nodeValue) {
     action = NOOP
-    if (originNode.nodeValue != value) {
+    if (originNode.nodeValue !== value) {
       action = REPLACE
     }
   }
 
   return {
-    element: action != NOOP ? document.createTextNode(value) : null,
+    element: action !== NOOP ? document.createTextNode(value) : null,
     sideEffects: null,
     action
   }
@@ -131,7 +131,7 @@ function createHTMLElement (vnode, path, dispatch, context, {originNode}) {
   if (!originNode) { // no such element in markup -> create & append
     DOMElement = cache.get(vnode.tagName)
     action = CREATE
-  } else if (!originNode.tagName || originNode.tagName.toLowerCase() != vnode.tagName.toLowerCase()) {
+  } else if (!originNode.tagName || originNode.tagName.toLowerCase() !== vnode.tagName.toLowerCase()) {
     // found element, but with wrong type -> recreate & replace
     let newDOMElement = cache.get(vnode.tagName)
     Array.prototype.forEach.call(originNode.childNodes, (nodeChild) => {
@@ -150,7 +150,7 @@ function createHTMLElement (vnode, path, dispatch, context, {originNode}) {
 
   let attributes = Object.keys(vnode.attributes)
   sideEffects.ofParent = attributes.map((name) => {
-    return function(option, element = DOMElement) {
+    return function (option, element = DOMElement) {
       setAttribute(element, name, vnode.attributes[name], null, option)
     }
   })
@@ -167,7 +167,7 @@ function createHTMLElement (vnode, path, dispatch, context, {originNode}) {
  *
  * @returns {Function}
  */
-function nodesUpdater(parentNode, path, dispatch, context) {
+function nodesUpdater (parentNode, path, dispatch, context) {
   let i = 0
 
   return (node, index, sideEffects) => {

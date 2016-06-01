@@ -1,12 +1,12 @@
 import createNativeElement from '@f/create-element'
 
 export default class Pool {
-  constructor() {
+  constructor () {
     this.storage = {}
     this._recyclingEnabled = false
   }
 
-  store(el) {
+  store (el) {
     if (!this._recyclingEnabled) {
       return
     }
@@ -15,7 +15,7 @@ export default class Pool {
       el.parentNode.removeChild(el)
     }
 
-    if (!el.nodeType || el.nodeType != Node.ELEMENT_NODE) {
+    if (!el.nodeType || el.nodeType !== 1 /* Node.ELEMENT_NODE == 1 */) {
       return
     }
 
@@ -38,11 +38,11 @@ export default class Pool {
     this.storage[tagName].push(el)
   }
 
-  enableRecycling(flag) {
+  enableRecycling (flag) {
     this._recyclingEnabled = flag
   }
 
-  get(tagName) {
+  get (tagName) {
     tagName = tagName.toLowerCase()
     if (this._recyclingEnabled && this.storage[tagName] && this.storage[tagName].length > 0) {
       return this.storage[tagName].pop()
@@ -50,7 +50,7 @@ export default class Pool {
     return createNativeElement(tagName)
   }
 
-  preallocate(tagName, size) {
+  preallocate (tagName, size) {
     if (!this._recyclingEnabled) {
       return
     }
@@ -71,7 +71,7 @@ export default class Pool {
   }
 
   // for tests only
-  _getStorageSizeFor(tagName) {
+  _getStorageSizeFor (tagName) {
     return (this.storage[tagName] || []).length
   }
 }

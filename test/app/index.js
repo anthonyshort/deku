@@ -294,7 +294,7 @@ test('rendering in a container with pre-rendered HTML', t => {
     '<div><p>Nyan!</p></div>',
     're-rendered due to changed tagName'
   )
-  
+
   document.body.removeChild(el)
   t.end()
 })
@@ -303,7 +303,7 @@ test('rerendering custom element with changing props', t => {
   let el = document.createElement('div')
   document.body.appendChild(el)
   const Comp = {
-    render({props, path}) {
+    render ({props, path}) {
       return (
         <span data-id={props.dataid}>woot</span>
       )
@@ -316,7 +316,7 @@ test('rerendering custom element with changing props', t => {
   el.children[0].attributes.chck = 1
   el.children[0].children[0].attributes.chck = 2
 
-  render(<div><Comp dataid="200" /></div>)
+  render(<div><Comp dataid='200' /></div>)
 
   t.equal(
     el.children[0].attributes.chck,
@@ -344,11 +344,11 @@ test('rendering in a container with pre-rendered HTML and click events', t => {
   el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
   let render = createApp(el)
   let a = () => {
-    t.assert("clicked")
+    t.assert('clicked')
   }
   let b = () => {
-    t.assert("clicked")
-    t.assert("clicked")
+    t.assert('clicked')
+    t.assert('clicked')
   }
   render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
   let arr = el.querySelectorAll('button, span')

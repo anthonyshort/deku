@@ -20,9 +20,9 @@ export function createApp (container, handler = noop, options = {}) {
   let rootId = options.id || '0'
   let dispatch = effect => effect && handler(effect)
 
-  if (typeof handler != 'function' && typeof handler == 'object') {
-    options = handler;
-    handler = noop;
+  if (typeof handler !== 'function' && typeof handler === 'object') {
+    options = handler
+    handler = noop
   }
   dom.enableNodeRecycling(options.enableNodeRecycling || false)
 

@@ -1,3 +1,4 @@
+/* global SVGElement */
 import test from 'tape'
 import Pool from '../../src/dom/pool'
 
@@ -19,7 +20,7 @@ test('getNewDomNode', t => {
   let pool = new Pool()
   let newNode = pool.get('div')
   t.equal(newNode.tagName.toLowerCase(), 'div', 'Pool created and returned div')
-  
+
   pool.enableRecycling(true)
   newNode = pool.get('div')
   t.equal(newNode.tagName.toLowerCase(), 'div', 'Pool created and returned div with enabled recycling')
