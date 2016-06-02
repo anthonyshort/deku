@@ -7,16 +7,13 @@ export default class Pool {
   }
 
   store (el) {
-    if (!this._recyclingEnabled) {
+    if (!this._recyclingEnabled || el._collected || !el.nodeType || el.nodeType !== 1 /* Node.ELEMENT_NODE == 1 */) {
       return
     }
+    el._collected = true
 
     if (el && el.parentNode) {
       el.parentNode.removeChild(el)
-    }
-
-    if (!el.nodeType || el.nodeType !== 1 /* Node.ELEMENT_NODE == 1 */) {
-      return
     }
 
     let tagName = el.tagName.toLowerCase()
@@ -25,12 +22,14 @@ export default class Pool {
     }
 
     // little cleanup
+    el.className = ''
     for (let i = 0; i < el.attributes.length; i++) {
       el.removeAttribute(el.attributes[i].name)
     }
 
     if (el.childNodes.length > 0) {
-      for (let i = 0; i < el.childNodes.length; i++) {
+      // Iterate backwards, because childNodes is live collection
+      for (let i = el.childNodes.length - 1; i >= 0; i--) {
         this.store(el.childNodes[i])
       }
     }
@@ -45,7 +44,9 @@ export default class Pool {
   get (tagName) {
     tagName = tagName.toLowerCase()
     if (this._recyclingEnabled && this.storage[tagName] && this.storage[tagName].length > 0) {
-      return this.storage[tagName].pop()
+      let el = this.storage[tagName].pop()
+      delete el._collected
+      return el
     }
     return createNativeElement(tagName)
   }

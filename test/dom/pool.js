@@ -16,6 +16,26 @@ test('storeDomNode', t => {
   t.end()
 })
 
+test('storeNestedNodes', t => {
+  let node = document.createElement('div')
+  for (let i = 0; i < 10; i++) {
+    node.appendChild(document.createElement('div'))
+  }
+  let pool = new Pool()
+  pool.enableRecycling(true)
+
+  pool.store(node)
+
+  let childNodesCount = 0
+  while (pool._getStorageSizeFor('div') > 0) {
+    let storedNode = pool.get('div')
+    childNodesCount += storedNode.childNodes.length
+  }
+
+  t.equal(childNodesCount, 0, 'Stored nested nodes were flattened and do not have children')
+  t.end()
+})
+
 test('getNewDomNode', t => {
   let pool = new Pool()
   let newNode = pool.get('div')
