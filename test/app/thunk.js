@@ -249,10 +249,10 @@ test('path should stay the same on when thunk is updated', t => {
   document.body.appendChild(el)
   let MyButton = {
     onUpdate ({path}) {
-      t.equal(path, '0.0', 'onUpdate')
+      t.equal(path, '0.0.0', 'onUpdate')
     },
     render ({path, children}) {
-      t.equal(path, '0.0', 'onRender')
+      t.equal(path, '0.0.0', 'onRender')
       return <button onClick={update}>{children}</button>
     }
   }
@@ -286,7 +286,6 @@ test('path should stay the same on when thunk is replaced', t => {
   render(<div><Thunk expectedPath='0.0' /><Thunk expectedPath='0.1' /></div>)
   render(<div><span /></div>)
   render(<div></div>)
-  // TODO: nested chunk gets same path to minify data - is it acceptable?
-  render(<div><Thunk expectedPath='0.0'><Thunk expectedPath='0.0' /></Thunk><Thunk expectedPath='0.1' /></div>)
+  render(<div><Thunk expectedPath='0.0'><Thunk expectedPath='0.0.0' /></Thunk><Thunk expectedPath='0.1' /></div>)
   t.end()
 })

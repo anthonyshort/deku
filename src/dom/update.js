@@ -1,5 +1,5 @@
 import {setAttribute, removeAttribute} from './setAttribute'
-import {isThunk} from '../element'
+import {isThunk, createPath} from '../element'
 import {Actions, diffNode} from '../diff'
 import reduceArray from '@f/reduce-array'
 import createElement, {storeInCache} from './create'
@@ -88,7 +88,7 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
     context
   }
   let nextNode = next.fn(model)
-  let changes = diffNode(prevNode, nextNode, path)
+  let changes = diffNode(prevNode, nextNode, createPath(path, '0'))
   DOMElement = reduceArray(updateElement(dispatch, context), DOMElement, changes)
   if (onUpdate) dispatch(onUpdate(model))
   next.state = {

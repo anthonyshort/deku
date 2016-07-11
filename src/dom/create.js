@@ -112,7 +112,8 @@ function createThunk (vnode, path, dispatch, context, options) {
     context
   }
   let output = vnode.fn(model)
-  let { element, sideEffects, action } = createWithSideEffects(output, path, dispatch, context, options)
+  let childPath = createPath(path, output.key || '0')
+  let { element, sideEffects, action } = createWithSideEffects(output, childPath, dispatch, context, options)
   effects.ofChildren.push(sideEffects)
 
   if (onCreate) dispatch(onCreate(model))
