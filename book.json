@@ -6,11 +6,11 @@
   "plugins": ["edit-link", "prism", "-highlight"],
   "pluginsConfig": {
     "edit-link": {
-      "base": "https://github.com/dekujs/deku/tree/master",
+      "base": "https://github.com/anthonyshort/deku/tree/master",
       "label": "Edit This Page"
     },
     "github": {
-      "url": "https://github.com/dekujs/deku/"
+      "url": "https://github.com/anthonyshort/deku/"
     }
   }
 }
