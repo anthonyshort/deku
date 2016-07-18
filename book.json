@@ -7,7 +7,7 @@
   "pluginsConfig": {
     "edit-link": {
       "base": "https://github.com/anthonyshort/deku/tree/master",
-      "label": "Edit This Page"
+      "label": "Edit"
     },
     "github": {
       "url": "https://github.com/anthonyshort/deku/"
