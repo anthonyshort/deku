@@ -57,3 +57,9 @@ export function magic (type, attributes, children) {
   return vnode
 }
 ```
+
+## Attributes: className aliased to class
+
+Deku's `element` function aliases the attribute `className` to `class`, to ease porting JSX from other projects or to ease the transition to Deku if your tooling does things such as automatically expanding selector-style shortcuts into HTML tags, but using `className` instead of `class`.  Just don't try to use the two at the same time.
+
+If your tooling is doing that, though, you should eventually fix it. ;)

@@ -35,3 +35,16 @@ test('groupByKey', t => {
   ])
   t.end()
 })
+
+test('should alias the className attribute to class', t => {
+  let vnode = h('span', { className: 'foo-bar-baz' }, [])
+  t.assert(
+    vnode.attributes.class === 'foo-bar-baz',
+    'attribute named "className" is now named "class"'
+  )
+  t.assert(
+    'className' in vnode.attributes === false,
+    'attributes no longer has className property'
+  )
+  t.end()
+})
