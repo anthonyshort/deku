@@ -1,7 +1,10 @@
-import {createElement} from './create'
-import {updateElement} from './update'
+import createElement from './create'
+import {createElementThenEvents, enableNodeRecycling} from './create'
+import updateElement from './update'
 
 export {
   createElement,
-  updateElement
+  createElementThenEvents,
+  updateElement,
+  enableNodeRecycling
 }

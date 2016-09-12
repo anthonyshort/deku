@@ -1,12 +1,17 @@
 import * as dom from '../dom'
 import {diffNode} from '../diff'
-import empty from '@f/empty-element'
 import noop from '@f/noop'
+import empty from '@f/empty-element'
 
 /**
  * Create a DOM renderer using a container element. Everything will be rendered
- * inside of that container. Returns a function that accepts new state that can
- * replace what is currently rendered.
+ * inside of that container. Can reuse markup inside the container (if any).
+ * Returns a function that accepts new state that can replace what is currently rendered.
+ *
+ * Options:
+ *  - reuseMarkup (bool): try to reuse already rendered markup inside the container.
+ *    This might be useful for isomorphic apps.
+ *  - enableNodeRecycling (bool): try to reuse existing DOM nodes to minimize DOM GC
  */
 
 export function createApp (container, handler = noop, options = {}) {
@@ -15,9 +20,11 @@ export function createApp (container, handler = noop, options = {}) {
   let rootId = options.id || '0'
   let dispatch = effect => effect && handler(effect)
 
-  if (container) {
-    empty(container)
+  if (typeof handler !== 'function' && typeof handler === 'object') {
+    options = handler
+    handler = noop
   }
+  dom.enableNodeRecycling(options.enableNodeRecycling || false)
 
   let update = (newVnode, context) => {
     let changes = diffNode(oldVnode, newVnode, rootId)
@@ -28,7 +35,18 @@ export function createApp (container, handler = noop, options = {}) {
 
   let create = (vnode, context) => {
     node = dom.createElement(vnode, rootId, dispatch, context)
-    if (container) container.appendChild(node)
+    if (container) {
+      empty(container)
+      container.appendChild(node)
+    }
+    oldVnode = vnode
+    return node
+  }
+
+  let createWithReuse = (vnode, context) => {
+    let {DOMnode, attachEvents} = dom.createElementThenEvents(vnode, rootId, dispatch, context, container.firstChild)
+    node = DOMnode
+    attachEvents(container.firstChild)
     oldVnode = vnode
     return node
   }
@@ -36,6 +54,10 @@ export function createApp (container, handler = noop, options = {}) {
   return (vnode, context = {}) => {
     return node !== null
       ? update(vnode, context)
-      : create(vnode, context)
+      : (
+        !container || container.childNodes.length === 0 || !options.reuseMarkup
+          ? create(vnode, context)
+          : createWithReuse(vnode, context)
+      )
   }
 }

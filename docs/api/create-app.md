@@ -5,7 +5,10 @@ Returns a `render` function that you can use to render elements within `DOMEleme
 ### Arguments
 
 1. `el` _(HTMLElement)_: A container element that will have virtual elements rendered inside of it. The element will never be touched.
-2. `dispatch` _(Function)_: A function that can receive actions from the interface. This function will be passed into every component. It usually takes an [action](http://redux.js.org/docs/basics/Actions.html) that can be handled by a [store](http://redux.js.org/docs/basics/Store.html)
+2. `dispatch` _(Function)_ [optional]: A function that can receive actions from the interface. This function will be passed into every component. It usually takes an [action](http://redux.js.org/docs/basics/Actions.html) that can be handled by a [store](http://redux.js.org/docs/basics/Store.html)
+3. `options` _(Object)_ [optional]: A plain object that contains renderer options:
+    - `reuseMarkup: true` will cause deku to reuse container contents when possible. This may be useful for isomorphic apps.
+    - `enableNodeRecycling: true` will enable pooling/recycling of existing DOM nodes. This should lead to reduced GC and memory usage.
 
 ### Returns
 
@@ -34,7 +37,9 @@ render(<App size="large" />)
 
 ### Notes
 
-The container DOM element should:
 
-* **Not be the document.body**. You'll probably run into problems with other libraries. They'll often add elements to the `document.body` which can confuse the diff algorithm.
-* **Be empty**. All elements inside of the container will be removed when a virtual element is rendered into it. The renderer needs to have complete control of all of the elements within the container.
+* You should **avoid using document.body as the container element**. You'll probably run into problems with other libraries. They'll often add elements to the `document.body` which can confuse the diff algorithm.
+
+* When the container element is not empty, **deku may try to reuse container contents**. Read [this page](/deku/docs/tips/pre-rendered.md) to learn more about working with pre-rendered elements.
+
+. All elements inside of the container will be removed when a virtual element is rendered into it, unless markup reuse option is on. The renderer needs to have complete control of all of the elements within the container.

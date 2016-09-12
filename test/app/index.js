@@ -3,6 +3,7 @@
 import test from 'tape'
 import {createApp} from '../../src/app'
 import {create as h} from '../../src/element'
+import trigger from 'trigger-event'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
@@ -63,19 +64,6 @@ test('moving elements using keys', t => {
     'element is moved'
   )
 
-  t.end()
-})
-
-test('emptying the container', t => {
-  let el = document.createElement('div')
-  el.innerHTML = '<div></div>'
-  let render = createApp(el)
-  render(<span></span>)
-  t.equal(
-    el.innerHTML,
-    '<span></span>',
-    'container emptied'
-  )
   t.end()
 })
 
@@ -281,5 +269,92 @@ test('rendering and updating null', t => {
   )
   t.equal(el.innerHTML, '<div><div></div><div></div></div>', 'empty node updated')
 
+  t.end()
+})
+
+test('rendering in a container with pre-rendered HTML', t => {
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+
+  el.innerHTML = '<div><span>Meow</span></div>'
+  let render = createApp(el)
+  render(<div><span>Thrr</span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span>Thrr</span></div>',
+    'inequivalent string updated'
+  )
+
+  // Should work fine for all except root element
+  el.innerHTML = '<div><div>Nyan!</div></div>'
+  render = createApp(el)
+  render(<div><p>Nyan!</p></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><p>Nyan!</p></div>',
+    're-rendered due to changed tagName'
+  )
+
+  document.body.removeChild(el)
+  t.end()
+})
+
+test('rerendering custom element with changing props', t => {
+  let el = document.createElement('div')
+  document.body.appendChild(el)
+  const Comp = {
+    render ({props, path}) {
+      return (
+        <span data-id={props.dataid}>woot</span>
+      )
+    }
+  }
+
+  let render = createApp(el, { reuseMarkup: true })
+
+  el.innerHTML = '<div><span data-id="100">woot</span></div>'
+  el.children[0].attributes.chck = 1
+  el.children[0].children[0].attributes.chck = 2
+
+  render(<div><Comp dataid='200' /></div>)
+
+  t.equal(
+    el.children[0].attributes.chck,
+    1,
+    'should not rerender outer div'
+  )
+  t.equal(
+    el.children[0].children[0].attributes.chck,
+    2,
+    'should not rerender inner span'
+  )
+  t.equal(
+    el.innerHTML,
+    '<div><span data-id="200">woot</span></div>',
+    'attributes should be updated when needed'
+  )
+
+  document.body.removeChild(el)
+  t.end()
+})
+
+test('rendering in a container with pre-rendered HTML and click events', t => {
+  t.plan(12)
+  let el = document.createElement('div')
+  el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
+  let render = createApp(el)
+  let a = () => {
+    t.assert('clicked')
+  }
+  let b = () => {
+    t.assert('clicked')
+    t.assert('clicked')
+  }
+  render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
+  let arr = el.querySelectorAll('button, span')
+  for (var item of arr) {
+    trigger(item, 'click')
+    trigger(item, 'click')
+  }
   t.end()
 })

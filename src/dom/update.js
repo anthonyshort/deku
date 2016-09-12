@@ -2,7 +2,7 @@ import {setAttribute, removeAttribute} from './setAttribute'
 import {isThunk, createPath} from '../element'
 import {Actions, diffNode} from '../diff'
 import reduceArray from '@f/reduce-array'
-import {createElement} from './create'
+import createElement, {storeInCache} from './create'
 import toArray from '@f/to-array'
 import forEach from '@f/foreach'
 import noop from '@f/noop'
@@ -11,7 +11,7 @@ import noop from '@f/noop'
  * Modify a DOM element given an array of actions.
  */
 
-export function updateElement (dispatch, context) {
+export default function updateElement (dispatch, context) {
   return (DOMElement, action) => {
     Actions.case({
       sameNode: noop,
@@ -33,13 +33,13 @@ export function updateElement (dispatch, context) {
       replaceNode: (prev, next, path) => {
         let newEl = createElement(next, path, dispatch, context)
         let parentEl = DOMElement.parentNode
-        if (parentEl) parentEl.replaceChild(newEl, DOMElement)
+        if (parentEl) storeInCache(parentEl.replaceChild(newEl, DOMElement))
         DOMElement = newEl
         removeThunks(prev, dispatch)
       },
       removeNode: (prev) => {
         removeThunks(prev)
-        DOMElement.parentNode.removeChild(DOMElement)
+        storeInCache(DOMElement.parentNode.removeChild(DOMElement))
         DOMElement = null
       }
     }, action)
@@ -62,7 +62,7 @@ function updateChildren (DOMElement, changes, dispatch, context) {
         insertAtIndex(DOMElement, index, createElement(vnode, path, dispatch, context))
       },
       removeChild: (index) => {
-        DOMElement.removeChild(childNodes[index])
+        storeInCache(DOMElement.removeChild(childNodes[index]))
       },
       updateChild: (index, actions) => {
         let _update = updateElement(dispatch, context)
@@ -93,7 +93,7 @@ function updateThunk (DOMElement, prev, next, path, dispatch, context) {
   if (onUpdate) dispatch(onUpdate(model))
   next.state = {
     vnode: nextNode,
-    model: model
+    model
   }
   return DOMElement
 }
@@ -119,7 +119,7 @@ function removeThunks (vnode, dispatch) {
  */
 
 export let insertAtIndex = (parent, index, el) => {
-  var target = parent.childNodes[index]
+  let target = parent.childNodes[index]
   if (target) {
     parent.insertBefore(el, target)
   } else {

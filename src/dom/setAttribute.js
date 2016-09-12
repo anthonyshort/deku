@@ -1,7 +1,6 @@
 import setNativeAttribute from '@f/set-attribute'
 import isValidAttribute from '@f/is-valid-attr'
 import isFunction from '@f/is-function'
-import indexOf from 'index-of'
 import setValue from 'setify'
 import events from './events'
 
@@ -28,16 +27,17 @@ export function removeAttribute (DOMElement, name, previousValue) {
   }
 }
 
-export function setAttribute (DOMElement, name, value, previousValue) {
-  let eventType = events[name]
-  if (value === previousValue) {
-    return
-  }
-  if (eventType) {
-    if (isFunction(previousValue)) {
-      DOMElement.removeEventListener(eventType, previousValue)
+export function setAttribute (DOMElement, name, value, previousValue, option = {}) {
+  if (value === previousValue) return
+  if (!option.noEventListeners) {
+    let eventType = events[name]
+    if (eventType) {
+      if (isFunction(previousValue)) DOMElement.removeEventListener(eventType, previousValue)
+      DOMElement.addEventListener(eventType, value)
+      return
     }
-    DOMElement.addEventListener(eventType, value)
+  }
+  if (option.onlyEventListeners) {
     return
   }
   if (!isValidAttribute(value)) {
@@ -56,7 +56,9 @@ export function setAttribute (DOMElement, name, value, previousValue) {
       // Fix for IE/Safari where select is not correctly selected on change
       if (DOMElement.tagName === 'OPTION' && DOMElement.parentNode) {
         let select = DOMElement.parentNode
-        select.selectedIndex = indexOf(select.options, DOMElement)
+        if (select.options.indexOf) {
+          select.selectedIndex = select.options.indexOf(DOMElement)
+        }
       }
       break
     case 'value':

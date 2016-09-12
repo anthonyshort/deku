@@ -22,16 +22,16 @@ function attributesToString (attributes) {
  * object that will be given to all components.
  */
 
-export function renderString (vnode, context, path = '0') {
+export function renderString (vnode, context, path = '0', opts = {}) {
   switch (vnode.type) {
     case 'text':
       return renderTextNode(vnode)
     case 'empty':
       return renderEmptyNode()
     case 'thunk':
-      return renderThunk(vnode, path, context)
+      return renderThunk(vnode, path, context, opts)
     case 'native':
-      return renderHTML(vnode, path, context)
+      return renderHTML(vnode, path, context, opts)
   }
 }
 
@@ -43,13 +43,13 @@ function renderEmptyNode () {
   return '<noscript></noscript>'
 }
 
-function renderThunk (vnode, path, context) {
+function renderThunk (vnode, path, context, opts) {
   let { props, children } = vnode
   let output = vnode.fn({ children, props, path, context })
-  return renderString(output, context, path)
+  return renderString(output, context, path, opts)
 }
 
-function renderHTML (vnode, path, context) {
+function renderHTML (vnode, path, context, opts) {
   let {attributes, tagName, children} = vnode
   let innerHTML = attributes.innerHTML
   let str = '<' + tagName + attributesToString(attributes) + '>'
@@ -57,7 +57,12 @@ function renderHTML (vnode, path, context) {
   if (innerHTML) {
     str += innerHTML
   } else {
-    str += children.map((child, i) => renderString(child, context, path + '.' + (isNull(child.key) ? i : child.key))).join('')
+    str += children.map((child, i) => renderString(
+      child,
+      context,
+      path + '.' + (isNull(child.key) ? i : child.key),
+      opts
+    )).join('')
   }
 
   str += '</' + tagName + '>'

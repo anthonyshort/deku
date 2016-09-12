@@ -283,9 +283,9 @@ test('path should stay the same on when thunk is replaced', t => {
     }
   }
   render(<div><span /></div>)
-  render(<div><Thunk expectedPath='0.0' /></div>)
+  render(<div><Thunk expectedPath='0.0' /><Thunk expectedPath='0.1' /></div>)
   render(<div><span /></div>)
   render(<div></div>)
-  render(<div><Thunk expectedPath='0.0'><Thunk expectedPath='0.0.0' /></Thunk></div>)
+  render(<div><Thunk expectedPath='0.0'><Thunk expectedPath='0.0.0' /></Thunk><Thunk expectedPath='0.1' /></div>)
   t.end()
 })
