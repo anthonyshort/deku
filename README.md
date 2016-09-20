@@ -67,7 +67,7 @@ render(
 
 ### Documentation
 
-You can [read the documentation online](http://anthonyshort.me/deku/).
+You can [read the documentation online](https://github.com/anthonyshort/deku/tree/master/docs).
 
 ### License
 
