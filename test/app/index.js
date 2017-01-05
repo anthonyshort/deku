@@ -3,6 +3,8 @@
 import test from 'tape'
 import {createApp} from '../../src/app'
 import {create as h} from '../../src/element'
+import {str as adler32} from 'adler-32'
+import trigger from 'trigger-event'
 
 test('rendering elements', t => {
   let el = document.createElement('div')
@@ -63,19 +65,6 @@ test('moving elements using keys', t => {
     'element is moved'
   )
 
-  t.end()
-})
-
-test('emptying the container', t => {
-  let el = document.createElement('div')
-  el.innerHTML = '<div></div>'
-  let render = createApp(el)
-  render(<span></span>)
-  t.equal(
-    el.innerHTML,
-    '<span></span>',
-    'container emptied'
-  )
   t.end()
 })
 
@@ -281,5 +270,73 @@ test('rendering and updating null', t => {
   )
   t.equal(el.innerHTML, '<div><div></div><div></div></div>', 'empty node updated')
 
+  t.end()
+})
+
+test('rendering in a container with pre-rendered HTML', t => {
+  let el = document.createElement('div')
+
+  el.innerHTML = '<div><span id="1"></span><span id="2"></span></div>'
+  let render = createApp(el)
+  render(<div><span id="2"></span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span id="1"></span><span id="2"></span></div>',
+    'no string-comparison occurs (nothing should happen)'
+  )
+
+  el.attributes.autoFix = ' '
+  el.innerHTML = '<div><span>Meow</span></div>'
+  render = createApp(el)
+  render(<div><span>Thrr</span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span>Thrr</span></div>',
+    'destory and re-rendered due to string inequivalence'
+  )
+
+  el.innerHTML = '<div><span>Cat</span></div>'
+  render(<div><span>Neko</span></div>)
+  t.equal(
+    el.innerHTML,
+    '<div><span>Cat</span></div>',
+    'nothing should happen because this is not the first call to render'
+  )
+
+  el.innerHTML = 'whatever'
+  el.attributes.checksum = adler32("<p>pre-rendered text</p>")
+  render = createApp(el)
+  render(<p>pre-rendered text</p>)
+  t.equal(
+    el.innerHTML,
+    'whatever',
+    'nothing should happen because checksums are the same'
+  )
+
+  el.innerHTML = '<div>Nyan!</div>'
+  el.attributes.checksum = adler32(el.innerHTML)
+  render = createApp(el)
+  render(<p>Nyan!</p>)
+  t.equal(
+    el.innerHTML,
+    '<p>Nyan!</p>',
+    'destory and re-rendered due to checksum inequivalence'
+  )
+  t.end()
+})
+
+test('rendering in a container with pre-rendered HTML and click events', t => {
+  t.plan(12)
+  let el = document.createElement('div')
+  el.innerHTML = '<div><button></button><span></span><button></button><div><div><span></span></div></div></div>'
+  let render = createApp(el)
+  let a = function(){t.assert("clicked")}
+  let b = function(){t.assert("clicked"); t.assert("clicked")}
+  render(<div><button onClick={a}/><span onClick={b}/><button onClick={a}/><div><div><span onClick={b}/></div></div></div>)
+  let arr = el.querySelectorAll('button, span')
+  for (var item of arr) {
+    trigger(item, 'click')
+    trigger(item, 'click')
+  }
   t.end()
 })

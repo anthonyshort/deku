@@ -28,18 +28,17 @@ export function removeAttribute (DOMElement, name, previousValue) {
   }
 }
 
-export function setAttribute (DOMElement, name, value, previousValue) {
-  let eventType = events[name]
-  if (value === previousValue) {
-    return
-  }
-  if (eventType) {
-    if (isFunction(previousValue)) {
-      DOMElement.removeEventListener(eventType, previousValue)
+export function setAttribute (DOMElement, name, value, previousValue, option = {}) {
+  if (value === previousValue) return
+  if(!option.noEventListeners){
+    let eventType = events[name]
+    if (eventType) {
+      if (isFunction(previousValue)) DOMElement.removeEventListener(eventType, previousValue)
+      DOMElement.addEventListener(eventType, value)
+      return
     }
-    DOMElement.addEventListener(eventType, value)
-    return
   }
+  if(option.onlyEventListeners) return
   if (!isValidAttribute(value)) {
     removeAttribute(DOMElement, name, previousValue)
     return
