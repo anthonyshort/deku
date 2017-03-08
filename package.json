@@ -24,7 +24,7 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags && npm run clean",
     "standalone": "browserify src/index.js -s deku -t babelify -o dist/deku.js",
-    "example:basic": "budo examples/basic/index.js -- -t babelify"
+    "example:basic": "cross-env BABEL_ENV=commonjs budo examples/basic/index.js -- -t babelify"
   },
   "devDependencies": {
     "babel-cli": "6.3.17",
